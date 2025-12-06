@@ -6,19 +6,33 @@
 -- end)
 
 script.on_event(defines.events.on_script_trigger_effect, function(event)
-    if event.effect_id == "create-logistic-cannon" then
-        local container = event.target_entity
-        if container and container.valid and container.name == "logistic-cannon-container" then
-            local cannon = container.surface.create_entity { name = "logistic-cannon-entity", position = container.position, force = container.force }
+    if event.effect_id == "create-logistic-cannon-launcher" then
+        local proxy = event.target_entity
+        if proxy and proxy.valid and proxy.name == "logistic-cannon-launcher" then
+            local cannon = proxy.surface.create_entity { name = "logistic-cannon-launcher-entity", position = proxy.position, force = proxy.force, quality = proxy.quality }
             if cannon then
-                script.register_on_object_destroyed(container)
-                container.proxy_target_entity = cannon
-                container.proxy_target_inventory = defines.inventory.car_trunk
-                local driver = container.surface.create_entity { name = "character", position = cannon.position, force = cannon.force }
+                script.register_on_object_destroyed(proxy)
+                proxy.proxy_target_entity = cannon
+                proxy.proxy_target_inventory = defines.inventory.car_trunk
+                local driver = proxy.surface.create_entity { name = "character", position = cannon.position, force = cannon.force }
                 cannon.set_driver(driver)
                 cannon.driver_is_gunner = true
+                cannon.destructible = false
             else
-                container.die()
+                proxy.die()
+            end
+        end
+    elseif event.effect_id == "create-logistic-cannon-receiver" then
+        local proxy = event.target_entity
+        if proxy and proxy.valid and proxy.name == "logistic-cannon-receiver" then
+            local storage = proxy.surface.create_entity { name = "logistic-cannon-receiver-entity", position = proxy.position, force = proxy.force, quality = proxy.quality }
+            if storage then
+                script.register_on_object_destroyed(proxy)
+                storage.destructible = false
+                proxy.proxy_target_entity = storage
+                proxy.proxy_target_inventory = defines.inventory.chest
+            else
+                proxy.die()
             end
         end
     elseif event.effect_id == "logistic-cannon-launch" then
@@ -31,7 +45,9 @@ script.on_event(defines.events.on_object_destroyed, function(event)
 end)
 
 script.on_event(defines.events.on_gui_opened, function(event)
-    if event.entity and event.entity.valid and event.entity.name == "logistic-cannon-container" then
-        game.players[event.player_index].opened = event.entity.proxy_target_entity
+    if event.entity and event.entity.valid then
+        if event.entity.name == "logistic-cannon-launcher" or event.entity.name == "logistic-cannon-receiver" then
+            game.players[event.player_index].opened = event.entity.proxy_target_entity
+        end
     end
 end)

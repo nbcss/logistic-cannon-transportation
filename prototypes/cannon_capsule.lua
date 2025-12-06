@@ -13,6 +13,12 @@ data:extend{
         icon = "__base__/graphics/icons/fish-entity.png",
         subgroup = "ammo",
         stack_size = 5,
+        custom_tooltip_fields = {
+            {
+                name = { "logistic-cannon-transportation.capsule-payload" },
+                value = { "", tostring(5) },
+            }
+        },
         ammo_type = {
             target_type = "entity",
             consumption_modifier = 0,
