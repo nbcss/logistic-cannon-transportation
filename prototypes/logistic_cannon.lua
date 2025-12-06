@@ -1,6 +1,30 @@
+local util = require("__core__.lualib.util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local logistic_cannon_health = 600
 local turret_shift_y = 12
+local container_animation = {
+    layers = {
+        {
+            filename = "__base__/graphics/entity/logistic-chest/passive-provider-chest.png",
+            priority = "extra-high",
+            width = 66,
+            height = 74,
+            frame_count = 7,
+            shift = util.by_pixel(0, -2),
+            scale = 1.5
+        },
+        {
+            filename = "__base__/graphics/entity/logistic-chest/logistic-chest-shadow.png",
+            priority = "extra-high",
+            width = 112,
+            height = 46,
+            repeat_count = 7,
+            shift = util.by_pixel(12, 4.5),
+            draw_as_shadow = true,
+            scale = 1.5
+        }
+    }
+}
 
 data:extend {
     {
@@ -14,9 +38,23 @@ data:extend {
         stack_size = 10
     },
     {
+        type = "recipe",
+        name = "logistic-cannon",
+        enabled = true,
+        energy_required = 5,
+        ingredients = {
+            { type = "item", name = "steel-plate", amount = 5 },
+        },
+        results = {
+            { type = "item", name = "logistic-cannon", amount = 1 },
+        }
+    },
+    {
         type = "gun",
         name = "logistic-cannon-gun",
         icon = "__base__/graphics/icons/tank-cannon.png",
+        localised_name = {"item-name.logistic-cannon"},
+        localised_description = {"item-description.logistic-cannon"},
         hidden = true,
         auto_recycle = false,
         subgroup = "gun",
@@ -45,16 +83,17 @@ data:extend {
         trash_inventory_size = 0,
         turret_rotation_speed = 0.35 / 60,
         turret_return_timeout = 4294967295,
-        flags = { "not-on-map", "not-rotatable", "placeable-player" },
+        flags = { "not-on-map", "not-rotatable", "placeable-player", "placeable-off-grid" },
         guns = { "logistic-cannon-gun" },
         allow_passengers = true, -- required for auto-control turret
         allow_remote_driving = false,
         is_military_target = false,
         max_health = logistic_cannon_health,
-        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        collision_box = { { 0, 0 }, { 0, 0 } },
         selection_box = { { 0, 0 }, { 0, 0 } },
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
+        selection_priority = 20,
         -- hidden = true,
         turret_animation = {
             layers = {
@@ -93,29 +132,7 @@ data:extend {
                 }
             }
         },
-        animation = {
-            layers = {
-                {
-                    filename = "__base__/graphics/entity/logistic-chest/passive-provider-chest.png",
-                    priority = "extra-high",
-                    width = 66,
-                    height = 74,
-                    frame_count = 7,
-                    shift = util.by_pixel(0, -2),
-                    scale = 1.5
-                },
-                {
-                    filename = "__base__/graphics/entity/logistic-chest/logistic-chest-shadow.png",
-                    priority = "extra-high",
-                    width = 112,
-                    height = 46,
-                    repeat_count = 7,
-                    shift = util.by_pixel(0, 4.5),
-                    draw_as_shadow = true,
-                    scale = 1.5
-                }
-            }
-        },
+        animation = container_animation,
         -- created_effect = {
         --     type = "direct",
         --     action_delivery = {
@@ -145,12 +162,16 @@ data:extend {
         max_health = logistic_cannon_health,
         icon = "__base__/graphics/icons/tank-cannon.png",
         minable = { mining_time = 1.0, result = "logistic-cannon" },
+        localised_name = {"entity-name.logistic-cannon-entity"},
+        localised_description = {"entity-description.logistic-cannon-entity"},
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        collision_mask = { layers = { item = true, meltable = true, object = true, player = true, water_tile = true, is_object = true, is_lower_object = true } },
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
-        circuit_wire_max_distance = default_circuit_wire_max_distance,
+        circuit_wire_max_distance = 9,
+        picture = container_animation,
         created_effect = {
             type = "direct",
             action_delivery = {

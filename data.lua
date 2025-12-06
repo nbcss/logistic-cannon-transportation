@@ -1,2 +1,2 @@
-require("prototypes.logistics_cannon_capsule")
-require("prototypes.logistics_cannon")
+require("prototypes.logistic_cannon_capsule")
+require("prototypes.logistic_cannon")

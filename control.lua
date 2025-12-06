@@ -17,12 +17,12 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
                 local driver = container.surface.create_entity { name = "character", position = cannon.position, force = cannon.force }
                 cannon.set_driver(driver)
                 cannon.driver_is_gunner = true
-                -- local passenger = container.surface.create_entity { name = "character", position = cannon.position, force = cannon.force }
-                -- cannon.set_passenger(passenger)
             else
                 container.die()
             end
         end
+    elseif event.effect_id == "logistic-cannon-launch" then
+        game.print("TODO")
     end
 end)
 
