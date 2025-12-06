@@ -1,0 +1,13 @@
+Ammo Properties
+- Payload size
+- Power consumption
+
+Technology bonus
+- Range/Power Capacity [infinite]
+- Shooting speed/Power charging speed [capped]
+
+Quality
+- Range
+- Station capacity
+
+
