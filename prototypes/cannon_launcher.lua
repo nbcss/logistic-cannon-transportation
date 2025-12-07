@@ -2,7 +2,7 @@ local util = require("__core__.lualib.util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local logistic_cannon_health = 600
 local turret_shift_y = 12
-local delivery_range = 100
+local delivery_range = 20
 local storage_size = 50
 local container_animation = {
     layers = {
@@ -105,7 +105,7 @@ data:extend {
         allow_remote_driving = false,
         is_military_target = false,
         max_health = logistic_cannon_health,
-        collision_box = { { 0, 0 }, { 0, 0 } },
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { 0, 0 }, { 0, 0 } },
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
@@ -168,9 +168,9 @@ data:extend {
         max_health = logistic_cannon_health,
         icon = "__base__/graphics/icons/tank-cannon.png",
         minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
-        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        collision_box = { { -1.25, -1.25 }, { 1.25, 1.25 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
-        collision_mask = { layers = { item = true, meltable = true, object = true, player = true, water_tile = true, is_object = true, is_lower_object = true } },
+        collision_mask = {layers={item=true, meltable=true, floor=true, car=true, water_tile=true, transport_belt=true, is_lower_object=true}},
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
