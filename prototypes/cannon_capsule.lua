@@ -83,6 +83,17 @@ data:extend {
             shift = { 0.0625, 0.1875 },
             scale = 0.5,
         },
+        smoke_sources = {
+            {
+                name = "smoke-fast",
+                deviation = { 0.15, 0.15 },
+                frequency = 1,
+                position = { 0, 0 },
+                starting_frame = 3,
+                starting_frame_deviation = 5
+            }
+        },
+        map_color = { 1, 0, 0 },
         particle_buffer_size = 1,
         particle_end_alpha = 1,
         particle_fade_out_threshold = 1,

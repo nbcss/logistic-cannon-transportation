@@ -12,7 +12,7 @@ for category, prototypes in pairs(tooltip_postprocessing) do
                 local base_value = tooltip["quality_base_value"]
                 local multiplier = tooltip["quality_multiplier"]
                 local quality_values = {}
-                log(serpent.block(data.raw["quality"]))
+                -- log(serpent.block(data.raw["quality"]))
                 for quality_name, quality in pairs(data.raw["quality"]) do
                     local value = base_value;
                     if quality[multiplier] then
@@ -27,3 +27,6 @@ for category, prototypes in pairs(tooltip_postprocessing) do
         end
     end
 end
+
+-- data.raw["projectile"]["rocket"].flags = {}
+-- data.raw["projectile"]["rocket"].map_color = {1, 0, 0}
