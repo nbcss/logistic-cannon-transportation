@@ -6,6 +6,32 @@ data.extend {
         subgroup = "ammo-category",
     },
     {
+        type = "temporary-container",
+        name = "cannon-capsule-storage",
+        inventory_size = 100,
+        time_to_live = 60 * 60 * 60,
+        destroy_on_empty = false,
+        hidden = true,
+        flags = { "not-on-map", "not-blueprintable", "not-selectable-in-game" }, --review flags "hide-alt-info"
+    },
+    {
+        type = "delayed-active-trigger",
+        name = "reset-shooting-state",
+        delay = 1,
+        action = {
+            type = "direct",
+            action_delivery = {
+                type = "instant",
+                target_effects = {
+                    {
+                        type = "script",
+                        effect_id = "logistic-cannon-launcher-reset",
+                    }
+                },
+            }
+        },
+    },
+    {
         type = "character",
         name = "logistic-cannon-driver",
         mining_speed = 0,
@@ -23,7 +49,7 @@ data.extend {
         ticks_to_keep_gun = 0,
         ticks_to_keep_aiming_direction = 0,
         ticks_to_stay_in_combat = 0,
-        damage_hit_tint = {0, 0, 0},
+        damage_hit_tint = { 0, 0, 0 },
         mining_with_tool_particles_animation_positions = {},
         running_sound_animation_positions = {},
         moving_sound_animation_positions = {},

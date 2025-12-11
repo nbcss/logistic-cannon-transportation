@@ -1,6 +1,15 @@
-local capsule_speed = 25 -- tile per second
+local constants = require("constants")
+local capsule_payload_size = 1
+local capsule_speed = 35 -- tile per second
 
 data:extend {
+    {
+        type = "mod-data",
+        name = constants.name_prefix .. "payload-sizes",
+        data = {
+            ["basic-logistic-cannon-capsule"] = capsule_payload_size,
+        },
+    },
     {
         type = "ammo",
         name = "basic-logistic-cannon-capsule",
@@ -10,8 +19,14 @@ data:extend {
         stack_size = 5,
         custom_tooltip_fields = {
             {
-                name = { "logistic-cannon-transportation.capsule-payload" },
-                value = { "", tostring(5) },
+                name = { "logistic-cannon-transportation.capsule-payload-size" },
+                value = { "logistic-cannon-transportation.stack", tostring(capsule_payload_size) },
+                order = 200,
+            },
+            {
+                name = { "logistic-cannon-transportation.capsule-speed" },
+                value = { "logistic-cannon-transportation.meter-per-second", tostring(capsule_speed) },
+                order = 201,
             }
         },
         ammo_type = {
@@ -20,13 +35,15 @@ data:extend {
             action = {
                 type = "direct",
                 action_delivery = {
-                    type = "instant",
-                    target_effects = {
-                        {
-                            type = "script",
-                            effect_id = "logistic-cannon-capsule-launched",
+                    {
+                        type = "instant",
+                        target_effects = {
+                            {
+                                type = "script",
+                                effect_id = "logistic-cannon-capsule-launched",
+                            }
                         }
-                    },
+                    }
                 }
             },
         }
@@ -44,10 +61,13 @@ data:extend {
         }
     },
     {
-        type = "stream",
-        name = "logistic-cannon-capsule-projectile",
+        type = "projectile",
+        name = "logistic-cannon-capsule-tracker",
+        max_speed = capsule_speed / 60,
+        acceleration = 99999999,
+        map_color = { 0.4, 1.0, 0.4, 0.8 },
         flags = {},
-        oriented_particle = true,
+        hidden = true,
         action = {
             {
                 type = "direct",
@@ -62,6 +82,12 @@ data:extend {
                 }
             },
         },
+    },
+    {
+        type = "stream",
+        name = "logistic-cannon-capsule-projectile",
+        flags = { "not-on-map" },
+        oriented_particle = true,
         particle = {
             filename = "__base__/graphics/entity/grenade/grenade.png",
             width = 48,
@@ -93,7 +119,7 @@ data:extend {
                 starting_frame_deviation = 5
             }
         },
-        map_color = { 1, 0, 0 },
+        -- map_color = { 1, 0, 0 },
         particle_buffer_size = 1,
         particle_end_alpha = 1,
         particle_fade_out_threshold = 1,

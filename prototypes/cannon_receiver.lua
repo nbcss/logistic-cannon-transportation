@@ -65,8 +65,10 @@ data:extend{
         inventory_type = "normal",
         is_military_target = false,
         max_health = 600,
-        collision_box = { { 0, 0 }, { 0, 0 } },
+        collision_mask = {layers={}},
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { 0, 0 }, { 0, 0 } },
+        selectable_in_game = false,
         quality_indicator_scale = 0,
     },
     {
