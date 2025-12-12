@@ -82,6 +82,57 @@ end
 --     end
 -- end
 
+---@param src LuaInventory
+---@param dst LuaInventory
+---@param item PrototypeWithQuality
+---@param count uint
+---@return uint transferred
+local function transfer_items(src, dst, item, count)
+    if not item.quality then item.quality = "normal" end
+    local src_i = 1
+    local dst_i = 1
+    local transferred = 0
+
+    while transferred < count and src_i <= #src and dst_i <= #dst do
+        -- Find matching source stack
+        local src_stack = src[src_i] ---@type LuaItemStack
+        if
+            not src_stack.valid_for_read or
+            src_stack.name ~= item.name or src_stack.quality.name ~= item.quality
+        then
+            src_i = src_i + 1
+            goto continue
+        end
+
+        local dst_stack = dst[dst_i] ---@type LuaItemStack
+        -- Try transferring to destination stack
+        local src_count_before = src_stack.count
+        dst_stack.transfer_stack(src_stack, count - transferred)
+        transferred = transferred + (src_count_before - src_stack.count)
+        if src_stack.count == 0 then
+            src_i = src_i + 1
+            if dst_stack.count >= dst_stack.prototype.stack_size then
+                dst_i = dst_i + 1
+            end
+        else
+            dst_i = dst_i + 1
+        end
+        ::continue::
+    end
+    return transferred
+end
+
+---@param src LuaInventory
+---@param dst LuaInventory
+local function dump_items(src, dst)
+    for i = 1, #src do
+        local src_stack = src[i]
+        if src_stack.valid_for_read then
+            src_stack.count = src_stack.count - dst.insert(src_stack)
+        end
+    end
+end
+
 function logistic_control.update_delivery()
     for launcher_station_id, launcher_station_data in pairs(storage.cannon_launcher_stations) do
         if launcher_station_data.station_entity.valid then
@@ -125,7 +176,8 @@ function logistic_control.update_delivery()
     for receiver_station_id, receiver_station_data in pairs(storage.cannon_receiver_stations) do
         local receiver_inventory = receiver_station_data.station_entity.get_inventory(defines.inventory.chest)
         for _, request_data in ipairs(receiver_station_data.delivery_requests) do
-            local demand = request_data.amount - receiver_inventory.get_item_count_filtered { name = request_data.name, quality = request_data.quality }
+            local demand = request_data.amount -
+            receiver_inventory.get_item_count_filtered { name = request_data.name, quality = request_data.quality }
             if demand < 0 then
                 goto continue_reciver
             end
@@ -192,6 +244,7 @@ function logistic_control.schedule_delivery(launcher_station_id, receiver_statio
         count = count,
         quality = quality,
     }
+    -- game.print(serpent.block(delivery_data))
     --todo check timeout
     storage.scheduled_deliveries[delivery_id] = delivery_data
     launcher_data.scheduled_delivery = delivery_data
@@ -204,8 +257,15 @@ end
 
 function logistic_control.on_cannon_launched(event)
     if event.source_entity and event.source_entity.valid and event.source_entity.name == "logistic-cannon-launcher-entity" then
+        local driver = event.source_entity.get_driver()
+        if driver and driver.name == "logistic-cannon-driver" then
+            local next_driver = event.source_entity.surface.create_entity { name = "logistic-cannon-driver", position = event.source_entity.position, force = event.source_entity.force }
+            event.source_entity.set_driver(next_driver)
+            driver.destroy()
+        end
         local launcher_data = storage.cannon_launcher_stations[event.source_entity.unit_number]
         if not launcher_data or not launcher_data.scheduled_delivery then
+            game.print(launcher_data.scheduled_delivery)
             return -- how?
         end
         local delivery = launcher_data.scheduled_delivery
@@ -213,19 +273,14 @@ function logistic_control.on_cannon_launched(event)
         local delivery_failed = true
         launcher_data.scheduled_delivery = nil -- reset delivery state for launcher
         if ammo_item.valid_for_read and ammo_item.name == delivery.delivery_ammo and event.target_position and event.source_position then
+            game.print("L2")
             -- could become partial delivery
-            -- Fixme this will cause item lost their attribute (durability/remain)
-            local count = event.source_entity.get_inventory(defines.inventory.car_trunk).remove {
-                name = delivery.item,
-                quality = delivery.quality,
-                count = delivery.count,
-            }
+            local capsule = delivery.capsule_entity.get_inventory(defines.inventory.chest)
+            local trunk = event.source_entity.get_inventory(defines.inventory.car_trunk)
+            local count = transfer_items(trunk, capsule, { name = delivery.item, quality = delivery.quality },
+                delivery.count)
             if count > 0 then
-                delivery.capsule_entity.get_inventory(defines.inventory.chest).insert {
-                    name = delivery.item,
-                    quality = delivery.quality,
-                    count = count,
-                }
+                delivery.count = count
                 if ammo_item.count == 1 then
                     ammo_item.clear() -- TODO it still auto load ammo from truck
                 else
@@ -249,17 +304,14 @@ function logistic_control.on_cannon_launched(event)
                     source = event.source_position,
                     target = delivery.capsule_entity,
                 }
-                local driver = event.source_entity.get_driver()
-                if driver and driver.name == "logistic-cannon-driver" then
-                    local next_driver = event.source_entity.surface.create_entity { name = "logistic-cannon-driver", position = event.source_entity.position, force = event.source_entity.force }
-                    event.source_entity.set_driver(next_driver)
-                    driver.destroy()
-                end
                 delivery_failed = false
             end
         end
         if delivery_failed then
-            --TODO, remember to check if receiver exists
+            -- move to other method?
+            delivery.capsule_entity.destroy()
+            delivery.receiver.scheduled_deliveries[delivery.id] = nil
+            storage.scheduled_deliveries[delivery.id] = nil
         end
     end
 end
@@ -270,19 +322,19 @@ function logistic_control.on_capsule_landed(event)
         local delivery_id = event.target_entity.unit_number
         local proxy_receiver = event.target_entity.surface.find_entity("logistic-cannon-receiver",
             event.target_entity.position)
-        local delivery_data = storage.scheduled_deliveries[delivery_id]
+        local delivery = storage.scheduled_deliveries[delivery_id]
         -- clear delivery state
-        if delivery_data then
-            delivery_data.receiver.scheduled_deliveries[delivery_id] = nil
+        if delivery then
+            delivery.receiver.scheduled_deliveries[delivery_id] = nil
             storage.scheduled_deliveries[delivery_id] = nil
         end
         if proxy_receiver and storage.proxy_to_station_id[proxy_receiver.unit_number] then
             local receiver_data = storage.cannon_receiver_stations
                 [storage.proxy_to_station_id[proxy_receiver.unit_number]]
             local container = receiver_data.station_entity.get_inventory(defines.inventory.chest)
-            for i = 1, #capsule_inventory do
-                container.insert(capsule_inventory[i])
-                capsule_inventory[i].clear()
+            dump_items(capsule_inventory, container)
+            if not capsule_inventory.is_empty() then
+                event.target_entity.surface.spill_inventory{position=event.target_entity.position, inventory=capsule_inventory}
             end
         end
         -- destroy capsule container TODO it should subscribe destroy event?
