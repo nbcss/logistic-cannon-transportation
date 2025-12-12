@@ -4,12 +4,13 @@ local logistic_control = {}
 
 function logistic_control.on_init()
     storage.proxy_to_station_id = storage.proxy_to_station_id or {}
-    storage.cannon_launcher_stations = storage.cannon_launcher_stations or {}
+    storage.launcher_stations = storage.launcher_stations or {}
     storage.cannon_receiver_stations = storage.cannon_receiver_stations or {}
     storage.scheduled_deliveries = storage.scheduled_deliveries or {}
     -- storage.update_task = storage.next_update_tick or {}
 end
 
+---@param event EventData.on_script_trigger_effect
 function logistic_control.on_launcher_station_created(event)
     local proxy_container = event.target_entity
     if proxy_container and proxy_container.valid and proxy_container.name == "logistic-cannon-launcher" then
@@ -23,11 +24,11 @@ function logistic_control.on_launcher_station_created(event)
             script.register_on_object_destroyed(proxy_container)
             proxy_container.proxy_target_entity = station_entity
             proxy_container.proxy_target_inventory = defines.inventory.car_trunk
-            local driver = proxy_container.surface.create_entity { name = "logistic-cannon-driver", position = proxy_container.position, force = proxy_container.force }
+            local driver = proxy_container.surface.create_entity { name = "logistic-cannon-controller", position = proxy_container.position, force = proxy_container.force }
             station_entity.set_driver(driver)
             station_entity.driver_is_gunner = true
             station_entity.destructible = false
-            storage.cannon_launcher_stations[station_entity.unit_number] = {
+            storage.launcher_stations[station_entity.unit_number] = {
                 proxy_entity = proxy_container,
                 station_entity = station_entity,
                 current_ammo = "",
@@ -44,6 +45,7 @@ function logistic_control.on_launcher_station_created(event)
     end
 end
 
+---@param event EventData.on_script_trigger_effect
 function logistic_control.on_receiver_station_created(event)
     local proxy_container = event.target_entity
     if proxy_container and proxy_container.valid and proxy_container.name == "logistic-cannon-receiver" then
@@ -85,15 +87,15 @@ end
 ---@param src LuaInventory
 ---@param dst LuaInventory
 ---@param item PrototypeWithQuality
----@param count uint
+---@param amount uint
 ---@return uint transferred
-local function transfer_items(src, dst, item, count)
+local function transfer_items(src, dst, item, amount)
     if not item.quality then item.quality = "normal" end
     local src_i = 1
     local dst_i = 1
     local transferred = 0
 
-    while transferred < count and src_i <= #src and dst_i <= #dst do
+    while transferred < amount and src_i <= #src and dst_i <= #dst do
         -- Find matching source stack
         local src_stack = src[src_i] ---@type LuaItemStack
         if
@@ -107,7 +109,7 @@ local function transfer_items(src, dst, item, count)
         local dst_stack = dst[dst_i] ---@type LuaItemStack
         -- Try transferring to destination stack
         local src_count_before = src_stack.count
-        dst_stack.transfer_stack(src_stack, count - transferred)
+        dst_stack.transfer_stack(src_stack, amount - transferred)
         transferred = transferred + (src_count_before - src_stack.count)
         if src_stack.count == 0 then
             src_i = src_i + 1
@@ -134,7 +136,7 @@ local function dump_items(src, dst)
 end
 
 function logistic_control.update_delivery()
-    for launcher_station_id, launcher_station_data in pairs(storage.cannon_launcher_stations) do
+    for launcher_station_id, launcher_station_data in pairs(storage.launcher_stations) do
         if launcher_station_data.station_entity.valid then
             local ammo_slot = launcher_station_data.station_entity.get_inventory(defines.inventory.car_ammo)[1]
             local current_ammo = ""
@@ -147,8 +149,7 @@ function logistic_control.update_delivery()
             launcher_station_data.current_ammo = current_ammo
             launcher_station_data.dirty = false
             if current_ammo ~= "" then
-                launcher_station_data.payload_size = prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data
-                    [current_ammo]
+                launcher_station_data.payload_size = prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data[current_ammo]
             else
                 launcher_station_data.payload_size = -1
             end
@@ -184,23 +185,23 @@ function logistic_control.update_delivery()
             local incoming = 0
             for _, delivery in pairs(receiver_station_data.scheduled_deliveries) do
                 if delivery.item == request_data.name and delivery.quality == request_data.quality then
-                    incoming = incoming + delivery.count
+                    incoming = incoming + delivery.amount
                 end
             end
             if demand - incoming < 0 then
                 goto continue_reciver
             end
             for _, launcher_station_id in ipairs(receiver_station_data.launchers_in_range) do
-                local payload_size = storage.cannon_launcher_stations[launcher_station_id].payload_size
                 if logistic_control.is_launcher_station_ready(launcher_station_id) then
-                    local inventory = storage.cannon_launcher_stations[launcher_station_id].station_entity.get_inventory(
+                    local payload_size = storage.launcher_stations[launcher_station_id].payload_size
+                    local inventory = storage.launcher_stations[launcher_station_id].station_entity.get_inventory(
                         defines.inventory.car_trunk)
                     local available_count = inventory.get_item_count_filtered { name = request_data.name, quality = request_data.quality }
                     local payload_count = payload_size * prototypes.item[request_data.name].stack_size
+                    local item = { name = request_data.name, quality = request_data.quality }
                     if available_count >= payload_count and payload_count <= demand - incoming and
-                        logistic_control.is_receiver_station_ready(receiver_station_id, request_data.name, request_data.quality, payload_count) then
-                        logistic_control.schedule_delivery(launcher_station_id, receiver_station_id, request_data.name,
-                            request_data.quality, payload_count)
+                        logistic_control.is_receiver_station_ready(receiver_station_id, item, payload_count) then
+                        logistic_control.schedule_delivery(launcher_station_id, receiver_station_id, item, payload_count)
                         incoming = incoming + payload_count
                     end
                 end
@@ -211,7 +212,7 @@ function logistic_control.update_delivery()
 end
 
 function logistic_control.is_launcher_station_ready(launcher_station_id)
-    local station = storage.cannon_launcher_stations[launcher_station_id]
+    local station = storage.launcher_stations[launcher_station_id]
     if station.current_ammo == "" or station.scheduled_delivery ~= nil then
         return false
     end
@@ -219,13 +220,15 @@ function logistic_control.is_launcher_station_ready(launcher_station_id)
     return true
 end
 
-function logistic_control.is_receiver_station_ready(receiver_station_id, item_name, quality, count)
+function logistic_control.is_receiver_station_ready(receiver_station_id, item, amount)
     -- todo check item capacity
     return true
 end
 
-function logistic_control.schedule_delivery(launcher_station_id, receiver_station_id, item_name, quality, count)
-    local launcher_data = storage.cannon_launcher_stations[launcher_station_id]
+---@param item PrototypeWithQuality
+---@param amount uint
+function logistic_control.schedule_delivery(launcher_station_id, receiver_station_id, item, amount)
+    local launcher_data = storage.launcher_stations[launcher_station_id]
     local receiver_data = storage.cannon_receiver_stations[receiver_station_id]
     local position = receiver_data.station_entity.position
     -- local delivery_id = tostring(launcher_station_id) .. "." .. tostring(game.tick) -- I should use capsule id?
@@ -240,9 +243,9 @@ function logistic_control.schedule_delivery(launcher_station_id, receiver_statio
         receiver = receiver_data,
         delivery_ammo = launcher_data.current_ammo,
         schedule_time = game.tick,
-        item = item_name,
-        count = count,
-        quality = quality,
+        item = item.name,
+        amount = amount,
+        quality = item.quality,
     }
     -- game.print(serpent.block(delivery_data))
     --todo check timeout
@@ -250,7 +253,7 @@ function logistic_control.schedule_delivery(launcher_station_id, receiver_statio
     launcher_data.scheduled_delivery = delivery_data
     receiver_data.scheduled_deliveries[delivery_id] = delivery_data
     local driver = launcher_data.station_entity.get_driver()
-    if driver and driver.name == "logistic-cannon-driver" then
+    if driver and driver.name == "logistic-cannon-controller" then
         driver.shooting_state = { state = defines.shooting.shooting_selected, position = position }
     end
 end
@@ -258,14 +261,13 @@ end
 function logistic_control.on_cannon_launched(event)
     if event.source_entity and event.source_entity.valid and event.source_entity.name == "logistic-cannon-launcher-entity" then
         local driver = event.source_entity.get_driver()
-        if driver and driver.name == "logistic-cannon-driver" then
-            local next_driver = event.source_entity.surface.create_entity { name = "logistic-cannon-driver", position = event.source_entity.position, force = event.source_entity.force }
+        if driver and driver.name == "logistic-cannon-controller" then
+            local next_driver = event.source_entity.surface.create_entity { name = "logistic-cannon-controller", position = event.source_entity.position, force = event.source_entity.force }
             event.source_entity.set_driver(next_driver)
             driver.destroy()
         end
-        local launcher_data = storage.cannon_launcher_stations[event.source_entity.unit_number]
+        local launcher_data = storage.launcher_stations[event.source_entity.unit_number]
         if not launcher_data or not launcher_data.scheduled_delivery then
-            game.print(launcher_data.scheduled_delivery)
             return -- how?
         end
         local delivery = launcher_data.scheduled_delivery
@@ -273,14 +275,12 @@ function logistic_control.on_cannon_launched(event)
         local delivery_failed = true
         launcher_data.scheduled_delivery = nil -- reset delivery state for launcher
         if ammo_item.valid_for_read and ammo_item.name == delivery.delivery_ammo and event.target_position and event.source_position then
-            game.print("L2")
             -- could become partial delivery
             local capsule = delivery.capsule_entity.get_inventory(defines.inventory.chest)
             local trunk = event.source_entity.get_inventory(defines.inventory.car_trunk)
-            local count = transfer_items(trunk, capsule, { name = delivery.item, quality = delivery.quality },
-                delivery.count)
-            if count > 0 then
-                delivery.count = count
+            local amount = transfer_items(trunk, capsule, { name = delivery.item, quality = delivery.quality }, delivery.amount)
+            if amount > 0 then
+                delivery.amount = amount
                 if ammo_item.count == 1 then
                     ammo_item.clear() -- TODO it still auto load ammo from truck
                 else
@@ -334,6 +334,7 @@ function logistic_control.on_capsule_landed(event)
             local container = receiver_data.station_entity.get_inventory(defines.inventory.chest)
             dump_items(capsule_inventory, container)
             if not capsule_inventory.is_empty() then
+                -- TODO add alert/effect
                 event.target_entity.surface.spill_inventory{position=event.target_entity.position, inventory=capsule_inventory}
             end
         end
@@ -347,11 +348,11 @@ end
 function logistic_control.on_entity_destroyed(entity_id)
     local station_id = storage.proxy_to_station_id[entity_id]
     if station_id then
-        if storage.cannon_launcher_stations[station_id] then
-            local station_entity = storage.cannon_launcher_stations[station_id].station_entity
+        if storage.launcher_stations[station_id] then
+            local station_entity = storage.launcher_stations[station_id].station_entity
             if station_entity and station_entity.valid then
                 local driver = station_entity.get_driver()
-                if driver and driver.valid and driver.name == "logistic-cannon-driver" then
+                if driver and driver.valid and driver.name == "logistic-cannon-controller" then
                     driver.destroy()
                 end
                 station_entity.destroy()

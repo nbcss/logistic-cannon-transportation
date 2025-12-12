@@ -33,7 +33,7 @@ data.extend {
     },
     {
         type = "character",
-        name = "logistic-cannon-driver",
+        name = "logistic-cannon-controller",
         mining_speed = 0,
         running_speed = 0,
         distance_per_frame = 0,

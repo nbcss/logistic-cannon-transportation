@@ -107,7 +107,6 @@ end
 function receiver_gui.on_request_modified(player, event)
     local index = tonumber(event.element.parent.name) or error()
     local element = player.gui.relative[name]--[[@as LuaGuiElement]].inner_frame.requests_flow.children[index] or error()
-
     local entity = player.opened--[[@as LuaEntity]]
     local data = storage.cannon_receiver_stations[entity.unit_number]
 

@@ -25,7 +25,6 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
     elseif event.effect_id == "logistic-cannon-capsule-launched" then
         logistic_control.on_cannon_launched(event)
     elseif event.effect_id == "logistic-cannon-capsule-landed" then
-        game.print("land")
         logistic_control.on_capsule_landed(event)
     end
 end)
