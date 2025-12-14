@@ -168,6 +168,8 @@ data:extend {
         draw_inventory_content = true,
         is_military_target = false,
         max_health = logistic_cannon_health,
+        flags = { "player-creation" },
+        map_color = {0.9, 0.1, 0.1},
         icon = "__base__/graphics/icons/tank-cannon.png",
         minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
