@@ -6,6 +6,7 @@ local ScheduledDelivery = {}
 ---@field receiver uint64 ID of the receiver.
 ---@field delivery_ammo string Prototype name of ammo used.
 ---@field created_time MapTick When the delivery was created.
+---@field position Vector Target position
 ---@field item string Name of the item delivered.
 ---@field quality string? Quality of the item delivered.
 ---@field amount uint32 Number of items delivered.
@@ -15,7 +16,7 @@ ScheduledDelivery.prototype.__index = ScheduledDelivery.prototype
 
 function ScheduledDelivery.on_init()
     ---@type table<uint64, ScheduledDelivery?> ScheduledDelivery's indexed by capsule_entity.unit_number.
-    storage.scheduled_deliveries = {}
+    storage.scheduled_deliveries = storage.scheduled_deliveries or {}
 end
 
 ---Create a CannonDelivery in storage and its associated entities.
@@ -25,7 +26,6 @@ end
 ---@param amount uint32
 ---@return ScheduledDelivery
 function ScheduledDelivery.create(launcher, receiver, item, amount)
-
     local capsule_storage = receiver.station_entity.surface.create_entity {
         name = "cannon-capsule-storage",
         position = receiver:position(),
@@ -36,6 +36,7 @@ function ScheduledDelivery.create(launcher, receiver, item, amount)
         receiver = receiver:id(),
         delivery_ammo = launcher.loaded_ammo,
         created_time = game.tick,
+        position = receiver:position(),
         item = item.name,
         quality = item.quality,
         amount = amount,
@@ -43,6 +44,12 @@ function ScheduledDelivery.create(launcher, receiver, item, amount)
 
     storage.scheduled_deliveries[instance:id()] = instance
     return instance
+end
+
+---@param id uint64
+---@return ScheduledDelivery?
+function ScheduledDelivery.get(id)
+    return storage.scheduled_deliveries[id]
 end
 
 ---@return uint64

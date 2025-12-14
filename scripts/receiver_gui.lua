@@ -1,4 +1,5 @@
 local constants = require "constants"
+local ReceiverStation = require("scripts.receiver_station")
 local receiver_gui = {}
 local name = "logistic-cannon-receiver-requests"
 
@@ -29,11 +30,11 @@ function receiver_gui.on_gui_opened(player, entity)
         direction = "vertical",
     }
 
-    inner_frame.add{
+    inner_frame.add {
         type = "label",
-        caption = {"logistic-cannon-transportation.cannon-requests"},
+        caption = { "logistic-cannon-transportation.cannon-requests" },
     }
-    inner_frame.add{
+    inner_frame.add {
         type = "flow",
         name = "requests_flow",
         direction = "vertical",
@@ -45,22 +46,23 @@ end
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function receiver_gui.refresh(player, entity)
-    local data = storage.cannon_receiver_stations[entity.unit_number]
+    local data = ReceiverStation.get(entity)
+    if not data then return end
     local gui = player.gui.relative[name] ---@type LuaGuiElement
 
     local requests_flow_children = gui.inner_frame.requests_flow.children
-    for i = 1, math.max(#requests_flow_children, #data.delivery_requests + 1) do
-        local request = data.delivery_requests[i]
+    for i = 1, math.max(#requests_flow_children, #data.settings.delivery_requests + 1) do
+        local request = data.settings.delivery_requests[i]
         local element = requests_flow_children[i]
-        if request or i == #data.delivery_requests + 1 then
+        if request or i == #data.scheduled_deliveries + 1 then
             if not element then
-                element = gui.inner_frame.requests_flow.add{
+                element = gui.inner_frame.requests_flow.add {
                     type = "flow",
                     name = tostring(i),
                     direction = "horizontal",
                     style = "player_input_horizontal_flow",
                 }
-                element.add{
+                element.add {
                     type = "choose-elem-button",
                     name = "choose_elem",
                     elem_type = "item-with-quality",
@@ -70,7 +72,7 @@ function receiver_gui.refresh(player, entity)
                         },
                     },
                 }
-                element.add{
+                element.add {
                     type = "textfield",
                     name = "request_number",
                     numeric = true,
@@ -86,7 +88,7 @@ function receiver_gui.refresh(player, entity)
                 }
             end
             if request then
-                element.choose_elem.elem_value = {name = request.name, quality = request.quality}
+                element.choose_elem.elem_value = { name = request.name, quality = request.quality }
                 element.request_number.visible = true
                 element.request_number.text = tostring(request.amount)
             else
@@ -106,18 +108,21 @@ end
 ---@param event EventData.on_gui_elem_changed | EventData.on_gui_text_changed
 function receiver_gui.on_request_modified(player, event)
     local index = tonumber(event.element.parent.name) or error()
-    local element = player.gui.relative[name]--[[@as LuaGuiElement]].inner_frame.requests_flow.children[index] or error()
-    local entity = player.opened--[[@as LuaEntity]]
-    local data = storage.cannon_receiver_stations[entity.unit_number]
+    local element = player.gui.relative[name] --[[@as LuaGuiElement]].inner_frame.requests_flow.children[index] or
+    error()
+    local entity = player.opened --[[@as LuaEntity]]
+    local data = ReceiverStation.get(entity)
 
-    if element.choose_elem.elem_value then
-        data.delivery_requests[index] = {
-            name = element.choose_elem.elem_value.name,
-            quality = element.choose_elem.elem_value.quality,
-            amount = tonumber(event.text) or 0, -- reset to 0 when choose_elem changes
-        }
-    else
-        table.remove(data.delivery_requests, index)
+    if data then
+        if element.choose_elem.elem_value then
+            data.settings.delivery_requests[index] = {
+                name = element.choose_elem.elem_value.name,
+                quality = element.choose_elem.elem_value.quality --[[@as string]],
+                amount = tonumber(event.text) or 0, -- reset to 0 when choose_elem changes
+            }
+        else
+            table.remove(data.settings.delivery_requests, index)
+        end
     end
 
     receiver_gui.refresh(player, entity)

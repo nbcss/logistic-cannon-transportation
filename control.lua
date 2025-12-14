@@ -1,12 +1,25 @@
 local constants = require("constants")
+local LauncherStation = require("scripts.launcher_station")
+local ReceiverStation = require("scripts.receiver_station")
+local ScheduledDelivery = require("scripts.scheduled_delivery")
 local logistic_control = require("scripts.logistic_control")
 local receiver_gui = require("scripts.receiver_gui")
 
+script.register_metatable("LauncherStation.prototype", LauncherStation.prototype)
+script.register_metatable("ReceiverStation.prototype", ReceiverStation.prototype)
+script.register_metatable("ScheduledDelivery.prototype", ScheduledDelivery.prototype)
+
 script.on_init(function()
+    LauncherStation.on_init()
+    ReceiverStation.on_init()
+    ScheduledDelivery.on_init()
     logistic_control.on_init()
 end)
 
 script.on_configuration_changed(function()
+    LauncherStation.on_init()
+    ReceiverStation.on_init()
+    ScheduledDelivery.on_init()
     logistic_control.on_init()
 end)
 
@@ -19,9 +32,9 @@ end)
 
 script.on_event(defines.events.on_script_trigger_effect, function(event)
     if event.effect_id == "create-logistic-cannon-launcher" then
-        logistic_control.on_launcher_station_created(event)
+        LauncherStation.create(event.target_entity)
     elseif event.effect_id == "create-logistic-cannon-receiver" then
-        logistic_control.on_receiver_station_created(event)
+        ReceiverStation.create(event.target_entity)
     elseif event.effect_id == "logistic-cannon-capsule-launched" then
         logistic_control.on_cannon_launched(event)
     elseif event.effect_id == "logistic-cannon-capsule-landed" then
@@ -31,11 +44,65 @@ end)
 
 script.on_event(defines.events.on_object_destroyed, function(event)
     if event.type == defines.target_type.entity and event.useful_id then
-        logistic_control.on_entity_destroyed(event.useful_id)
+        -- logistic_control.on_entity_destroyed(event.useful_id)
+        ReceiverStation.on_object_destroyed(event.useful_id)
     end
 end)
 
-script.on_nth_tick(5, function (t)
+script.on_event(defines.events.on_space_platform_pre_mined, function(event)
+    if event.entity.name == constants.entity_receiver then
+        local station = ReceiverStation.get(event.entity)
+        if station then
+            local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
+            logistic_control.dump_items(station:get_inventory(), target)
+        end
+    elseif event.entity.name == constants.entity_launcher then
+        local station = LauncherStation.get(event.entity)
+        if station then
+            local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
+            logistic_control.dump_items(station:get_inventory(), target)
+            logistic_control.dump_items(station:get_ammo_inventory(), target)
+        end
+    end
+end)
+
+script.on_event(defines.events.on_pre_player_mined_item, function(event)
+    local player = game.players[event.player_index]
+    if event.entity.name == constants.entity_receiver then
+        local station = ReceiverStation.get(event.entity)
+        if station then
+            local target = player.get_main_inventory() --[[@as LuaInventory]]
+            logistic_control.dump_items(station:get_inventory(), target)
+        end
+    elseif event.entity.name == constants.entity_launcher then
+        local station = LauncherStation.get(event.entity)
+        if station then
+            local target = player.get_main_inventory() --[[@as LuaInventory]]
+            logistic_control.dump_items(station:get_inventory(), target)
+            logistic_control.dump_items(station:get_ammo_inventory(), target)
+        end
+    end
+end)
+
+script.on_event(defines.events.on_robot_pre_mined, function(event)
+    if event.entity.name == constants.entity_receiver then
+        local station = ReceiverStation.get(event.entity)
+        if station then
+            -- TODO only able to dispatch single bot
+            local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
+            logistic_control.dump_items(station:get_inventory(), target)
+        end
+    elseif event.entity.name == constants.entity_launcher then
+        local station = LauncherStation.get(event.entity)
+        if station then
+            local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
+            logistic_control.dump_items(station:get_inventory(), target)
+            logistic_control.dump_items(station:get_ammo_inventory(), target)
+        end
+    end
+end)
+
+script.on_nth_tick(5, function(t)
     logistic_control.update_delivery()
 end)
 
@@ -53,32 +120,32 @@ script.on_event(defines.events.on_gui_opened, function(event)
 end)
 
 script.on_event({
-    defines.events.on_gui_click,
-    defines.events.on_gui_elem_changed,
-    defines.events.on_gui_text_changed,
-},
----@param event
----| EventData.on_gui_click
----| EventData.on_gui_elem_changed
----| EventData.on_gui_text_changed
-function(event)
-    local handlers = event.element.tags[constants.gui_tag_event_handlers]--[[@as {[string]: string?}]]
-    if not handlers then return end
-    local handler_name
-    for k, v in pairs(handlers) do
-        if defines.events[k] == event.name then
-            handler_name = v
-            break
+        defines.events.on_gui_click,
+        defines.events.on_gui_elem_changed,
+        defines.events.on_gui_text_changed,
+    },
+    ---@param event
+    ---| EventData.on_gui_click
+    ---| EventData.on_gui_elem_changed
+    ---| EventData.on_gui_text_changed
+    function(event)
+        local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
+        if not handlers then return end
+        local handler_name
+        for k, v in pairs(handlers) do
+            if defines.events[k] == event.name then
+                handler_name = v
+                break
+            end
         end
-    end
-    if handler_name then
-        local sep = string.find(handler_name, ".", 0, true)
-        local handler_module = string.sub(handler_name, 0, sep-1)
-        local handler_func = string.sub(handler_name, sep+1)
-        if handler_module == "receiver_gui" then
-            receiver_gui[handler_func](game.get_player(event.player_index), event)
-        else
-            error("Invalid GUI event handler: "..handler_name)
+        if handler_name then
+            local sep = string.find(handler_name, ".", 0, true)
+            local handler_module = string.sub(handler_name, 0, sep - 1)
+            local handler_func = string.sub(handler_name, sep + 1)
+            if handler_module == "receiver_gui" then
+                receiver_gui[handler_func](game.get_player(event.player_index), event)
+            else
+                error("Invalid GUI event handler: " .. handler_name)
+            end
         end
-    end
-end)
+    end)

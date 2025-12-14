@@ -9,6 +9,8 @@ local LauncherStation = {}
 ---@class LauncherStation
 ---@field proxy_entity LuaEntity The proxy container.
 ---@field station_entity LuaEntity The tank.
+---@field proxy_id uint64 The unit number of proxy container
+---@field station_id uint64 The unit number of station entity
 ---@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
 ---@field receivers_in_range uint64[]
 ---@field scheduled_delivery uint64? The delivery being scheduled for launch.-- FIXME
@@ -23,9 +25,9 @@ LauncherStation.default_settings = {}
 
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by station_entity.unit_number.
-    storage.launcher_stations = {}
+    storage.launcher_stations = storage.launcher_stations or {}
     ---@type table<uint64, uint64?> Index of LauncherStation proxy_entity.unit_number to station_entity.unit_number.
-    storage.launcher_stations_index_proxy_entity = {}
+    storage.launcher_stations_index_proxy_entity = storage.launcher_stations_index_proxy_entity or {}
 end
 
 ---Create a LauncherStation in storage and associated entities for a newly placed entity.
@@ -34,35 +36,40 @@ end
 function LauncherStation.create(entity)
     assert(entity.name == constants.entity_launcher)
 
-    if storage.launcher_stations[entity.unit_number] then
+    if storage.launcher_stations_index_proxy_entity[entity.unit_number] then
         error()
     end
 
     local station_entity = entity.surface.create_entity {
-        name = constants.entity_launcher_entity,
+        name = constants.entity_receiver,
         position = entity.position,
         force = entity.force,
-        quality = entity.quality,
+        quality = entity.quality
     } or error()
 
     local instance = setmetatable({
         proxy_entity = entity,
         station_entity = station_entity,
+        proxy_id = entity.unit_number,
+        station_id = station_entity.unit_number,
         loaded_ammo = "",
         receivers_in_range = {},
         scheduled_delivery = nil,
         settings = util.table.deepcopy(LauncherStation.default_settings),
-    }--[[@as LauncherStation]], LauncherStation.prototype)
+    } --[[@as LauncherStation]], LauncherStation)
 
-    -- Configure launcher entities
     script.register_on_object_destroyed(instance.proxy_entity)
     script.register_on_object_destroyed(instance.station_entity)
-    instance.proxy_entity.proxy_target_entity = station_entity
+
+    instance.station_entity.destructible = false
+    instance.proxy_entity.proxy_target_entity = instance.station_entity
     instance.proxy_entity.proxy_target_inventory = defines.inventory.car_trunk
-    instance:get_or_create_driver()
+    instance.station_entity.driver_is_gunner = true
+    instance:set_shooting(nil) -- initialize driver
 
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_index_proxy_entity[instance.proxy_entity.unit_number] = instance:id()
+
     return instance
 end
 
@@ -75,28 +82,33 @@ function LauncherStation.get(entity)
         storage.launcher_stations[storage.launcher_stations_index_proxy_entity[unit_number]]
 end
 
----Destroy a LauncherStation following the destruction an associated entity.
+---Get an iterator over all LauncherStation's.
+---@return fun():LauncherStation?
+function LauncherStation.all()
+    local key = nil
+    return function()
+        local value
+        key, value = next(storage.launcher_stations, key)
+        return value
+    end
+end
+
+---Destroy a ReceiverStation following the destruction an associated entity.
 ---@param unit_number uint64 Unit number of the destroyed entity.
-function LauncherStation.destroy(unit_number)
+function LauncherStation.on_object_destroyed(unit_number)
     local instance = LauncherStation.get(unit_number)
     if not instance then return end
 
+    storage.launcher_stations[instance.station_id] = nil
+    storage.launcher_stations_index_proxy_entity[instance.proxy_id] = nil
     if instance.proxy_entity.valid then
         instance.proxy_entity.destroy()
-        storage.launcher_stations_index_proxy_entity[instance.proxy_entity.unit_number] = nil
     end
-    storage.launcher_stations_index_proxy_entity[unit_number] = nil
-
     if instance.station_entity.valid then
         instance.station_entity.destroy()
-        storage.launcher_stations[instance.station_entity.unit_number] = nil
     end
-    storage.launcher_stations[unit_number] = nil
-end
-
----@return uint64
-function LauncherStation.prototype:id()
-    return self.station_entity.unit_number
+    -- TODO rebuild index
+    
 end
 
 function LauncherStation.prototype:update()
@@ -120,7 +132,8 @@ function LauncherStation.prototype:update()
     if maximum_range > 0 then
         for receiver_station_id, receiver_station_data in pairs(storage.cannon_receiver_stations) do
             if receiver_station_data.station_entity.surface == self.station_entity.surface then
-                local d = math2d.position.distance_squared(receiver_station_data.station_entity.position, self.station_entity.position)
+                local d = math2d.position.distance_squared(receiver_station_data.station_entity.position,
+                    self.station_entity.position)
                 if d <= maximum_range then
                     table.insert(self.receivers_in_range, receiver_station_id)
                     table.insert(receiver_station_data.launchers_in_range, self:id())
@@ -134,14 +147,13 @@ end
 ---@param item PrototypeWithQuality
 ---@param amount uint32
 function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
+    --FIXME duplicate of set_delivery
     local delivery = ScheduledDelivery.create(self, receiver, item, amount)
 
     --todo check timeout
     self.scheduled_delivery = delivery:id()
     receiver:on_delivery_scheduled(delivery)
-
-    local driver = self:get_or_create_driver()
-    driver.shooting_state = { state = defines.shooting.shooting_selected, position = receiver:position() }
+    self:set_shooting(delivery.position)
 end
 
 ---@return boolean
@@ -153,27 +165,78 @@ function LauncherStation.prototype:is_ready()
     return true
 end
 
----@return LuaEntity
-function LauncherStation.prototype:get_or_create_driver()
-    local driver = self.station_entity.get_driver()--[[@as LuaEntity]]
-    if driver and driver.name == "logistic-cannon-controller" then
-        return driver
-    end
+---@return LuaInventory
+function LauncherStation.prototype:get_inventory()
+    return self.station_entity.get_inventory(defines.inventory.car_trunk) --[[@as LuaInventory]]
+end
 
-    driver = self.station_entity.surface.create_entity {
-        name = "logistic-cannon-controller",
-        position = self.station_entity.position,
-        force = self.station_entity.force
-    } or error()
-    self.station_entity.set_driver(driver)
-    self.station_entity.driver_is_gunner = true
-    self.station_entity.destructible = false
-    return driver
+---@return LuaInventory
+function LauncherStation.prototype:get_ammo_inventory()
+    return self.station_entity.get_inventory(defines.inventory.car_ammo) --[[@as LuaInventory]]
+end
+
+---@param delivery ScheduledDelivery
+function LauncherStation.prototype:set_delivery(delivery)
+    --TODO check already have delivery?
+    self.scheduled_delivery = delivery:id()
+    self:set_shooting(delivery.position)
+end
+
+---@param position Vector?
+function LauncherStation.prototype:set_shooting(position)
+    local driver = self.station_entity.get_driver() --[[@as LuaEntity]]
+    if position then
+        if not driver or driver.name ~= "logistic-cannon-controller" then
+            driver = self.station_entity.surface.create_entity {
+                name = "logistic-cannon-controller",
+                position = self.station_entity.position,
+                force = self.station_entity.force
+            } or error()
+            self.station_entity.set_driver(driver)
+        end
+        driver.shooting_state = { state = defines.shooting.shooting_selected, position = position }
+    else
+        local replace_driver = self.station_entity.surface.create_entity {
+            name = "logistic-cannon-controller",
+            position = self.station_entity.position,
+            force = self.station_entity.force
+        } or error()
+        self.station_entity.set_driver(replace_driver)
+        if driver and driver.name == "logistic-cannon-controller" then
+            driver.destroy()
+        end
+    end
+end
+
+---@return ScheduledDelivery?
+function LauncherStation.prototype:get_scheduled_delivery()
+    if self.scheduled_delivery then
+        -- TODO clear self's reference if not exists?
+        return ScheduledDelivery.get(self.scheduled_delivery)
+    else
+        return nil
+    end
 end
 
 ---@return uint32?
 function LauncherStation.prototype:get_max_payload_size()
-    return prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data[self.loaded_ammo]--[[@as integer?]]
+    return prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data[self.loaded_ammo] --[[@as integer?]]
 end
+
+---@return uint64
+function LauncherStation.prototype:id()
+    return self.station_entity.unit_number
+end
+
+---@return boolean
+function LauncherStation.prototype:valid()
+    return self.proxy_entity.valid and self.station_entity.valid
+end
+
+---@return MapPosition
+function LauncherStation.prototype:position()
+    return self.station_entity.position
+end
+
 
 return LauncherStation
