@@ -1,9 +1,12 @@
 local constants = require("constants")
 local LauncherStation = require("scripts.launcher_station")
-local ReceiverStation = require("scripts.receiver_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
-local logistic_control = require("scripts.logistic_control")
+local ReceiverStation = require("scripts.receiver_station")
+local inventory_tool = require("scripts.inventory_tool")
 local receiver_gui = require("scripts.receiver_gui")
+
+LauncherStation.load_deps()
+ReceiverStation.load_deps()
 
 script.register_metatable("LauncherStation.prototype", LauncherStation.prototype)
 script.register_metatable("ReceiverStation.prototype", ReceiverStation.prototype)
@@ -13,14 +16,12 @@ script.on_init(function()
     LauncherStation.on_init()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
-    logistic_control.on_init()
 end)
 
 script.on_configuration_changed(function()
     LauncherStation.on_init()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
-    logistic_control.on_init()
 end)
 
 -- script.on_event(defines.events.on_player_driving_changed_state, function (event)
@@ -30,22 +31,42 @@ end)
 --     end
 -- end)
 
+local function on_cannon_launched(event)
+    if event.source_position and event.source_entity and event.source_entity.valid
+        and event.source_entity.name == "logistic-cannon-launcher-entity" then
+        local launcher = LauncherStation.get(event.source_entity)
+        if launcher then
+            launcher:launch(event.source_position)
+        end
+    end
+end
+
+local function on_capsule_landed(event)
+    if event.target_entity and event.target_entity.valid and event.target_entity.name == "cannon-capsule-storage" then
+        local delivery = ScheduledDelivery.get(event.target_entity.unit_number)
+        if delivery then
+            delivery:deliver()
+        end
+    end
+end
+
 script.on_event(defines.events.on_script_trigger_effect, function(event)
     if event.effect_id == "create-logistic-cannon-launcher" then
         LauncherStation.create(event.target_entity)
     elseif event.effect_id == "create-logistic-cannon-receiver" then
         ReceiverStation.create(event.target_entity)
     elseif event.effect_id == "logistic-cannon-capsule-launched" then
-        logistic_control.on_cannon_launched(event)
+        on_cannon_launched(event)
     elseif event.effect_id == "logistic-cannon-capsule-landed" then
-        logistic_control.on_capsule_landed(event)
+        on_capsule_landed(event)
     end
 end)
 
 script.on_event(defines.events.on_object_destroyed, function(event)
     if event.type == defines.target_type.entity and event.useful_id then
-        -- logistic_control.on_entity_destroyed(event.useful_id)
+        LauncherStation.on_object_destroyed(event.useful_id)
         ReceiverStation.on_object_destroyed(event.useful_id)
+        ScheduledDelivery.on_object_destroyed(event.useful_id)
     end
 end)
 
@@ -54,14 +75,14 @@ script.on_event(defines.events.on_space_platform_pre_mined, function(event)
         local station = ReceiverStation.get(event.entity)
         if station then
             local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
-            logistic_control.dump_items(station:get_inventory(), target)
+            inventory_tool.dump_items(station:get_inventory(), target)
         end
     elseif event.entity.name == constants.entity_launcher then
         local station = LauncherStation.get(event.entity)
         if station then
             local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
-            logistic_control.dump_items(station:get_inventory(), target)
-            logistic_control.dump_items(station:get_ammo_inventory(), target)
+            inventory_tool.dump_items(station:get_inventory(), target)
+            inventory_tool.dump_items(station:get_ammo_inventory(), target)
         end
     end
 end)
@@ -72,14 +93,14 @@ script.on_event(defines.events.on_pre_player_mined_item, function(event)
         local station = ReceiverStation.get(event.entity)
         if station then
             local target = player.get_main_inventory() --[[@as LuaInventory]]
-            logistic_control.dump_items(station:get_inventory(), target)
+            inventory_tool.dump_items(station:get_inventory(), target)
         end
     elseif event.entity.name == constants.entity_launcher then
         local station = LauncherStation.get(event.entity)
         if station then
             local target = player.get_main_inventory() --[[@as LuaInventory]]
-            logistic_control.dump_items(station:get_inventory(), target)
-            logistic_control.dump_items(station:get_ammo_inventory(), target)
+            inventory_tool.dump_items(station:get_inventory(), target)
+            inventory_tool.dump_items(station:get_ammo_inventory(), target)
         end
     end
 end)
@@ -88,27 +109,28 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
     if event.entity.name == constants.entity_receiver then
         local station = ReceiverStation.get(event.entity)
         if station then
-            -- TODO only able to dispatch single bot
+            -- FIXME only able to dispatch single bot
             local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
-            logistic_control.dump_items(station:get_inventory(), target)
+            inventory_tool.dump_items(station:get_inventory(), target)
         end
     elseif event.entity.name == constants.entity_launcher then
         local station = LauncherStation.get(event.entity)
         if station then
             local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
-            logistic_control.dump_items(station:get_inventory(), target)
-            logistic_control.dump_items(station:get_ammo_inventory(), target)
+            inventory_tool.dump_items(station:get_inventory(), target)
+            inventory_tool.dump_items(station:get_ammo_inventory(), target)
         end
     end
 end)
 
 script.on_nth_tick(5, function(t)
-    logistic_control.update_delivery()
+    for launcher in LauncherStation.all() do
+        launcher:update()
+    end
+    for receiver in ReceiverStation.all() do
+        receiver:update()
+    end
 end)
-
--- script.on_event(defines.events.on_tick, function (event)
---     logistic_control.on_tick(event.tick)
--- end)
 
 script.on_event(defines.events.on_gui_opened, function(event)
     if event.entity and event.entity.valid then

@@ -1,9 +1,13 @@
 local constants = require("constants")
 local util = require("util")
-local ScheduledDelivery = require("scripts.scheduled_delivery")
-local LauncherStation = require("scripts.launcher_station")
+local ScheduledDelivery ---@module "scripts.scheduled_delivery"
+local LauncherStation ---@module "scripts.launcher_station"
 
 local ReceiverStation = {}
+function ReceiverStation.load_deps()
+    LauncherStation = require("scripts.launcher_station")
+    ScheduledDelivery = require("scripts.scheduled_delivery")
+end
 
 ---Represents a cannon receiver in storage, lifetime synchronized with associated entities.
 ---@class ReceiverStation
@@ -11,8 +15,8 @@ local ReceiverStation = {}
 ---@field station_entity LuaEntity The regular container.
 ---@field proxy_id uint64 The unit number of proxy container
 ---@field station_id uint64 The unit number of station entity
----@field launchers_in_range uint64[]
----@field scheduled_deliveries uint64[] Anticipated deliveries to this receiver.
+---@field launchers_in_range LauncherStation[]
+---@field scheduled_deliveries table<uint64, ScheduledDelivery> Anticipated deliveries to this receiver.
 ---@field settings ReceiverStationSettings
 ReceiverStation.prototype = {}
 ReceiverStation.prototype.__index = ReceiverStation.prototype
@@ -57,7 +61,7 @@ function ReceiverStation.create(entity)
         launchers_in_range = {},
         scheduled_deliveries = {},
         settings = util.table.deepcopy(ReceiverStation.default_settings),
-    } --[[@as ReceiverStation]], ReceiverStation)
+    } --[[@as ReceiverStation]], ReceiverStation.prototype)
 
     script.register_on_object_destroyed(instance.proxy_entity)
     script.register_on_object_destroyed(instance.station_entity)
@@ -110,36 +114,35 @@ function ReceiverStation.all()
 end
 
 function ReceiverStation.prototype:update()
+    if not self:valid() then return end
     local inventory = self:get_inventory()
+    local empty_slots = inventory.count_empty_stacks(false, false)
+    if empty_slots == 0 then return end
     for _, request in ipairs(self.settings.delivery_requests) do
-        local demand = request.amount - inventory.get_item_count_filtered { name = request.name, quality = request.quality }
+        local demand = request.amount -
+        inventory.get_item_count_filtered { name = request.name, quality = request.quality }
         if demand < 0 then
             goto continue
         end
         local incoming = 0
         -- TODO can be optimized
-        for _, delivery_id in pairs(self.scheduled_deliveries) do
-            local delivery = ScheduledDelivery.get(delivery_id)
-            if delivery and delivery.item == request.name and delivery.quality == request.quality then
+        for _, delivery in pairs(self.scheduled_deliveries) do
+            if delivery:valid() and delivery.item == request.name and delivery.quality == request.quality then
                 incoming = incoming + delivery.amount
             end
         end
-        if demand - incoming < 0 then
+        if demand - incoming <= 0 then
             goto continue
         end
-        for _, launcher_station_id in ipairs(self.launchers_in_range) do
-            local launcher = LauncherStation.get(launcher_station_id)
-            if launcher and launcher:is_ready() then
-                local payload_size = launcher:get_max_payload_size()
-                local inventory = launcher:get_inventory()
-                local available_count = inventory.get_item_count_filtered { name = request.name, quality = request.quality }
-                local payload_count = payload_size * prototypes.item[request.name].stack_size
-                local item = { name = request.name, quality = request.quality }
-                if available_count >= payload_count and payload_count <= demand - incoming and self:is_ready() then
-                    local delivery = ScheduledDelivery.create(launcher, self, item, payload_count)
-                    table.insert(self.scheduled_deliveries, delivery:id())
-                    launcher:set_delivery(delivery)
-                    incoming = incoming + payload_count
+        local item = { name = request.name, quality = request.quality }
+        for _, launcher in pairs(self.launchers_in_range) do
+            if launcher:valid() and launcher:is_ready() then
+                if launcher:get_max_payload_size() <= empty_slots then
+                    local delivery = launcher:schedule_delivery(self, item, demand - incoming)
+                    if delivery then
+                        self.scheduled_deliveries[delivery:id()] = delivery
+                        incoming = incoming + delivery.amount
+                    end
                 end
             end
         end
@@ -152,20 +155,9 @@ function ReceiverStation.prototype:get_inventory()
     return self.station_entity.get_inventory(defines.inventory.chest) --[[@as LuaInventory]]
 end
 
----@param delivery ScheduledDelivery
-function ReceiverStation.prototype:on_delivery_scheduled(delivery)
-    table.insert(self.scheduled_deliveries, delivery)
-end
-
----@return boolean
-function ReceiverStation.prototype:is_ready(receiver_station_id, item, amount)
-    -- todo check item capacity
-    return true
-end
-
 ---@return uint64
 function ReceiverStation.prototype:id()
-    return self.station_entity.unit_number
+    return self.station_id
 end
 
 ---@return boolean
