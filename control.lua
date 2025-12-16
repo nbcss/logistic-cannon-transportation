@@ -3,6 +3,7 @@ local LauncherStation = require("scripts.launcher_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
 local ReceiverStation = require("scripts.receiver_station")
 local inventory_tool = require("scripts.inventory_tool")
+local launcher_gui = require("scripts.launcher_gui")
 local receiver_gui = require("scripts.receiver_gui")
 
 LauncherStation.load_deps()
@@ -134,6 +135,7 @@ end)
 
 script.on_event(defines.events.on_gui_opened, function(event)
     if event.entity and event.entity.valid then
+        launcher_gui.on_gui_opened(game.players[event.player_index], event.entity)
         receiver_gui.on_gui_opened(game.players[event.player_index], event.entity)
         if event.entity.name == "logistic-cannon-launcher" or event.entity.name == "logistic-cannon-receiver" then
             game.players[event.player_index].opened = event.entity.proxy_target_entity

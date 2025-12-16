@@ -88,6 +88,24 @@ data:extend {
         },
     },
     {
+        type = "electric-energy-interface",
+        name = "cannon-launcher-energy-interface",
+        icon = "__base__/graphics/icons/tank-cannon.png",
+        hidden = true,
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        selection_priority = 1,
+        flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
+        energy_source = {
+            type = "electric",
+            buffer_capacity = "10MJ",
+            usage_priority = "secondary-input",
+            input_flow_limit = "500kW",
+            output_flow_limit = "0W",
+            -- drain = "50kW",
+        }
+    },
+    {
         type = "car",
         name = "logistic-cannon-launcher-entity",
         icon = "__base__/graphics/icons/tank-cannon.png",
@@ -99,7 +117,7 @@ data:extend {
         trash_inventory_size = 0,
         turret_rotation_speed = 0.35 / 60,
         turret_return_timeout = 4294967295,
-        flags = { "not-on-map", "not-rotatable", "placeable-player", "placeable-off-grid" },
+        flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
         guns = { "logistic-cannon-gun" },
         allow_passengers = true, -- required for auto-control turret
         allow_remote_driving = false,
@@ -112,7 +130,7 @@ data:extend {
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
         quality_indicator_scale = 0,
-        -- hidden = true,
+        hidden = true,
         turret_animation = {
             layers = {
                 {

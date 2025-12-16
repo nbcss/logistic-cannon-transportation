@@ -9,10 +9,10 @@ data.extend {
         type = "temporary-container",
         name = "cannon-capsule-storage",
         inventory_size = 100,
-        time_to_live = 60 * 60 * 60,
+        time_to_live = 60 * 60 * 60, -- 1 hour
         destroy_on_empty = false,
         hidden = true,
-        flags = { "not-on-map", "not-blueprintable", "not-selectable-in-game" }, --review flags "hide-alt-info"
+        flags = { "not-on-map", "not-blueprintable", "not-selectable-in-game", "hide-alt-info" }, --review flags
     },
     {
         type = "delayed-active-trigger",

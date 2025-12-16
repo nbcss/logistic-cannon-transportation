@@ -15,8 +15,9 @@ end
 ---@class LauncherStation
 ---@field proxy_entity LuaEntity The proxy container.
 ---@field station_entity LuaEntity The tank.
----@field proxy_id uint64 The unit number of proxy container
----@field station_id uint64 The unit number of station entity
+---@field electric_interface LuaEntity The power interface.
+---@field proxy_id uint64 The unit number of proxy container.
+---@field station_id uint64 The unit number of station entity.
 ---@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
 ---@field receivers_in_range ReceiverStation[]
 ---@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.-- FIXME
@@ -50,12 +51,20 @@ function LauncherStation.create(entity)
         name = constants.entity_launcher_entity,
         position = entity.position,
         force = entity.force,
-        quality = entity.quality
+        quality = entity.quality,
+    } or error()
+
+    local electric_interface = entity.surface.create_entity {
+        name = "cannon-launcher-energy-interface",
+        position = entity.position,
+        force = entity.force,
+        quality = entity.quality,
     } or error()
 
     local instance = setmetatable({
         proxy_entity = entity,
         station_entity = station_entity,
+        electric_interface = electric_interface,
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
         loaded_ammo = "",
@@ -68,6 +77,7 @@ function LauncherStation.create(entity)
     script.register_on_object_destroyed(instance.station_entity)
 
     instance.station_entity.destructible = false
+    instance.electric_interface.destructible = false
     instance.proxy_entity.proxy_target_entity = instance.station_entity
     instance.proxy_entity.proxy_target_inventory = defines.inventory.car_trunk
     instance.station_entity.driver_is_gunner = true
@@ -102,9 +112,12 @@ function LauncherStation.on_object_destroyed(unit_number)
     if instance.station_entity.valid then
         local driver = instance.station_entity.get_driver()
         if driver and driver.valid and driver.name == "logistic-cannon-controller" then
-            driver.destroy()
+            driver.destroy() -- TODO add driver to storage?
         end
         instance.station_entity.destroy()
+    end
+    if instance.electric_interface.valid then
+        instance.electric_interface.destroy()
     end
     -- TODO rebuild index
 end
