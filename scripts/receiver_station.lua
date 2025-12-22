@@ -1,10 +1,12 @@
 local constants = require("constants")
 local util = require("util")
+local CannonNetwork ---@module "scripts.cannon_network"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local LauncherStation ---@module "scripts.launcher_station"
 
 local ReceiverStation = {}
 function ReceiverStation.load_deps()
+    CannonNetwork = require("scripts.cannon_network")
     LauncherStation = require("scripts.launcher_station")
     ScheduledDelivery = require("scripts.scheduled_delivery")
 end
@@ -15,7 +17,7 @@ end
 ---@field station_entity LuaEntity The regular container.
 ---@field proxy_id uint64 The unit number of proxy container
 ---@field station_id uint64 The unit number of station entity
----@field launchers_in_range LauncherStation[]
+---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_deliveries table<uint64, ScheduledDelivery> Anticipated deliveries to this receiver.
 ---@field settings ReceiverStationSettings
 ReceiverStation.prototype = {}
@@ -27,7 +29,6 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 ReceiverStation.default_settings = {
     delivery_requests = {},
 }
-
 
 function ReceiverStation.on_init()
     ---@type table<uint64, ReceiverStation?> ReceiverStation's indexed by station_entity.unit_number.
@@ -53,12 +54,14 @@ function ReceiverStation.create(entity)
         quality = entity.quality
     } or error()
 
+    local network = CannonNetwork.get_or_create(entity.force --[[@as LuaForce]], entity.surface)
+
     local instance = setmetatable({
         proxy_entity = entity,
         station_entity = station_entity,
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
-        launchers_in_range = {},
+        network = network,
         scheduled_deliveries = {},
         settings = util.table.deepcopy(ReceiverStation.default_settings),
     } --[[@as ReceiverStation]], ReceiverStation.prototype)
@@ -72,6 +75,7 @@ function ReceiverStation.create(entity)
 
     storage.receiver_stations[instance:id()] = instance
     storage.receiver_stations_index_proxy_entity[instance.proxy_entity.unit_number] = instance:id()
+    network:add_receiver(instance)
 
     return instance
 end
@@ -99,7 +103,7 @@ function ReceiverStation.on_object_destroyed(unit_number)
     if instance.station_entity.valid then
         instance.station_entity.destroy()
     end
-    -- TODO rebuild index
+    instance.network:remove_receiver(unit_number)
 end
 
 ---Get an iterator over all ReceiverStation's.
@@ -113,41 +117,9 @@ function ReceiverStation.all()
     end
 end
 
-function ReceiverStation.prototype:update()
-    if not self:valid() then return end
-    local inventory = self:get_inventory()
-    local empty_slots = inventory.count_empty_stacks(false, false)
-    if empty_slots == 0 then return end
-    for _, request in ipairs(self.settings.delivery_requests) do
-        local demand = request.amount -
-        inventory.get_item_count_filtered { name = request.name, quality = request.quality }
-        if demand < 0 then
-            goto continue
-        end
-        local incoming = 0
-        -- TODO can be optimized
-        for _, delivery in pairs(self.scheduled_deliveries) do
-            if delivery:valid() and delivery.item == request.name and delivery.quality == request.quality then
-                incoming = incoming + delivery.amount
-            end
-        end
-        if demand - incoming <= 0 then
-            goto continue
-        end
-        local item = { name = request.name, quality = request.quality }
-        for _, launcher in pairs(self.launchers_in_range) do
-            if launcher:valid() and launcher:is_ready() then
-                if launcher:get_max_payload_size() <= empty_slots then
-                    local delivery = launcher:schedule_delivery(self, item, demand - incoming)
-                    if delivery then
-                        self.scheduled_deliveries[delivery:id()] = delivery
-                        incoming = incoming + delivery.amount
-                    end
-                end
-            end
-        end
-        ::continue::
-    end
+---@param delivery ScheduledDelivery
+function ReceiverStation.prototype:add_delivery(delivery)
+    self.scheduled_deliveries[delivery:id()] = delivery
 end
 
 ---@return LuaInventory

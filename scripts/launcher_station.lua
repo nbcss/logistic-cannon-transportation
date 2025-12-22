@@ -1,12 +1,14 @@
 local constants = require("constants")
 local util = require("util")
 local math2d = require("math2d")
+local CannonNetwork ---@module "scripts.cannon_network"
 local ReceiverStation ---@module "scripts.receiver_station"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
 
 local LauncherStation = {}
 function LauncherStation.load_deps()
+    CannonNetwork = require("scripts.cannon_network")
     ReceiverStation = require("scripts.receiver_station")
     ScheduledDelivery = require("scripts.scheduled_delivery")
 end
@@ -19,7 +21,7 @@ end
 ---@field proxy_id uint64 The unit number of proxy container.
 ---@field station_id uint64 The unit number of station entity.
 ---@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
----@field receivers_in_range ReceiverStation[]
+---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.-- FIXME
 ---@field settings LauncherStationSettings
 LauncherStation.prototype = {}
@@ -61,6 +63,8 @@ function LauncherStation.create(entity)
         quality = entity.quality,
     } or error()
 
+    local network = CannonNetwork.get_or_create(entity.force --[[@as LuaForce]], entity.surface)
+
     local instance = setmetatable({
         proxy_entity = entity,
         station_entity = station_entity,
@@ -68,7 +72,7 @@ function LauncherStation.create(entity)
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
         loaded_ammo = "",
-        receivers_in_range = {},
+        network = network,
         scheduled_delivery = nil,
         settings = util.table.deepcopy(LauncherStation.default_settings),
     } --[[@as LauncherStation]], LauncherStation.prototype)
@@ -85,6 +89,7 @@ function LauncherStation.create(entity)
 
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_index_proxy_entity[instance.proxy_entity.unit_number] = instance:id()
+    network:add_launcher(instance)
 
     return instance
 end
@@ -119,7 +124,7 @@ function LauncherStation.on_object_destroyed(unit_number)
     if instance.electric_interface.valid then
         instance.electric_interface.destroy()
     end
-    -- TODO rebuild index
+    instance.network:remove_launcher(unit_number)
 end
 
 ---Get an iterator over all LauncherStation's.
@@ -133,40 +138,72 @@ function LauncherStation.all()
     end
 end
 
-function LauncherStation.prototype:update()
-    if not self:valid() then return end
+---@return boolean if the state been changed
+function LauncherStation.prototype:update_state()
+    if not self:valid() then return false end
     local ammo_slot = self:get_ammo_inventory()[1]
     local current_ammo = ""
     if ammo_slot.valid_for_read then
         current_ammo = ammo_slot.name
     end
     if current_ammo == self.loaded_ammo then
-        return
+        return false
     end
     self.loaded_ammo = current_ammo
-    for _, receiver in pairs(self.receivers_in_range) do
-        -- todo move to receiver's function?
-        -- fixme it using the receivers' storage
-        receiver.launchers_in_range[self:id()] = nil
+    return true
+end
+
+function LauncherStation.prototype:get_max_range()
+    if self.loaded_ammo == "" then
+        return 0
     end
-    self.receivers_in_range = {}
-    --todo get range from ammo / turret state
-    local maximum_range = 300 * 300
-    if maximum_range > 0 then
-        for receiver in ReceiverStation.all() do
-            if receiver.station_entity.surface == self.station_entity.surface then
-                local d = math2d.position.distance_squared(receiver:position(), self:position())
-                if d <= maximum_range then
-                    self.receivers_in_range[receiver:id()] = receiver
-                    receiver.launchers_in_range[self:id()] = self
-                end
-            end
-        end
+    local capacity = self.electric_interface.electric_buffer_size / 1000
+    return capacity / self:get_launch_consumption()
+end
+
+function LauncherStation.prototype:get_range()
+    if self.loaded_ammo == "" then
+        return 0
     end
+    local buffer = self.electric_interface.energy / 1000
+    return buffer / self:get_launch_consumption()
+end
+
+function LauncherStation.prototype:update_diode_status()
+    if not self:valid() then return end
+    local status = "logistic-cannon-transportation.status-ready"
+    local diode = defines.entity_status_diode.green --[[@as defines.entity_status_diode]]
+    if self.loaded_ammo == "" then
+        status = "logistic-cannon-transportation.status-no-capsule"
+        diode = defines.entity_status_diode.red
+    elseif self.scheduled_delivery then
+        status = "logistic-cannon-transportation.status-preparing"
+        diode = defines.entity_status_diode.yellow
+    elseif self.electric_interface.electric_buffer_size - self.electric_interface.energy > 1.0 then
+        status = "logistic-cannon-transportation.status-charging"
+        diode = defines.entity_status_diode.yellow
+    end
+    local range = tostring(self:get_max_range())
+    if range ~= "0" then
+        range = tostring(string.format("%.0f", self:get_range())) .. "/" .. range
+    end
+    local current_charge = string.format("%.1f", self.electric_interface.energy / 1000)
+    local buffer_size = string.format("%.1f", self.electric_interface.electric_buffer_size / 1000)
+    self.station_entity.custom_status = {
+        diode = diode,
+        label = { "", { status } }
+    }
+    self.proxy_entity.custom_status = {
+        diode = diode,
+        label = { "", { status },
+            "\n", { "logistic-cannon-transportation.energy-info", current_charge, buffer_size },
+            "\n", { "logistic-cannon-transportation.range-info", range },
+        }
+    }
 end
 
 ---@param receiver ReceiverStation
----@param item PrototypeWithQuality
+---@param item ItemIDAndQualityIDPair
 ---@param amount uint32
 ---@return ScheduledDelivery?
 function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
@@ -176,20 +213,22 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
     if available_count < payload_count or payload_count > amount then
         return nil
     end
-    local delivery = ScheduledDelivery.create(self, receiver, item, payload_count)
+    local deliver_item = { name = item.name, quality = item.quality, count = payload_count }
+    local delivery = ScheduledDelivery.create(self, receiver, deliver_item)
     --todo check timeout
     self.scheduled_delivery = delivery
     self:set_aiming(delivery.position)
     return delivery
 end
 
+---@param position MapPosition
 ---@return boolean
-function LauncherStation.prototype:is_ready()
+function LauncherStation.prototype:is_ready(position)
     if self.loaded_ammo == "" or self.scheduled_delivery ~= nil then
         return false
     end
-    -- todo check buffer_capacity
-    return true
+    local distance = math2d.position.distance(self:position(), position)
+    return self.electric_interface.energy / 1000 >= distance * self:get_launch_consumption()
 end
 
 ---@return LuaInventory
@@ -206,42 +245,43 @@ end
 function LauncherStation.prototype:launch(source_position)
     self:set_aiming(nil)
     local delivery = self.scheduled_delivery
-    if not self:valid() or not delivery then
-        return
-    end
+    if not self:valid() or not delivery then return end
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_item = self:get_ammo_inventory()[1]
     if delivery:valid() and ammo_item.valid_for_read and ammo_item.name == delivery.delivery_ammo then
-        -- could become partial delivery
-        local capsule = delivery:get_inventory()
-        local trunk = self:get_inventory()
-        local amount = inventory_tool.transfer_items(trunk, capsule,
-            { name = delivery.item, quality = delivery.quality },
-            delivery.amount)
-        if amount > 0 then
-            delivery.amount = amount
-            if ammo_item.count == 1 then
-                ammo_item.clear() -- TODO it still auto load ammo from trunk
-            else
-                ammo_item.drain_ammo(1)
+        local energy_cost = 1000 * math2d.position.distance(self:position(), delivery.position) * self:get_launch_consumption()
+        if self.electric_interface.energy >= energy_cost then
+            local capsule = delivery:get_inventory()
+            local trunk = self:get_inventory()
+            local amount = inventory_tool.transfer_items(trunk, capsule,
+                { name = delivery.item, quality = delivery.quality },
+                delivery.amount)
+            if amount > 0 then
+                self.electric_interface.energy = self.electric_interface.energy - energy_cost
+                delivery.amount = amount
+                if ammo_item.count == 1 then
+                    ammo_item.clear() -- TODO it still auto load ammo from trunk
+                else
+                    ammo_item.drain_ammo(1)
+                end
+                self.station_entity.surface.create_entity {
+                    name = "logistic-cannon-capsule-projectile",
+                    position = source_position,
+                    direction = self.station_entity.direction,
+                    force = self.station_entity.force,
+                    source = source_position,
+                    target = delivery.position,
+                }
+                self.station_entity.surface.create_entity {
+                    name = "logistic-cannon-capsule-tracker",
+                    position = source_position,
+                    direction = self.station_entity.direction,
+                    force = self.station_entity.force,
+                    source = source_position,
+                    target = delivery.capsule_entity,
+                }
+                return
             end
-            self.station_entity.surface.create_entity {
-                name = "logistic-cannon-capsule-projectile",
-                position = source_position,
-                direction = self.station_entity.direction,
-                force = self.station_entity.force,
-                source = source_position,
-                target = delivery.position,
-            }
-            self.station_entity.surface.create_entity {
-                name = "logistic-cannon-capsule-tracker",
-                position = source_position,
-                direction = self.station_entity.direction,
-                force = self.station_entity.force,
-                source = source_position,
-                target = delivery.capsule_entity,
-            }
-            return
         end
     end
     delivery:destroy()
@@ -282,6 +322,11 @@ end
 ---@return uint32?
 function LauncherStation.prototype:get_max_payload_size()
     return prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data[self.loaded_ammo] --[[@as integer?]]
+end
+
+---@return number?
+function LauncherStation.prototype:get_launch_consumption()
+    return prototypes.mod_data[constants.name_prefix .. "launch-consumptions"].data[self.loaded_ammo] --[[@as number?]]
 end
 
 ---@return uint64

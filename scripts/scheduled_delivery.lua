@@ -26,10 +26,9 @@ end
 ---Create a CannonDelivery in storage and its associated entities.
 ---@param launcher LauncherStation
 ---@param receiver ReceiverStation
----@param item PrototypeWithQuality
----@param amount uint32
+---@param item ItemWithQualityCount
 ---@return ScheduledDelivery
-function ScheduledDelivery.create(launcher, receiver, item, amount)
+function ScheduledDelivery.create(launcher, receiver, item)
     local capsule_storage = receiver.station_entity.surface.create_entity {
         name = "cannon-capsule-storage",
         position = receiver:position(),
@@ -45,7 +44,7 @@ function ScheduledDelivery.create(launcher, receiver, item, amount)
         position = receiver:position(),
         item = item.name,
         quality = item.quality,
-        amount = amount,
+        amount = item.count,
     } --[[@as ScheduledDelivery]], ScheduledDelivery.prototype)
 
     script.register_on_object_destroyed(capsule_storage)
@@ -103,7 +102,6 @@ function ScheduledDelivery.prototype:deliver()
     end
     -- destroy capsule container TODO it should subscribe destroy event?
     self:destroy()
-    -- game.print(event.target_position)
 end
 
 function ScheduledDelivery.prototype:destroy()

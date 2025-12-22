@@ -1,6 +1,7 @@
 local constants = require("constants")
 local capsule_payload_size = 1
-local capsule_speed = 35 -- tile per second
+local capsule_speed = 35      -- tile per second
+local launch_consumption = 25 -- kJ per tile
 
 data:extend {
     {
@@ -11,10 +12,17 @@ data:extend {
         },
     },
     {
+        type = "mod-data",
+        name = constants.name_prefix .. "launch-consumptions",
+        data = {
+            ["basic-logistic-cannon-capsule"] = launch_consumption,
+        },
+    },
+    {
         type = "ammo",
         name = "basic-logistic-cannon-capsule",
         ammo_category = "logistic-cannon-capsule",
-        icon = "__base__/graphics/icons/fish-entity.png",
+        icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo",
         stack_size = 5,
         custom_tooltip_fields = {
@@ -27,7 +35,12 @@ data:extend {
                 name = { "logistic-cannon-transportation.capsule-speed" },
                 value = { "logistic-cannon-transportation.meter-per-second", tostring(capsule_speed) },
                 order = 201,
-            }
+            },
+            {
+                name = { "logistic-cannon-transportation.launch-consumption" },
+                value = { "logistic-cannon-transportation.kj-per-meter", tostring(launch_consumption) },
+                order = 202,
+            },
         },
         ammo_type = {
             target_type = "direction",
@@ -87,6 +100,7 @@ data:extend {
         type = "stream",
         name = "logistic-cannon-capsule-projectile",
         flags = { "not-on-map" },
+        hidden = true,
         oriented_particle = true,
         particle = {
             filename = "__base__/graphics/entity/grenade/grenade.png",
@@ -131,7 +145,7 @@ data:extend {
         particle_spawn_timeout = 1,
         particle_start_alpha = 1,
         particle_start_scale = 2,
-        particle_vertical_acceleration = 0.0032,
+        particle_vertical_acceleration = 0.004,
         progress_to_create_smoke = 0.03,
     }
 }

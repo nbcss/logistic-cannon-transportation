@@ -6,7 +6,7 @@
     "factorio_version": "2.0",
 	"dependencies": [
         "? quality",
-        "glib"
+        "custom-bonus-gui"
 	],
     "description": ""
 }

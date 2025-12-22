@@ -2,8 +2,20 @@ data.extend {
     {
         type = "ammo-category",
         name = "logistic-cannon-capsule",
-        icon = "__base__/graphics/icons/fish-entity.png",
+        icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
+    },
+    {
+        type = "ammo-category",
+        name = "logistic-cannon-launcher-energy-buffer",
+        icon = "__base__/graphics/icons/rocket-part.png",
+        subgroup = "ammo-category",
+    },
+    {
+        type = "font",
+        name = "no-percent",
+        size = 14,
+        from = "test-no-percent",
     },
     {
         type = "temporary-container",
@@ -34,6 +46,7 @@ data.extend {
     {
         type = "character",
         name = "logistic-cannon-controller",
+        hidden = true,
         mining_speed = 0,
         running_speed = 0,
         distance_per_frame = 0,

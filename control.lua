@@ -1,4 +1,5 @@
 local constants = require("constants")
+local CannonNetwork = require("scripts.cannon_network")
 local LauncherStation = require("scripts.launcher_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
 local ReceiverStation = require("scripts.receiver_station")
@@ -13,16 +14,43 @@ script.register_metatable("LauncherStation.prototype", LauncherStation.prototype
 script.register_metatable("ReceiverStation.prototype", ReceiverStation.prototype)
 script.register_metatable("ScheduledDelivery.prototype", ScheduledDelivery.prototype)
 
+local function update_bonus(force)
+    local capacity_bonus = force.get_ammo_damage_modifier("logistic-cannon-launcher-energy-buffer") * 100
+    if capacity_bonus > 0 then
+        remote.call("custom-bonus-gui", "set", force, {
+            mod_name = "logistic-cannon-transportation",
+            name = "cannon-launcher-energy-capacity",
+            icons = {
+                {
+                    type = "item",
+                    name = "logistic-cannon-launcher"
+                }
+            },
+            texts = {
+                { "logistic-cannon-transportation.energy-capacity-bonus", capacity_bonus },
+            }
+        })
+    else
+        remote.call("custom-bonus-gui", "remove", force, "cannon-launcher-energy-capacity")
+    end
+end
+
+
 script.on_init(function()
+    CannonNetwork.on_init()
     LauncherStation.on_init()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
 end)
 
 script.on_configuration_changed(function()
+    CannonNetwork.on_init()
     LauncherStation.on_init()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
+    for _, force in pairs(game.forces) do
+        update_bonus(force)
+    end
 end)
 
 -- script.on_event(defines.events.on_player_driving_changed_state, function (event)
@@ -124,12 +152,29 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
     end
 end)
 
-script.on_nth_tick(5, function(t)
-    for launcher in LauncherStation.all() do
-        launcher:update()
+script.on_event(defines.events.on_research_finished, function(event) update_bonus(event.research.force) end)
+script.on_event(defines.events.on_research_reversed, function(event) update_bonus(event.research.force) end)
+script.on_event(defines.events.on_force_reset, function(event) update_bonus(event.force) end)
+
+script.on_event(defines.events.on_tick, function(event)
+    -- update station custom states
+    for _, player in ipairs(game.connected_players) do
+        if player.selected and player.selected.name == constants.entity_launcher then
+            local launcher = LauncherStation.get(player.selected)
+            if launcher then
+                launcher:update_diode_status()
+            end
+        end
+        if player.opened and player.opened.type == "car" and player.opened.name == constants.entity_launcher_entity then
+            local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+            if launcher then
+                launcher:update_diode_status()
+            end
+        end
     end
-    for receiver in ReceiverStation.all() do
-        receiver:update()
+    -- update network schedules
+    for network in CannonNetwork.all() do
+        network:update_deliveries(event.tick)
     end
 end)
 

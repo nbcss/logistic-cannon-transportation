@@ -1,8 +1,9 @@
-local util = require("__core__.lualib.util")
+local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local logistic_cannon_health = 600
 local turret_shift_y = 12
-local delivery_range = 20
+local delivery_range = 100
+local buffer_capacity = 2000 -- base energy buffer in kj
 local storage_size = 50
 local container_animation = {
     layers = {
@@ -67,8 +68,9 @@ data:extend {
         type = "gun",
         name = "logistic-cannon-gun",
         icon = "__base__/graphics/icons/tank-cannon.png",
-        localised_name = {"item-name.logistic-cannon-launcher"},
-        localised_description = {"item-description.logistic-cannon-launcher"},
+        localised_name = { "item-name.logistic-cannon-launcher" },
+        localised_description = { "item-description.logistic-cannon-launcher" },
+        flags = { "not-stackable" },
         hidden = true,
         auto_recycle = false,
         subgroup = "gun",
@@ -91,6 +93,8 @@ data:extend {
         type = "electric-energy-interface",
         name = "cannon-launcher-energy-interface",
         icon = "__base__/graphics/icons/tank-cannon.png",
+        localised_name = { "entity-name.logistic-cannon-launcher" },
+        localised_description = { "entity-description.logistic-cannon-launcher" },
         hidden = true,
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
@@ -98,9 +102,9 @@ data:extend {
         flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
         energy_source = {
             type = "electric",
-            buffer_capacity = "10MJ",
+            buffer_capacity = tostring(buffer_capacity) .. "kJ",
             usage_priority = "secondary-input",
-            input_flow_limit = "500kW",
+            input_flow_limit = "200kW",
             output_flow_limit = "0W",
             -- drain = "50kW",
         }
@@ -109,8 +113,8 @@ data:extend {
         type = "car",
         name = "logistic-cannon-launcher-entity",
         icon = "__base__/graphics/icons/tank-cannon.png",
-        localised_name = {"entity-name.logistic-cannon-launcher"},
-        localised_description = {"entity-description.logistic-cannon-launcher"},
+        localised_name = { "entity-name.logistic-cannon-launcher" },
+        localised_description = { "entity-description.logistic-cannon-launcher" },
         auto_sort_inventory = false,
         equipment_grid = nil,
         inventory_size = storage_size,
@@ -123,7 +127,7 @@ data:extend {
         allow_remote_driving = false,
         is_military_target = false,
         max_health = logistic_cannon_health,
-        collision_mask = {layers = {is_object=true}},
+        collision_mask = { layers = { is_object = true } },
         collision_box = { { -1.21, -1.21 }, { 1.21, 1.21 } },
         selection_box = { { 0, 0 }, { 0, 0 } },
         selectable_in_game = false,
@@ -187,7 +191,7 @@ data:extend {
         is_military_target = false,
         max_health = logistic_cannon_health,
         flags = { "player-creation" },
-        map_color = {0.9, 0.1, 0.1},
+        map_color = { 0.9, 0.1, 0.1 },
         icon = "__base__/graphics/icons/tank-cannon.png",
         minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
