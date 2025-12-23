@@ -1,13 +1,53 @@
-Ammo Properties
+Ammo properties
 - Payload size
-- Power consumption
+- Base consumption (scale with distance)
+- Projectile speed
+- Maximum range?
+
+Launcher properties
+- Base energy capacity
+- Base energy charging speed
+- Storage capacity
 
 Technology bonus
 - Range/Power Capacity [infinite]
 - Shooting speed/Power charging speed [capped]
 
-Quality
-- Range
+More modifier
+- Allow bot integration?
+- Allow passenger transportation?
+- Reduce consumption per shot (+range & save electricity)
+- Increase charge speed (+shooting speed)
+- Increase power buffer (+range)
+- Projectile speed? (prototype value)
+- More request slot
 - Station capacity
 
+Quality
+- Range (power buffer?)
+- Equipment grid size?
 
+Data
+[Projectile speed]
+- Slow: 25 m/s
+- Moderate: 40 m/s
+- Fast: 65 m/s
+- Express: 100 m/s
+
+[Ammo]
+Basic
+- Payload: 1 stack
+- Consumption: 25 kJ/m
+- Speed: Slow
+
+Advanced
+- Payload: 5 stacks
+- Consumption: 100 kJ/m
+- Speed: Moderate
+
+TODO
+- handle station teleport/clone event
+- Schedule algorithm optimization
+- Network signal
+- Range visualize
+- GUI

@@ -144,7 +144,7 @@ data:extend {
         particle_spawn_interval = 0,
         particle_spawn_timeout = 1,
         particle_start_alpha = 1,
-        particle_start_scale = 2,
+        particle_start_scale = 1,
         particle_vertical_acceleration = 0.004,
         progress_to_create_smoke = 0.03,
     }

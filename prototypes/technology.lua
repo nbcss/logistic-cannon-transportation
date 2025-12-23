@@ -1,6 +1,26 @@
 data:extend {
     {
         type = "technology",
+        name = "logistic-cannon",
+        icon = "__base__/graphics/technology/battery.png",
+        effects = {
+            { type = "unlock-recipe", recipe = "logistic-cannon-launcher"},
+            { type = "unlock-recipe", recipe = "logistic-cannon-receiver"},
+            { type = "unlock-recipe", recipe = "basic-logistic-cannon-capsule"},
+        },
+        prerequisites = { "logistic-science-pack" },
+        order = "logistic-cannon",
+        unit = {
+            count = 150,
+            time = 30,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+            }
+        }
+    },
+    {
+        type = "technology",
         name = "cannon-energy-buffer-1",
         icons = util.technology_icon_constant_capacity("__base__/graphics/technology/battery.png"),
         icon_size = 64,

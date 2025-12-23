@@ -17,6 +17,7 @@ end
 ---@field station_entity LuaEntity The regular container.
 ---@field proxy_id uint64 The unit number of proxy container
 ---@field station_id uint64 The unit number of station entity
+---@field name string Custom name of the station.
 ---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_deliveries table<uint64, ScheduledDelivery> Anticipated deliveries to this receiver.
 ---@field settings ReceiverStationSettings
@@ -55,12 +56,13 @@ function ReceiverStation.create(entity)
     } or error()
 
     local network = CannonNetwork.get_or_create(entity.force --[[@as LuaForce]], entity.surface)
-
+    
     local instance = setmetatable({
         proxy_entity = entity,
         station_entity = station_entity,
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
+        name = "",
         network = network,
         scheduled_deliveries = {},
         settings = util.table.deepcopy(ReceiverStation.default_settings),

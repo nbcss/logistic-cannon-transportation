@@ -20,6 +20,7 @@ end
 ---@field electric_interface LuaEntity The power interface.
 ---@field proxy_id uint64 The unit number of proxy container.
 ---@field station_id uint64 The unit number of station entity.
+---@field name string Custom name of the station.
 ---@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
 ---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.-- FIXME
@@ -71,6 +72,7 @@ function LauncherStation.create(entity)
         electric_interface = electric_interface,
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
+        name = "",
         loaded_ammo = "",
         network = network,
         scheduled_delivery = nil,

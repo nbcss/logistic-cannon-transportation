@@ -125,7 +125,7 @@ end
 
 ---@param launcher LauncherStation
 function CannonNetwork.prototype:update_launcher_connections(launcher)
-    if not self.launcher_index[launcher:id()] then return end
+    if not self.launcher_index[launcher:id()] or not launcher:valid() then return end
     local receivers_in_range = self.launcher_to_receivers[launcher:id()]
     for receiver_id, _ in pairs(receivers_in_range) do
         self.receiver_to_launchers[receiver_id][launcher:id()] = nil
@@ -134,10 +134,14 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
     local maximum_range = launcher:get_max_range()
     if maximum_range > 0 then
         for _, receiver in ipairs(self.receivers) do
-            local d = math2d.position.distance(receiver:position(), launcher:position())
-            if d <= maximum_range then
-                self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
-                self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
+            if receiver:valid() then
+                local d = math2d.position.distance(receiver:position(), launcher:position())
+                if d <= maximum_range then
+                    self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
+                    self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
+                end
+            else
+                game.print("Invalid receiver: " .. receiver:id()) -- debug
             end
         end
     end
@@ -145,20 +149,24 @@ end
 
 ---@param receiver ReceiverStation
 function CannonNetwork.prototype:update_receiver_connections(receiver)
-    if not self.receiver_index[receiver:id()] then return end
+    if not self.receiver_index[receiver:id()] or not receiver:valid() then return end
     local launchers_in_range = self.receiver_to_launchers[receiver:id()]
     for launcher_id, _ in pairs(launchers_in_range) do
         self.launcher_to_receivers[launcher_id][receiver:id()] = nil
     end
     self.receiver_to_launchers[receiver:id()] = {}
     for _, launcher in ipairs(self.launchers) do
-        local maximum_range = launcher:get_max_range()
-        if maximum_range > 0 then
-            local d = math2d.position.distance(receiver:position(), launcher:position())
-            if d <= maximum_range then
-                self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
-                self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
+        if launcher:valid() then
+            local maximum_range = launcher:get_max_range()
+            if maximum_range > 0 then
+                local d = math2d.position.distance(receiver:position(), launcher:position())
+                if d <= maximum_range then
+                    self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
+                    self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
+                end
             end
+        else
+            game.print("Invalid launcher: " .. launcher:id()) -- debug
         end
     end
 end

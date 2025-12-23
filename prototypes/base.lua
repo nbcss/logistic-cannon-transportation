@@ -12,12 +12,6 @@ data.extend {
         subgroup = "ammo-category",
     },
     {
-        type = "font",
-        name = "no-percent",
-        size = 14,
-        from = "test-no-percent",
-    },
-    {
         type = "temporary-container",
         name = "cannon-capsule-storage",
         inventory_size = 100,

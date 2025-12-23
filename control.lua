@@ -4,37 +4,17 @@ local LauncherStation = require("scripts.launcher_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
 local ReceiverStation = require("scripts.receiver_station")
 local inventory_tool = require("scripts.inventory_tool")
-local launcher_gui = require("scripts.launcher_gui")
-local receiver_gui = require("scripts.receiver_gui")
+local launcher_gui = require("scripts.gui.launcher_gui")
+local receiver_gui = require("scripts.gui.receiver_gui")
+local bonus_control = require("scripts.bonus_control")
 
 LauncherStation.load_deps()
 ReceiverStation.load_deps()
 
+script.register_metatable("CannonNetwork.prototype", CannonNetwork.prototype)
 script.register_metatable("LauncherStation.prototype", LauncherStation.prototype)
 script.register_metatable("ReceiverStation.prototype", ReceiverStation.prototype)
 script.register_metatable("ScheduledDelivery.prototype", ScheduledDelivery.prototype)
-
-local function update_bonus(force)
-    local capacity_bonus = force.get_ammo_damage_modifier("logistic-cannon-launcher-energy-buffer") * 100
-    if capacity_bonus > 0 then
-        remote.call("custom-bonus-gui", "set", force, {
-            mod_name = "logistic-cannon-transportation",
-            name = "cannon-launcher-energy-capacity",
-            icons = {
-                {
-                    type = "item",
-                    name = "logistic-cannon-launcher"
-                }
-            },
-            texts = {
-                { "logistic-cannon-transportation.energy-capacity-bonus", capacity_bonus },
-            }
-        })
-    else
-        remote.call("custom-bonus-gui", "remove", force, "cannon-launcher-energy-capacity")
-    end
-end
-
 
 script.on_init(function()
     CannonNetwork.on_init()
@@ -49,7 +29,7 @@ script.on_configuration_changed(function()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
     for _, force in pairs(game.forces) do
-        update_bonus(force)
+        bonus_control.update_bonus(force)
     end
 end)
 
@@ -138,7 +118,7 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
     if event.entity.name == constants.entity_receiver then
         local station = ReceiverStation.get(event.entity)
         if station then
-            -- FIXME only able to dispatch single bot
+            -- FIXME only able to dispatch single bot at a time
             local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
             inventory_tool.dump_items(station:get_inventory(), target)
         end
@@ -152,9 +132,9 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
     end
 end)
 
-script.on_event(defines.events.on_research_finished, function(event) update_bonus(event.research.force) end)
-script.on_event(defines.events.on_research_reversed, function(event) update_bonus(event.research.force) end)
-script.on_event(defines.events.on_force_reset, function(event) update_bonus(event.force) end)
+script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)
+script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
+script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
 
 script.on_event(defines.events.on_tick, function(event)
     -- update station custom states
