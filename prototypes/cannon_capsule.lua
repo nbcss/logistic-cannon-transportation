@@ -1,7 +1,7 @@
 local constants = require("constants")
 local capsule_payload_size = 1
 local capsule_speed = 35      -- tile per second
-local launch_consumption = 25 -- kJ per tile
+local launch_consumption = 25000 -- J per tile
 
 data:extend {
     {
@@ -38,7 +38,7 @@ data:extend {
             },
             {
                 name = { "logistic-cannon-transportation.launch-consumption" },
-                value = { "logistic-cannon-transportation.kj-per-meter", tostring(launch_consumption) },
+                value = { "logistic-cannon-transportation.kj-per-meter", string.format("%.0f", launch_consumption / 1000) },
                 order = 202,
             },
         },

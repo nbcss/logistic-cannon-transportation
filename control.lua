@@ -95,7 +95,6 @@ script.on_event(defines.events.on_space_platform_pre_mined, function(event)
         end
     end
 end)
-
 script.on_event(defines.events.on_pre_player_mined_item, function(event)
     local player = game.players[event.player_index]
     if event.entity.name == constants.entity_receiver then
@@ -113,7 +112,6 @@ script.on_event(defines.events.on_pre_player_mined_item, function(event)
         end
     end
 end)
-
 script.on_event(defines.events.on_robot_pre_mined, function(event)
     if event.entity.name == constants.entity_receiver then
         local station = ReceiverStation.get(event.entity)
@@ -141,7 +139,7 @@ script.on_event(defines.events.on_tick, function(event)
     for _, player in ipairs(game.connected_players) do
         if player.selected and player.selected.name == constants.entity_launcher then
             local launcher = LauncherStation.get(player.selected)
-            if launcher then
+            if launcher and launcher:valid() then
                 launcher:update_diode_status()
             end
         end

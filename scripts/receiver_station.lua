@@ -105,7 +105,7 @@ function ReceiverStation.on_object_destroyed(unit_number)
     if instance.station_entity.valid then
         instance.station_entity.destroy()
     end
-    instance.network:remove_receiver(unit_number)
+    instance.network:remove_receiver(instance.station_id)
 end
 
 ---Get an iterator over all ReceiverStation's.

@@ -3,8 +3,7 @@ local sounds = require("__base__/prototypes/entity/sounds")
 local logistic_cannon_health = 600
 local turret_shift_y = 12
 local delivery_range = 100
-local buffer_capacity = 2000 -- base energy buffer in kj
-local storage_size = 50
+local storage_size = 80
 local container_animation = {
     layers = {
         {
@@ -102,7 +101,7 @@ data:extend {
         flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
         energy_source = {
             type = "electric",
-            buffer_capacity = tostring(buffer_capacity) .. "kJ",
+            buffer_capacity = "0kJ",
             usage_priority = "secondary-input",
             input_flow_limit = "200kW",
             output_flow_limit = "0W",
@@ -119,7 +118,7 @@ data:extend {
         equipment_grid = nil,
         inventory_size = storage_size,
         trash_inventory_size = 0,
-        turret_rotation_speed = 0.35 / 60,
+        turret_rotation_speed = 0.1 / 60,
         turret_return_timeout = 4294967295,
         flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
         guns = { "logistic-cannon-gun" },

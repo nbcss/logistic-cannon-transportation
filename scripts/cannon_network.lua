@@ -7,6 +7,7 @@ local CannonNetwork = {}
 ---@field id string
 ---@field force LuaForce
 ---@field surface LuaSurface
+---@field signal SignalID?
 ---@field launchers LauncherStation[]
 ---@field receivers ReceiverStation[]
 ---@field launcher_index table<uint64, uint>
@@ -16,6 +17,18 @@ local CannonNetwork = {}
 CannonNetwork.prototype = {}
 CannonNetwork.prototype.__index = CannonNetwork.prototype
 
+---@param force LuaForce
+---@param surface LuaSurface
+---@param signal SignalID?
+---@return string
+local function get_network_id(force, surface, signal)
+    local signal_name = ""
+    if signal then
+        signal_name = "," .. signal.type .. "/" .. signal.name .. ":" .. signal.quality
+    end
+    return tostring(surface.index) .. "," .. tostring(force.index) .. signal_name
+end
+
 function CannonNetwork.on_init()
     ---@type table<string, CannonNetwork?>
     storage.cannon_networks = storage.cannon_networks or {}
@@ -23,10 +36,10 @@ end
 
 ---@param force LuaForce
 ---@param surface LuaSurface
+---@param signal SignalID?
 ---@return CannonNetwork
-function CannonNetwork.get_or_create(force, surface)
-    -- FIXME better network id format?
-    local network_id = tostring(force.index) .. "_" .. tostring(surface.index)
+function CannonNetwork.get_or_create(force, surface, signal)
+    local network_id = get_network_id(force, surface, signal)
     if storage.cannon_networks[network_id] then
         return storage.cannon_networks[network_id]
     end
@@ -34,6 +47,7 @@ function CannonNetwork.get_or_create(force, surface)
         id = network_id,
         force = force,
         surface = surface,
+        signal = signal,
         launchers = {},
         receivers = {},
         launcher_index = {},
@@ -88,6 +102,7 @@ end
 
 function CannonNetwork.prototype:update_deliveries(tick)
     if tick % 5 ~= 0 then return end
+    -- TODO optimize
     for _, launcher in ipairs(self.launchers) do
         if launcher:update_state() then
             self:update_launcher_connections(launcher)
@@ -210,7 +225,7 @@ function CannonNetwork.prototype:remove_launcher(launcher_id)
         self.launchers[index] = self.launchers[#self.launchers]
         self.launcher_index[self.launchers[index]:id()] = index
     end
-    table.remove(self.launchers, #self.launchers)
+    table.remove(self.launchers)
     self.launcher_index[launcher_id] = nil
     self:destroy_if_empty()
 end
@@ -230,7 +245,7 @@ function CannonNetwork.prototype:remove_receiver(receiver_id)
         self.receivers[index] = self.receivers[#self.receivers]
         self.receiver_index[self.receivers[index]:id()] = index
     end
-    table.remove(self.receivers, #self.receivers)
+    table.remove(self.receivers)
     self.receiver_index[receiver_id] = nil
     self:destroy_if_empty()
 end

@@ -5,26 +5,31 @@ Ammo properties
 - Maximum range?
 
 Launcher properties
-- Base energy capacity
-- Base energy charging speed
+- Base Range [+Quality]
+- Base energy charging speed [+Quality?]
+- Base equipment grid? [+Quality?]
 - Storage capacity
 
+Receiver properties
+- Storage capacity [+Quality?]
+- Request slot
+
 Technology bonus
-- Range/Power Capacity [infinite]
-- Shooting speed/Power charging speed [capped]
+- Range [infinite]
+- Charging speed [finite]
 
 More modifier
 - Allow bot integration?
 - Allow passenger transportation?
-- Reduce consumption per shot (+range & save electricity)
+- Reduce consumption per shot (+save electricity)
 - Increase charge speed (+shooting speed)
-- Increase power buffer (+range)
+- Increase range (+power capacity)
 - Projectile speed? (prototype value)
 - More request slot
 - Station capacity
 
-Quality
-- Range (power buffer?)
+Launcher Quality
+- Range
 - Equipment grid size?
 
 Data

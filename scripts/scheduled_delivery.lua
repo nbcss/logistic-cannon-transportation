@@ -88,7 +88,11 @@ end
 
 function ScheduledDelivery.prototype:deliver()
     local capsule_inventory = self:get_inventory()
-    local receiver_entity = self.capsule_entity.surface.find_entity("logistic-cannon-receiver", self.position)
+    local receiver_entity = self.capsule_entity.surface.find_entities_filtered{
+        name = "logistic-cannon-receiver",
+        position = self.position,
+        limit = 1,
+    }[1]
     if receiver_entity then
         local receiver = ReceiverStation.get(receiver_entity)
         if receiver and receiver:valid() then

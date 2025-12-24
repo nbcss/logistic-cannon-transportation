@@ -1,6 +1,7 @@
 local constants = require("constants")
 local util = require("util")
 local math2d = require("math2d")
+local bonus_control = require("scripts.bonus_control")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ReceiverStation ---@module "scripts.receiver_station"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
@@ -22,6 +23,8 @@ end
 ---@field station_id uint64 The unit number of station entity.
 ---@field name string Custom name of the station.
 ---@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
+---@field overflow_energy number The amount of overflow energy
+---@field range_visualization LuaRenderObject[]
 ---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.-- FIXME
 ---@field settings LauncherStationSettings
@@ -64,6 +67,29 @@ function LauncherStation.create(entity)
         quality = entity.quality,
     } or error()
 
+    local range_visualization = {
+        rendering.draw_circle {
+            color = { 0.02, 0.08, 0.02, 0 },
+            radius = 0,
+            filled = true,
+            target = station_entity,
+            surface = station_entity.surface,
+            players = {},
+            draw_on_ground = true,
+            render_mode = "game",
+        },
+        rendering.draw_circle {
+            color = { 0.02, 0.08, 0.02, 0 },
+            radius = 0,
+            filled = true,
+            target = station_entity,
+            surface = station_entity.surface,
+            players = {},
+            draw_on_ground = true,
+            render_mode = "chart",
+        }
+    }
+
     local network = CannonNetwork.get_or_create(entity.force --[[@as LuaForce]], entity.surface)
 
     local instance = setmetatable({
@@ -74,6 +100,8 @@ function LauncherStation.create(entity)
         station_id = station_entity.unit_number,
         name = "",
         loaded_ammo = "",
+        overflow_energy = 0,
+        range_visualization = range_visualization,
         network = network,
         scheduled_delivery = nil,
         settings = util.table.deepcopy(LauncherStation.default_settings),
@@ -92,7 +120,9 @@ function LauncherStation.create(entity)
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_index_proxy_entity[instance.proxy_entity.unit_number] = instance:id()
     network:add_launcher(instance)
-
+    for _, visualization in ipairs(range_visualization) do
+        visualization.radius = instance:get_max_range()
+    end
     return instance
 end
 
@@ -126,7 +156,12 @@ function LauncherStation.on_object_destroyed(unit_number)
     if instance.electric_interface.valid then
         instance.electric_interface.destroy()
     end
-    instance.network:remove_launcher(unit_number)
+    for _, visualization in ipairs(instance.range_visualization) do
+        if visualization.valid then
+            visualization.destroy()
+        end
+    end
+    instance.network:remove_launcher(instance.station_id)
 end
 
 ---Get an iterator over all LauncherStation's.
@@ -144,31 +179,69 @@ end
 function LauncherStation.prototype:update_state()
     if not self:valid() then return false end
     local ammo_slot = self:get_ammo_inventory()[1]
+    -- TODO consider ammo quality
     local current_ammo = ""
     if ammo_slot.valid_for_read then
         current_ammo = ammo_slot.name
     end
-    if current_ammo == self.loaded_ammo then
+    local range = self:get_max_range()
+    if current_ammo == self.loaded_ammo and range == self.range_visualization[1].radius then
         return false
     end
+    -- cancel ongoing delivery if ammo changed
+    if self.loaded_ammo ~= current_ammo and self.scheduled_delivery and self.scheduled_delivery:valid() then
+        self.scheduled_delivery:destroy()
+        self.scheduled_delivery = nil
+    end
     self.loaded_ammo = current_ammo
+    -- transfer overflow energy
+    self.overflow_energy = self.overflow_energy + self.electric_interface.energy
+    self.electric_interface.energy = 0
+    self.electric_interface.electric_buffer_size = range * self:get_launch_consumption()
+    local transfer = math.min(self.overflow_energy, self.electric_interface.electric_buffer_size)
+    self.overflow_energy = self.overflow_energy - transfer
+    self.electric_interface.energy = transfer
+    -- update range visualization
+    for _, visualization in ipairs(self.range_visualization) do
+        visualization.radius = range
+    end
     return true
 end
 
 function LauncherStation.prototype:get_max_range()
-    if self.loaded_ammo == "" then
-        return 0
-    end
-    local capacity = self.electric_interface.electric_buffer_size / 1000
-    return capacity / self:get_launch_consumption()
+    if not self:valid() then return 0 end
+    local range = self.station_entity.prototype.indexed_guns[1].attack_parameters.range
+    local quality_modifier = self.station_entity.quality.range_multiplier
+    local tech_modifier = 1.0 + bonus_control.get_launcher_range_bonus(self.station_entity.force --[[@as LuaForce]])
+    return range * quality_modifier * tech_modifier
 end
 
 function LauncherStation.prototype:get_range()
-    if self.loaded_ammo == "" then
-        return 0
+    local consumption = self:get_launch_consumption()
+    if consumption == 0 then return 0 end
+    return math.min(self:get_max_range(), self:get_stored_energy() / consumption)
+end
+
+---@param player LuaPlayer
+function LauncherStation.prototype:add_visualization_viewer(player)
+    for _, p in ipairs(self.range_visualization[1].players) do
+        if player == p then return end
     end
-    local buffer = self.electric_interface.energy / 1000
-    return buffer / self:get_launch_consumption()
+    for _, visualization in ipairs(self.range_visualization) do
+        table.insert(visualization.players, player)
+    end
+end
+
+---@param player LuaPlayer
+function LauncherStation.prototype:remove_visualization_viewer(player)
+    for index, p in ipairs(self.range_visualization[1].players) do
+        if player == p then
+            for _, visualization in ipairs(self.range_visualization) do
+                table.remove(visualization.players, index)
+            end
+            return
+        end
+    end
 end
 
 function LauncherStation.prototype:update_diode_status()
@@ -189,7 +262,7 @@ function LauncherStation.prototype:update_diode_status()
     if range ~= "0" then
         range = tostring(string.format("%.0f", self:get_range())) .. "/" .. range
     end
-    local current_charge = string.format("%.1f", self.electric_interface.energy / 1000)
+    local current_charge = string.format("%.1f", self:get_stored_energy() / 1000)
     local buffer_size = string.format("%.1f", self.electric_interface.electric_buffer_size / 1000)
     self.station_entity.custom_status = {
         diode = diode,
@@ -230,7 +303,7 @@ function LauncherStation.prototype:is_ready(position)
         return false
     end
     local distance = math2d.position.distance(self:position(), position)
-    return self.electric_interface.energy / 1000 >= distance * self:get_launch_consumption()
+    return self:get_range() >= distance
 end
 
 ---@return LuaInventory
@@ -243,6 +316,19 @@ function LauncherStation.prototype:get_ammo_inventory()
     return self.station_entity.get_inventory(defines.inventory.car_ammo) --[[@as LuaInventory]]
 end
 
+---@return number
+function LauncherStation.prototype:get_stored_energy()
+    return self.overflow_energy + self.electric_interface.energy
+end
+
+---Consume given amount of energy; if no enough energy to consume, extra energy cost is ignored
+---@param energy number
+function LauncherStation.prototype:consume_energy(energy)
+    local cost = math.max(0, energy - self.overflow_energy)
+    self.overflow_energy = math.max(0, self.overflow_energy - energy)
+    self.electric_interface.energy = math.max(0, self.electric_interface.energy - cost)
+end
+
 ---@param source_position MapPosition
 function LauncherStation.prototype:launch(source_position)
     self:set_aiming(nil)
@@ -251,15 +337,15 @@ function LauncherStation.prototype:launch(source_position)
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_item = self:get_ammo_inventory()[1]
     if delivery:valid() and ammo_item.valid_for_read and ammo_item.name == delivery.delivery_ammo then
-        local energy_cost = 1000 * math2d.position.distance(self:position(), delivery.position) * self:get_launch_consumption()
-        if self.electric_interface.energy >= energy_cost then
+        local energy_cost = math2d.position.distance(self:position(), delivery.position) * self:get_launch_consumption()
+        if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
             local trunk = self:get_inventory()
             local amount = inventory_tool.transfer_items(trunk, capsule,
                 { name = delivery.item, quality = delivery.quality },
                 delivery.amount)
             if amount > 0 then
-                self.electric_interface.energy = self.electric_interface.energy - energy_cost
+                self:consume_energy(energy_cost)
                 delivery.amount = amount
                 if ammo_item.count == 1 then
                     ammo_item.clear() -- TODO it still auto load ammo from trunk
@@ -326,9 +412,10 @@ function LauncherStation.prototype:get_max_payload_size()
     return prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data[self.loaded_ammo] --[[@as integer?]]
 end
 
----@return number?
+---@return number
 function LauncherStation.prototype:get_launch_consumption()
-    return prototypes.mod_data[constants.name_prefix .. "launch-consumptions"].data[self.loaded_ammo] --[[@as number?]]
+    if not self:valid() or self.loaded_ammo == "" then return 0 end
+    return prototypes.mod_data[constants.name_prefix .. "launch-consumptions"].data[self.loaded_ammo] --[[@as number]]
 end
 
 ---@return uint64
@@ -338,7 +425,7 @@ end
 
 ---@return boolean
 function LauncherStation.prototype:valid()
-    return self.proxy_entity.valid and self.station_entity.valid
+    return self.proxy_entity.valid and self.station_entity.valid and self.electric_interface.valid
 end
 
 ---@return MapPosition

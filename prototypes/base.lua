@@ -1,3 +1,5 @@
+local constants = require("constants")
+
 data.extend {
     {
         type = "ammo-category",
@@ -7,9 +9,10 @@ data.extend {
     },
     {
         type = "ammo-category",
-        name = "logistic-cannon-launcher-energy-buffer",
+        name = constants.range_upgrade_bonus,
         icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
+        hidden = true,
     },
     {
         type = "temporary-container",
@@ -19,23 +22,6 @@ data.extend {
         destroy_on_empty = false,
         hidden = true,
         flags = { "not-on-map", "not-blueprintable", "not-selectable-in-game", "hide-alt-info" }, --review flags
-    },
-    {
-        type = "delayed-active-trigger",
-        name = "reset-shooting-state",
-        delay = 1,
-        action = {
-            type = "direct",
-            action_delivery = {
-                type = "instant",
-                target_effects = {
-                    {
-                        type = "script",
-                        effect_id = "logistic-cannon-launcher-reset",
-                    }
-                },
-            }
-        },
     },
     {
         type = "character",
