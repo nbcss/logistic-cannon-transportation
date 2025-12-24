@@ -346,6 +346,7 @@ function LauncherStation.prototype:launch(source_position)
                 delivery.amount)
             if amount > 0 then
                 self:consume_energy(energy_cost)
+                self.network:update_launcher_storage(self)
                 delivery.amount = amount
                 if ammo_item.count == 1 then
                     ammo_item.clear() -- TODO it still auto load ammo from trunk

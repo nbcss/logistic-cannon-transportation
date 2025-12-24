@@ -14,6 +14,8 @@ local CannonNetwork = {}
 ---@field receiver_index table<uint64, uint>
 ---@field launcher_to_receivers table<uint64, table<uint64, ReceiverStation>>
 ---@field receiver_to_launchers table<uint64, table<uint64, LauncherStation>>
+---@field launcher_to_items table<uint64, table<string, ItemWithQualityID>> -- launcher id to encoded item name set
+---@field item_to_launchers table<string, table<uint64, LauncherStation>> -- encoded item name to set of launchers
 CannonNetwork.prototype = {}
 CannonNetwork.prototype.__index = CannonNetwork.prototype
 
@@ -54,6 +56,8 @@ function CannonNetwork.get_or_create(force, surface, signal)
         receiver_index = {},
         launcher_to_receivers = {},
         receiver_to_launchers = {},
+        launcher_to_items = {},
+        item_to_launchers = {},
     } --[[@as CannonNetwork]], CannonNetwork.prototype)
 
     storage.cannon_networks[network_id] = instance
@@ -100,6 +104,23 @@ local function get_receiver_demand(receiver)
     return request_demands
 end
 
+-- array index:
+-- + guarantee good distribution 
+-- - harder to maintain
+-- ? faster update if < update interval
+-- bucket map:
+-- + easy to maintain, just one map
+-- - load distribute could be uneven
+-- ? constant update interval
+-- what if a station has a lots of item to provide/request?
+
+-- split stations into buckets
+-- for each tick, update stations in same bucket
+-- launcher: ammo check, connection fix, read inventory & build provide index [item -> provider set] + [provider -> item set]
+-- receiver: read inventory & build index for request
+-- iterate over updated receiver stations
+-- compare their number of connections with number of known launchers [how to get this? it could be outdated]
+
 function CannonNetwork.prototype:update_deliveries(tick)
     if tick % 5 ~= 0 then return end
     -- TODO optimize
@@ -136,6 +157,10 @@ function CannonNetwork.prototype:update_deliveries(tick)
         end
         ::next_receiver::
     end
+end
+
+function CannonNetwork.prototype:update_launcher_storage(launcher)
+    
 end
 
 ---@param launcher LauncherStation
