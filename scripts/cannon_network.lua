@@ -1,4 +1,6 @@
 local math2d = require("math2d")
+local constants = require("constants")
+local BucketSet = require("scripts.bucket_set")
 
 local CannonNetwork = {}
 
@@ -8,13 +10,11 @@ local CannonNetwork = {}
 ---@field force LuaForce
 ---@field surface LuaSurface
 ---@field signal SignalID?
----@field launchers LauncherStation[]
----@field receivers ReceiverStation[]
----@field launcher_index table<uint64, uint>
----@field receiver_index table<uint64, uint>
+---@field launchers BucketSet<LauncherStation>
+---@field receivers BucketSet<ReceiverStation>
 ---@field launcher_to_receivers table<uint64, table<uint64, ReceiverStation>>
 ---@field receiver_to_launchers table<uint64, table<uint64, LauncherStation>>
----@field launcher_to_items table<uint64, table<string, ItemWithQualityID>> -- launcher id to encoded item name set
+---@field launcher_to_items table<uint64, table<string, ItemWithQualityCount>> -- launcher id to encoded item name set
 ---@field item_to_launchers table<string, table<uint64, LauncherStation>> -- encoded item name to set of launchers
 CannonNetwork.prototype = {}
 CannonNetwork.prototype.__index = CannonNetwork.prototype
@@ -36,6 +36,23 @@ function CannonNetwork.on_init()
     storage.cannon_networks = storage.cannon_networks or {}
 end
 
+function CannonNetwork.resize_buckets()
+    for network in CannonNetwork.all() do
+        -- resize launchers
+        local launchers = BucketSet.new(settings.global[constants.update_interval_setting].value)
+        for launcher in network.launchers:all() do
+            launchers:put(launcher:id(), launcher)
+        end
+        network.launchers = launchers
+        -- resize receivers
+        local receivers = BucketSet.new(settings.global[constants.update_interval_setting].value)
+        for receiver in network.receivers:all() do
+            receivers:put(receiver:id(), receiver)
+        end
+        network.receivers = receivers
+    end
+end
+
 ---@param force LuaForce
 ---@param surface LuaSurface
 ---@param signal SignalID?
@@ -50,10 +67,8 @@ function CannonNetwork.get_or_create(force, surface, signal)
         force = force,
         surface = surface,
         signal = signal,
-        launchers = {},
-        receivers = {},
-        launcher_index = {},
-        receiver_index = {},
+        launchers = BucketSet.new(settings.global[constants.update_interval_setting].value),
+        receivers = BucketSet.new(settings.global[constants.update_interval_setting].value),
         launcher_to_receivers = {},
         receiver_to_launchers = {},
         launcher_to_items = {},
@@ -75,16 +90,21 @@ function CannonNetwork.all()
     end
 end
 
+local function encode_item(name, quality)
+    return name .. ":" .. quality
+end
+
 ---@param receiver ReceiverStation
 ---@return table<string, ItemWithQualityCount>
 local function get_receiver_demand(receiver)
     local request_demands = {}
     for _, request in ipairs(receiver.settings.delivery_requests) do
-        local key = request.name .. ":" .. request.quality
-        request_demands[key] = { name = request.name, quality = request.quality, count = request.amount }
+        local key = encode_item(request.name, request.quality)
+        request_demands[key] = request.amount > 0 and
+            { name = request.name, quality = request.quality, count = request.amount } or nil
     end
     for _, item in ipairs(receiver:get_inventory().get_contents()) do
-        local key = item.name .. ":" .. item.quality
+        local key = encode_item(item.name, item.quality)
         local demand = request_demands[key]
         if demand then
             request_demands[key] = demand.count - item.count > 0 and
@@ -93,7 +113,7 @@ local function get_receiver_demand(receiver)
     end
     for _, delivery in pairs(receiver.scheduled_deliveries) do
         if delivery:valid() then
-            local key = delivery.item .. ":" .. delivery.quality
+            local key = encode_item(delivery.item, delivery.quality)
             local demand = request_demands[key]
             if demand then
                 request_demands[key] = demand.count - delivery.amount > 0 and
@@ -104,68 +124,82 @@ local function get_receiver_demand(receiver)
     return request_demands
 end
 
--- array index:
--- + guarantee good distribution 
--- - harder to maintain
--- ? faster update if < update interval
--- bucket map:
--- + easy to maintain, just one map
--- - load distribute could be uneven
--- ? constant update interval
--- what if a station has a lots of item to provide/request?
-
--- split stations into buckets
--- for each tick, update stations in same bucket
--- launcher: ammo check, connection fix, read inventory & build provide index [item -> provider set] + [provider -> item set]
--- receiver: read inventory & build index for request
--- iterate over updated receiver stations
--- compare their number of connections with number of known launchers [how to get this? it could be outdated]
-
-function CannonNetwork.prototype:update_deliveries(tick)
-    if tick % 5 ~= 0 then return end
-    -- TODO optimize
-    for _, launcher in ipairs(self.launchers) do
-        if launcher:update_state() then
-            self:update_launcher_connections(launcher)
+function CannonNetwork.prototype:update_launcher_storage(launcher)
+    if not launcher:valid() or not self.launchers:contains(launcher:id()) then return end
+    -- delete previous item index
+    for encoded_item, _ in pairs(self.launcher_to_items[launcher:id()]) do
+        self.item_to_launchers[encoded_item][launcher:id()] = nil
+    end
+    self.launcher_to_items[launcher:id()] = {}
+    -- indexing items
+    local payload_stack = launcher:get_max_payload_size()
+    if not payload_stack or payload_stack <= 0 then return end
+    for _, item in ipairs(launcher:get_inventory().get_contents()) do
+        local payload_count = payload_stack * prototypes.item[item.name].stack_size
+        local encoded_item = encode_item(item.name, item.quality)
+        if item.count >= payload_count then
+            -- add to item index
+            self.launcher_to_items[launcher:id()][encoded_item] = item
+            if not self.item_to_launchers[encoded_item] then
+                self.item_to_launchers[encoded_item] = {}
+            end
+            self.item_to_launchers[encoded_item][launcher:id()] = launcher
         end
     end
-    for _, receiver in ipairs(self.receivers) do
-        if not receiver:valid() then goto next_receiver end
+end
 
+function CannonNetwork.prototype:update_deliveries(tick)
+    local bucket_id = tick % settings.global[constants.update_interval_setting].value + 1
+    for launcher in self.launchers:bucket(bucket_id) do
+        launcher:update_state()
+        self:update_launcher_storage(launcher)
+    end
+    for receiver in self.receivers:bucket(bucket_id) do
+        if not receiver:valid() then goto next_receiver end
         local empty_slots = receiver:get_inventory().count_empty_stacks(false, false)
         if empty_slots <= 0 then goto next_receiver end
-
         local demands = get_receiver_demand(receiver)
-        for _, demand in pairs(demands) do
-            local item = { name = demand.name, quality = demand.quality }
-            for _, launcher in pairs(self.receiver_to_launchers[receiver:id()]) do
-                if launcher:valid() and launcher:is_ready(receiver:position()) then
-                    local payload_size = launcher:get_max_payload_size()
-                    if payload_size <= empty_slots then
-                        local delivery = launcher:schedule_delivery(receiver, item, demand.count)
-                        if delivery then
-                            receiver:add_delivery(delivery)
-                            demand.count = demand.count - delivery.amount
-                            empty_slots = empty_slots - payload_size
-                            if empty_slots <= 0 then goto next_receiver end
-                            if demand.count <= 0 then goto next_demand_item end
+        local neighbours = self.receiver_to_launchers[receiver:id()]
+        local neighbour_size = table_size(neighbours)
+        for encoded_item, demand in pairs(demands) do
+            local item_providers = self.item_to_launchers[encoded_item]
+            if item_providers then
+                local item = { name = demand.name, quality = demand.quality }
+                local launchers = {}
+                if table_size(item_providers) <= neighbour_size then
+                    -- iterate over item providers
+                    for _, launcher in pairs(item_providers) do
+                        if neighbours[launcher:id()] then
+                            table.insert(launchers, launcher)
+                        end
+                    end
+                else
+                    -- iterate over neighbours
+                    for _, launcher in pairs(neighbours) do
+                        if self.launcher_to_items[launcher:id()][encoded_item] then
+                            table.insert(launchers, launcher)
                         end
                     end
                 end
+                for _, launcher in ipairs(launchers) do
+                    local delivery = launcher:schedule_delivery(receiver, item, demand.count)
+                    if delivery then
+                        receiver:add_delivery(delivery)
+                        demand.count = demand.count - delivery.amount
+                        empty_slots = empty_slots - launcher:get_max_payload_size()
+                        if empty_slots <= 0 then goto next_receiver end
+                        if demand.count <= 0 then break end
+                    end
+                end
             end
-            ::next_demand_item::
         end
         ::next_receiver::
     end
 end
 
-function CannonNetwork.prototype:update_launcher_storage(launcher)
-    
-end
-
 ---@param launcher LauncherStation
 function CannonNetwork.prototype:update_launcher_connections(launcher)
-    if not self.launcher_index[launcher:id()] or not launcher:valid() then return end
+    if not launcher:valid() or not self.launchers:contains(launcher:id()) then return end
     local receivers_in_range = self.launcher_to_receivers[launcher:id()]
     for receiver_id, _ in pairs(receivers_in_range) do
         self.receiver_to_launchers[receiver_id][launcher:id()] = nil
@@ -173,7 +207,7 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
     self.launcher_to_receivers[launcher:id()] = {}
     local maximum_range = launcher:get_max_range()
     if maximum_range > 0 then
-        for _, receiver in ipairs(self.receivers) do
+        for receiver in self.receivers:all() do
             if receiver:valid() then
                 local d = math2d.position.distance(receiver:position(), launcher:position())
                 if d <= maximum_range then
@@ -189,13 +223,13 @@ end
 
 ---@param receiver ReceiverStation
 function CannonNetwork.prototype:update_receiver_connections(receiver)
-    if not self.receiver_index[receiver:id()] or not receiver:valid() then return end
+    if not receiver:valid() or not self.receivers:contains(receiver:id()) then return end
     local launchers_in_range = self.receiver_to_launchers[receiver:id()]
     for launcher_id, _ in pairs(launchers_in_range) do
         self.launcher_to_receivers[launcher_id][receiver:id()] = nil
     end
     self.receiver_to_launchers[receiver:id()] = {}
-    for _, launcher in ipairs(self.launchers) do
+    for launcher in self.launchers:all() do
         if launcher:valid() then
             local maximum_range = launcher:get_max_range()
             if maximum_range > 0 then
@@ -213,65 +247,56 @@ end
 
 ---@param launcher LauncherStation
 function CannonNetwork.prototype:add_launcher(launcher)
-    if not launcher:valid() or self.launcher_index[launcher:id()] then return end
-    table.insert(self.launchers, launcher)
-    self.launcher_index[launcher:id()] = #self.launchers
+    if not launcher:valid() or self.launchers:contains(launcher:id()) then return end
+    self.launchers:put(launcher:id(), launcher)
     self.launcher_to_receivers[launcher:id()] = {}
+    self.launcher_to_items[launcher:id()] = {}
     self:update_launcher_connections(launcher)
 end
 
 ---@param receiver ReceiverStation
 function CannonNetwork.prototype:add_receiver(receiver)
-    if not receiver:valid() or self.receiver_index[receiver:id()] then return end
-    table.insert(self.receivers, receiver)
-    self.receiver_index[receiver:id()] = #self.receivers
+    if not receiver:valid() or self.receivers:contains(receiver:id()) then return end
+    self.receivers:put(receiver:id(), receiver)
     self.receiver_to_launchers[receiver:id()] = {}
     self:update_receiver_connections(receiver)
 end
 
 function CannonNetwork.prototype:destroy_if_empty()
-    if #self.receivers == 0 and #self.launchers == 0 then
+    if not next(self.receiver_to_launchers) and not next(self.launcher_to_receivers) then
         storage.cannon_networks[self.id] = nil
     end
 end
 
 ---@param launcher_id uint64
 function CannonNetwork.prototype:remove_launcher(launcher_id)
-    if not self.launcher_index[launcher_id] then return end
+    if not self.launchers:contains(launcher_id) then return end
     -- delete connections
     local receivers_in_range = self.launcher_to_receivers[launcher_id]
     for receiver_id, _ in pairs(receivers_in_range) do
         self.receiver_to_launchers[receiver_id][launcher_id] = nil
     end
-    self.launcher_to_receivers[launcher_id] = nil
-    -- swap with last & remove from storage
-    local index = self.launcher_index[launcher_id]
-    if index < #self.launchers then
-        self.launchers[index] = self.launchers[#self.launchers]
-        self.launcher_index[self.launchers[index]:id()] = index
+    -- delete item index
+    local items = self.launcher_to_items[launcher_id]
+    for encoded_item, _ in pairs(items) do
+        self.item_to_launchers[encoded_item][launcher_id] = nil
     end
-    table.remove(self.launchers)
-    self.launcher_index[launcher_id] = nil
+    self.launcher_to_receivers[launcher_id] = nil
+    self.launcher_to_items[launcher_id] = nil
+    self.launchers:remove(launcher_id)
     self:destroy_if_empty()
 end
 
 ---@param receiver_id uint64
 function CannonNetwork.prototype:remove_receiver(receiver_id)
-    if not self.receiver_index[receiver_id] then return end
+    if not self.receivers:contains(receiver_id) then return end
     -- delete connections
     local launchers_in_range = self.receiver_to_launchers[receiver_id]
     for launcher_id, _ in pairs(launchers_in_range) do
         self.launcher_to_receivers[launcher_id][receiver_id] = nil
     end
     self.receiver_to_launchers[receiver_id] = nil
-    -- swap with last & remove from storage
-    local index = self.receiver_index[receiver_id]
-    if index < #self.receivers then
-        self.receivers[index] = self.receivers[#self.receivers]
-        self.receiver_index[self.receivers[index]:id()] = index
-    end
-    table.remove(self.receivers)
-    self.receiver_index[receiver_id] = nil
+    self.receivers:remove(receiver_id)
     self:destroy_if_empty()
 end
 

@@ -1,4 +1,5 @@
 local constants = require("constants")
+local BucketSet = require("scripts.bucket_set")
 local CannonNetwork = require("scripts.cannon_network")
 local LauncherStation = require("scripts.launcher_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
@@ -11,6 +12,7 @@ local bonus_control = require("scripts.bonus_control")
 LauncherStation.load_deps()
 ReceiverStation.load_deps()
 
+script.register_metatable("BucketSet.prototype", BucketSet.prototype)
 script.register_metatable("CannonNetwork.prototype", CannonNetwork.prototype)
 script.register_metatable("LauncherStation.prototype", LauncherStation.prototype)
 script.register_metatable("ReceiverStation.prototype", ReceiverStation.prototype)
@@ -133,6 +135,12 @@ end)
 script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
+
+script.on_event(defines.events.on_runtime_mod_setting_changed, function (event)
+    if event.setting_type == "runtime-global" and event.setting == constants.update_interval_setting then
+        CannonNetwork.resize_buckets()
+    end
+end)
 
 script.on_event(defines.events.on_tick, function(event)
     -- update station custom states

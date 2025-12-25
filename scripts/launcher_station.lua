@@ -175,7 +175,6 @@ function LauncherStation.all()
     end
 end
 
----@return boolean if the state been changed
 function LauncherStation.prototype:update_state()
     if not self:valid() then return false end
     local ammo_slot = self:get_ammo_inventory()[1]
@@ -186,7 +185,7 @@ function LauncherStation.prototype:update_state()
     end
     local range = self:get_max_range()
     if current_ammo == self.loaded_ammo and range == self.range_visualization[1].radius then
-        return false
+        return
     end
     -- cancel ongoing delivery if ammo changed
     if self.loaded_ammo ~= current_ammo and self.scheduled_delivery and self.scheduled_delivery:valid() then
@@ -201,11 +200,13 @@ function LauncherStation.prototype:update_state()
     local transfer = math.min(self.overflow_energy, self.electric_interface.electric_buffer_size)
     self.overflow_energy = self.overflow_energy - transfer
     self.electric_interface.energy = transfer
+    if range ~= self.range_visualization[1].radius then
+        self.network:update_launcher_connections(self)
+    end
     -- update range visualization
     for _, visualization in ipairs(self.range_visualization) do
         visualization.radius = range
     end
-    return true
 end
 
 function LauncherStation.prototype:get_max_range()
@@ -282,6 +283,9 @@ end
 ---@param amount uint32
 ---@return ScheduledDelivery?
 function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
+    if not self:valid() or not self:is_ready(receiver:position()) then
+        return nil
+    end
     local inventory = self:get_inventory()
     local available_count = inventory.get_item_count_filtered { name = item.name, quality = item.quality }
     local payload_count = self:get_max_payload_size() * prototypes.item[item.name].stack_size
