@@ -143,11 +143,16 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function (event)
 end)
 
 script.on_event(defines.events.on_tick, function(event)
+    -- update network schedules
+    for network in CannonNetwork.all() do
+        network:update(event.tick)
+    end
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
+        -- TODO add visualization
         if player.selected and player.selected.name == constants.entity_launcher then
             local launcher = LauncherStation.get(player.selected)
-            if launcher and launcher:valid() then
+            if launcher then
                 launcher:update_diode_status()
             end
         end
@@ -155,13 +160,16 @@ script.on_event(defines.events.on_tick, function(event)
             local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
             if launcher then
                 launcher:update_diode_status()
+                launcher_gui.refresh(player, player.opened --[[@as LuaEntity]])
             end
         end
     end
-    -- update network schedules
-    for network in CannonNetwork.all() do
-        network:update_deliveries(event.tick)
-    end
+    -- update diode: on tick check player selected OR entity change
+    -- visualization: only need to update when player change selected
+end)
+
+script.on_event(defines.events.on_selected_entity_changed, function (event)
+    
 end)
 
 script.on_event(defines.events.on_gui_opened, function(event)

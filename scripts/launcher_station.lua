@@ -1,6 +1,7 @@
 local constants = require("constants")
 local util = require("util")
 local math2d = require("math2d")
+local format = require("scripts.format")
 local bonus_control = require("scripts.bonus_control")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ReceiverStation ---@module "scripts.receiver_station"
@@ -33,7 +34,10 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 
 ---User-configurable settings of a cannon launcher, POD.
 ---@class (exact) LauncherStationSettings
-LauncherStation.default_settings = {}
+---@field load_capsule_from_inventory boolean
+LauncherStation.default_settings = {
+    load_capsule_from_inventory = true
+}
 
 
 function LauncherStation.on_init()
@@ -75,6 +79,7 @@ function LauncherStation.create(entity)
             target = station_entity,
             surface = station_entity.surface,
             players = {},
+            visible = false,
             draw_on_ground = true,
             render_mode = "game",
         },
@@ -85,6 +90,7 @@ function LauncherStation.create(entity)
             target = station_entity,
             surface = station_entity.surface,
             players = {},
+            visible = false,
             draw_on_ground = true,
             render_mode = "chart",
         }
@@ -180,6 +186,9 @@ function LauncherStation.prototype:update_state()
     local ammo_slot = self:get_ammo_inventory()[1]
     -- TODO consider ammo quality
     local current_ammo = ""
+    if not ammo_slot.valid_for_read and self.settings.load_capsule_from_inventory then
+        inventory_tool.transfer_to_slot(self:get_inventory(), ammo_slot)
+    end
     if ammo_slot.valid_for_read then
         current_ammo = ammo_slot.name
     end
@@ -230,6 +239,7 @@ function LauncherStation.prototype:add_visualization_viewer(player)
     end
     for _, visualization in ipairs(self.range_visualization) do
         table.insert(visualization.players, player)
+        visualization.visible = true
     end
 end
 
@@ -239,6 +249,9 @@ function LauncherStation.prototype:remove_visualization_viewer(player)
         if player == p then
             for _, visualization in ipairs(self.range_visualization) do
                 table.remove(visualization.players, index)
+                if #visualization.players == 0 then
+                    visualization.visible = false
+                end
             end
             return
         end
@@ -263,8 +276,8 @@ function LauncherStation.prototype:update_diode_status()
     if range ~= "0" then
         range = tostring(string.format("%.0f", self:get_range())) .. "/" .. range
     end
-    local current_charge = string.format("%.1f", self:get_stored_energy() / 1000)
-    local buffer_size = string.format("%.1f", self.electric_interface.electric_buffer_size / 1000)
+    local energy = format.energy(self:get_stored_energy())
+    local capacity = format.energy(self:get_energy_capacity())
     self.station_entity.custom_status = {
         diode = diode,
         label = { "", { status } }
@@ -272,10 +285,30 @@ function LauncherStation.prototype:update_diode_status()
     self.proxy_entity.custom_status = {
         diode = diode,
         label = { "", { status },
-            "\n", { "logistic-cannon-transportation.energy-info", current_charge, buffer_size },
+            "\n", { "logistic-cannon-transportation.energy-info", energy, capacity },
             "\n", { "logistic-cannon-transportation.range-info", range },
         }
     }
+end
+
+---@param signal SignalID?
+function LauncherStation.prototype:set_network_signal(signal)
+    local force = self.station_entity.force --[[@as LuaForce]]
+    local surface = self.station_entity.surface
+    local network = CannonNetwork.get_or_create(force, surface, signal)
+    if network ~= self.network then
+        self.network:remove_launcher(self:id())
+        self.network = network
+        self.network:add_launcher(self)
+    end
+end
+
+---@return string
+function LauncherStation.prototype:get_display_name()
+    if self.name ~= "" then
+        return self.name
+    end
+    return string.format("[%.0f, %.0f]", self:position().x, self:position().y)
 end
 
 ---@param receiver ReceiverStation
@@ -283,7 +316,7 @@ end
 ---@param amount uint32
 ---@return ScheduledDelivery?
 function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
-    if not self:valid() or not self:is_ready(receiver:position()) then
+    if not self:is_ready(receiver:position()) then
         return nil
     end
     local inventory = self:get_inventory()
@@ -303,7 +336,7 @@ end
 ---@param position MapPosition
 ---@return boolean
 function LauncherStation.prototype:is_ready(position)
-    if self.loaded_ammo == "" or self.scheduled_delivery ~= nil then
+    if not self:valid() or self.loaded_ammo == "" or self.scheduled_delivery ~= nil then
         return false
     end
     local distance = math2d.position.distance(self:position(), position)
@@ -323,6 +356,10 @@ end
 ---@return number
 function LauncherStation.prototype:get_stored_energy()
     return self.overflow_energy + self.electric_interface.energy
+end
+
+function LauncherStation.prototype:get_energy_capacity()
+    return self.electric_interface.electric_buffer_size
 end
 
 ---Consume given amount of energy; if no enough energy to consume, extra energy cost is ignored
@@ -352,8 +389,11 @@ function LauncherStation.prototype:launch(source_position)
                 self:consume_energy(energy_cost)
                 self.network:update_launcher_storage(self)
                 delivery.amount = amount
-                if ammo_item.count == 1 then
-                    ammo_item.clear() -- TODO it still auto load ammo from trunk
+                if ammo_item.count == 1 and not self.settings.load_capsule_from_inventory then
+                    -- game.print(ammo_item.set_stack("logistic-cannon-empty-capsule"))
+                    -- ammo_item.set_stack("logistic-cannon-empty-capsule")
+                    -- FIXME still doesn't work
+                    ammo_item.clear()
                 else
                     ammo_item.drain_ammo(1)
                 end

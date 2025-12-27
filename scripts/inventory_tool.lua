@@ -51,4 +51,15 @@ function inventory_tool.dump_items(src, dst)
     end
 end
 
+---@param src LuaInventory
+---@param dst_slot LuaItemStack
+function inventory_tool.transfer_to_slot(src, dst_slot)
+    for i = 1, #src do
+        local src_stack = src[i]
+        if src_stack.valid_for_read then
+            dst_slot.transfer_stack(src_stack)
+        end
+    end
+end
+
 return inventory_tool

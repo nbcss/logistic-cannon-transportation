@@ -1,7 +1,7 @@
 local constants = require "constants"
 local ReceiverStation = require("scripts.receiver_station")
 local receiver_gui = {}
-local name = "logistic-cannon-receiver-requests"
+local name = "logistic-cannon-receiver-gui"
 
 ---@param player LuaPlayer
 ---@param entity LuaEntity
@@ -16,7 +16,6 @@ function receiver_gui.on_gui_opened(player, entity)
     local outer_frame = player.gui.relative.add {
         type = "frame",
         name = name,
-        caption = { "logistic-cannon-transportation.cannon-requests" },
         direction = "vertical",
         anchor = {
             gui = defines.relative_gui_type.container_gui,
@@ -49,6 +48,7 @@ function receiver_gui.refresh(player, entity)
     local data = ReceiverStation.get(entity)
     if not data then return end
     local gui = player.gui.relative[name] ---@type LuaGuiElement
+    gui.caption = {"", data:get_display_name()}
 
     local requests_flow_children = gui.inner_frame.requests_flow.children
     for i = 1, math.max(#requests_flow_children, #data.settings.delivery_requests + 1) do

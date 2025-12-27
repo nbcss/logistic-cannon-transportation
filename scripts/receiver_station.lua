@@ -119,6 +119,26 @@ function ReceiverStation.all()
     end
 end
 
+---@param signal SignalID?
+function ReceiverStation.prototype:set_network_signal(signal)
+    local force = self.station_entity.force --[[@as LuaForce]]
+    local surface = self.station_entity.surface
+    local network = CannonNetwork.get_or_create(force, surface, signal)
+    if network ~= self.network then
+        self.network:remove_receiver(self:id())
+        self.network = network
+        self.network:add_receiver(self)
+    end
+end
+
+---@return string
+function ReceiverStation.prototype:get_display_name()
+    if self.name ~= "" then
+        return self.name
+    end
+    return string.format("[%.0f, %.0f]", self:position().x, self:position().y)
+end
+
 ---@param delivery ScheduledDelivery
 function ReceiverStation.prototype:add_delivery(delivery)
     self.scheduled_deliveries[delivery:id()] = delivery

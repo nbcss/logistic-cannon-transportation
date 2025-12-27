@@ -148,7 +148,7 @@ function CannonNetwork.prototype:update_launcher_storage(launcher)
     end
 end
 
-function CannonNetwork.prototype:update_deliveries(tick)
+function CannonNetwork.prototype:update(tick)
     local bucket_id = tick % settings.global[constants.update_interval_setting].value + 1
     for launcher in self.launchers:bucket(bucket_id) do
         launcher:update_state()
@@ -166,15 +166,14 @@ function CannonNetwork.prototype:update_deliveries(tick)
             if item_providers then
                 local item = { name = demand.name, quality = demand.quality }
                 local launchers = {}
+                -- iterate over item providers or neighbours, determined by which one is smaller
                 if table_size(item_providers) <= neighbour_size then
-                    -- iterate over item providers
                     for _, launcher in pairs(item_providers) do
                         if neighbours[launcher:id()] then
                             table.insert(launchers, launcher)
                         end
                     end
                 else
-                    -- iterate over neighbours
                     for _, launcher in pairs(neighbours) do
                         if self.launcher_to_items[launcher:id()][encoded_item] then
                             table.insert(launchers, launcher)

@@ -7,6 +7,18 @@ data.extend {
         icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
     },
+    -- {
+    --     type = "ammo",
+    --     name = "logistic-cannon-empty-capsule",
+    --     ammo_category = "logistic-cannon-capsule",
+    --     icon = "__base__/graphics/icons/signal/signal-no-entry.png",
+    --     subgroup = "ammo",
+    --     hidden = true,
+    --     stack_size = 1,
+    --     ammo_type = {
+    --         consumption_modifier = 0,
+    --     },
+    -- },
     {
         type = "ammo-category",
         name = constants.range_upgrade_bonus,
