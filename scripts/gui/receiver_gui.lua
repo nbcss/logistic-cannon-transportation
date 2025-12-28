@@ -3,6 +3,17 @@ local ReceiverStation = require("scripts.receiver_station")
 local receiver_gui = {}
 local name = "logistic-cannon-receiver-gui"
 
+-- Info:
+-- Map view
+-- X stations in range (include a button to show list of stations)
+
+-- Settings:
+-- Change name (top)
+-- Network
+-- Requests
+-- Read content (circuit)
+-- Enable/disable (circuit)
+
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function receiver_gui.on_gui_opened(player, entity)
@@ -21,6 +32,22 @@ function receiver_gui.on_gui_opened(player, entity)
             gui = defines.relative_gui_type.container_gui,
             position = defines.relative_gui_position.right,
         },
+    }
+    local title_frame = outer_frame.add {
+        type = "flow",
+        name = "title_frame",
+        direction = "horizontal",
+    }
+    title_frame.add {
+        type = "label",
+        name = "station_name",
+        style = "frame_title",
+    }
+    title_frame.add {
+        type = "sprite-button",
+        sprite = "utility/rename_icon",
+        name = "name_button",
+        style = "frame_action_button",
     }
     local inner_frame = outer_frame.add {
         type = "frame",
@@ -48,7 +75,7 @@ function receiver_gui.refresh(player, entity)
     local data = ReceiverStation.get(entity)
     if not data then return end
     local gui = player.gui.relative[name] ---@type LuaGuiElement
-    gui.caption = {"", data:get_display_name()}
+    gui.title_frame.station_name.caption = {"", data:get_display_name()}
 
     local requests_flow_children = gui.inner_frame.requests_flow.children
     for i = 1, math.max(#requests_flow_children, #data.settings.delivery_requests + 1) do

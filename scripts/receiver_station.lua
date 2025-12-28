@@ -17,7 +17,6 @@ end
 ---@field station_entity LuaEntity The regular container.
 ---@field proxy_id uint64 The unit number of proxy container
 ---@field station_id uint64 The unit number of station entity
----@field name string Custom name of the station.
 ---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_deliveries table<uint64, ScheduledDelivery> Anticipated deliveries to this receiver.
 ---@field settings ReceiverStationSettings
@@ -26,8 +25,10 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 
 ---User-configurable settings of a cannon receiver, POD.
 ---@class (exact) ReceiverStationSettings
+---@field name string Custom name of the station.
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
 ReceiverStation.default_settings = {
+    name = "",
     delivery_requests = {},
 }
 
@@ -62,7 +63,6 @@ function ReceiverStation.create(entity)
         station_entity = station_entity,
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
-        name = "",
         network = network,
         scheduled_deliveries = {},
         settings = util.table.deepcopy(ReceiverStation.default_settings),
@@ -133,10 +133,10 @@ end
 
 ---@return string
 function ReceiverStation.prototype:get_display_name()
-    if self.name ~= "" then
-        return self.name
+    if self.settings.name ~= "" then
+        return self.settings.name
     end
-    return string.format("[%.0f, %.0f]", self:position().x, self:position().y)
+    return string.format("Receiver [%.0f, %.0f]", self:position().x, self:position().y)
 end
 
 ---@param delivery ScheduledDelivery

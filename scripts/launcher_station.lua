@@ -22,7 +22,6 @@ end
 ---@field electric_interface LuaEntity The power interface.
 ---@field proxy_id uint64 The unit number of proxy container.
 ---@field station_id uint64 The unit number of station entity.
----@field name string Custom name of the station.
 ---@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
 ---@field overflow_energy number The amount of overflow energy
 ---@field range_visualization LuaRenderObject[]
@@ -34,9 +33,11 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 
 ---User-configurable settings of a cannon launcher, POD.
 ---@class (exact) LauncherStationSettings
+---@field name string Custom name of the station.
 ---@field load_capsule_from_inventory boolean
 LauncherStation.default_settings = {
-    load_capsule_from_inventory = true
+    name = "",
+    load_capsule_from_inventory = true,
 }
 
 
@@ -104,7 +105,6 @@ function LauncherStation.create(entity)
         electric_interface = electric_interface,
         proxy_id = entity.unit_number,
         station_id = station_entity.unit_number,
-        name = "",
         loaded_ammo = "",
         overflow_energy = 0,
         range_visualization = range_visualization,
@@ -305,10 +305,10 @@ end
 
 ---@return string
 function LauncherStation.prototype:get_display_name()
-    if self.name ~= "" then
-        return self.name
+    if self.settings.name ~= "" then
+        return self.settings.name
     end
-    return string.format("[%.0f, %.0f]", self:position().x, self:position().y)
+    return string.format("Launcher [%.0f, %.0f]", self:position().x, self:position().y)
 end
 
 ---@param receiver ReceiverStation

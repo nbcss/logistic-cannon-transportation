@@ -11,12 +11,13 @@ local name = "logistic-cannon-launcher-gui"
 ---- Launch consumption
 ---- Payload size
 ---- Projectile speed?
--- Stations in range (number)
----- Station name, distance
+-- Map view
+-- X stations in range (include a button to show list of stations)
 
 -- Settings:
 -- Change name (top)
 -- Network
+-- Payload size override?
 -- Enable auto-load ammo from trunk?
 -- Read content (circuit)
 -- Enable/disable (circuit)
