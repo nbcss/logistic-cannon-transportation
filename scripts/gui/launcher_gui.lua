@@ -28,7 +28,7 @@ function launcher_gui.on_gui_opened(player, entity)
     if player.gui.relative[name] then
         player.gui.relative[name].destroy()
     end
-    if entity.name ~= "logistic-cannon-launcher-entity" then
+    if entity.name ~= constants.entity_launcher_gui_proxy then
         return
     end
 
@@ -37,7 +37,8 @@ function launcher_gui.on_gui_opened(player, entity)
         name = name,
         direction = "vertical",
         anchor = {
-            gui = defines.relative_gui_type.car_gui,
+            gui = defines.relative_gui_type.proxy_container_gui,
+            name = constants.entity_launcher_gui_proxy,
             position = defines.relative_gui_position.right,
         },
     }

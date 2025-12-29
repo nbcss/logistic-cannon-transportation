@@ -1,9 +1,21 @@
+local constants = require("constants")
 local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local logistic_cannon_health = 600
-local turret_shift_y = 12
 local delivery_range = 100
 local storage_size = 80
+local integration_patch = {
+    sheets = {
+        {
+            filename = "__base__/graphics/entity/logistic-chest/passive-provider-chest.png",
+            priority = "extra-high",
+            width = 66,
+            height = 74,
+            shift = util.by_pixel(0, -2),
+            scale = 1.5
+        },
+    }
+}
 local container_animation = {
     layers = {
         {
@@ -11,7 +23,6 @@ local container_animation = {
             priority = "extra-high",
             width = 66,
             height = 74,
-            frame_count = 7,
             shift = util.by_pixel(0, -2),
             scale = 1.5
         },
@@ -20,7 +31,6 @@ local container_animation = {
             priority = "extra-high",
             width = 112,
             height = 46,
-            repeat_count = 7,
             shift = util.by_pixel(12, 4.5),
             draw_as_shadow = true,
             scale = 1.5
@@ -36,7 +46,7 @@ data:extend {
         icon_size = 64,
         subgroup = "transport",
         -- order = "b[turret]-a[gun-turret]-a",
-        place_result = "logistic-cannon-launcher",
+        place_result = constants.entity_launcher_placement,
         stack_size = 5,
         custom_tooltip_fields = {
             {
@@ -45,10 +55,6 @@ data:extend {
                 quality_base_value = delivery_range,
                 quality_multiplier = "range_multiplier",
             },
-            {
-                name = { "description.storage-size" },
-                value = { "", tostring(storage_size) },
-            }
         },
     },
     {
@@ -64,33 +70,75 @@ data:extend {
         }
     },
     {
-        type = "gun",
-        name = "logistic-cannon-gun",
+        type = "container",
+        name = constants.entity_launcher_placement,
         icon = "__base__/graphics/icons/tank-cannon.png",
-        localised_name = { "item-name.logistic-cannon-launcher" },
-        localised_description = { "item-description.logistic-cannon-launcher" },
-        flags = { "not-stackable" },
-        hidden = true,
-        auto_recycle = false,
-        subgroup = "gun",
-        order = "z[tank]-a[cannon]",
-        stack_size = 1,
-        attack_parameters = {
-            type = "projectile",
-            ammo_categories = { "logistic-cannon-capsule" },
-            cooldown = 60,
-            movement_slow_down_factor = 0,
-            projectile_creation_distance = 1.15,
-            projectile_center = { 0, -0.85 },
-            health_penalty = 0,
-            rotate_penalty = 0,
-            range = delivery_range,
-            sound = sounds.tank_gunshot
+        flags = { "placeable-player" },
+        localised_name = { "entity-name.logistic-cannon-launcher" },
+        localised_description = { "entity-description.logistic-cannon-launcher" },
+        inventory_size = storage_size,
+        picture = container_animation,
+        quality_affects_inventory_size = true,
+        inventory_type = "normal",
+        max_health = logistic_cannon_health,
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        selection_box = { { 0, 0 }, { 0, 0 } },
+        created_effect = {
+            type = "direct",
+            action_delivery = {
+                type = "instant",
+                target_effects = {
+                    type = "script",
+                    effect_id = "create-logistic-cannon-launcher",
+                }
+            }
         },
     },
     {
+        type = "container",
+        name = constants.entity_launcher_inventory,
+        icon = "__base__/graphics/icons/tank-cannon.png",
+        flags = { "placeable-player", "placeable-off-grid" },
+        localised_name = { "entity-name.logistic-cannon-launcher" },
+        localised_description = { "entity-description.logistic-cannon-launcher" },
+        map_color = { 0.9, 0.1, 0.1 },
+        minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
+        mined_sound = sounds.deconstruct_large(0.8),
+        placeable_by = { item = "logistic-cannon-launcher", count = 1 },
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        circuit_wire_max_distance = 9,
+        -- logistic_mode = "passive-provider",
+        inventory_size = storage_size,
+        render_not_in_network_icon = false,
+        integration_patch_render_layer = "zero",
+        integration_patch = integration_patch,
+        quality_affects_inventory_size = true,
+        open_sound = sounds.metallic_chest_open,
+        close_sound = sounds.metallic_chest_close,
+        inventory_type = "normal",
+        is_military_target = false,
+        quality_indicator_scale = 0,
+    },
+    {
+        type = "proxy-container",
+        name = constants.entity_launcher_gui_proxy,
+        draw_inventory_content = true,
+        is_military_target = false,
+        max_health = logistic_cannon_health,
+        flags = { "player-creation", "not-selectable-in-game" },
+        localised_name = { "entity-name.logistic-cannon-launcher" },
+        localised_description = { "entity-description.logistic-cannon-launcher" },
+        -- map_color = { 0.9, 0.1, 0.1 },
+        icon = "__base__/graphics/icons/tank-cannon.png",
+        open_sound = sounds.metallic_chest_open,
+        close_sound = sounds.metallic_chest_close,
+        integration_patch_render_layer = "zero",
+        integration_patch = integration_patch,
+    },
+    {
         type = "electric-energy-interface",
-        name = "cannon-launcher-energy-interface",
+        name = constants.entity_launcher_energy_interface,
         icon = "__base__/graphics/icons/tank-cannon.png",
         localised_name = { "entity-name.logistic-cannon-launcher" },
         localised_description = { "entity-description.logistic-cannon-launcher" },
@@ -109,106 +157,98 @@ data:extend {
         }
     },
     {
-        type = "car",
-        name = "logistic-cannon-launcher-entity",
+        type = "ammo-turret",
+        name = constants.entity_launcher_turret,
         icon = "__base__/graphics/icons/tank-cannon.png",
+        -- icon_size = 64,
+        flags = { "placeable-player", "placeable-off-grid" },
         localised_name = { "entity-name.logistic-cannon-launcher" },
         localised_description = { "entity-description.logistic-cannon-launcher" },
-        auto_sort_inventory = false,
-        equipment_grid = nil,
-        inventory_size = storage_size,
-        trash_inventory_size = 0,
-        turret_rotation_speed = 0.1 / 60,
-        turret_return_timeout = 4294967295,
-        flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
-        guns = { "logistic-cannon-gun" },
-        allow_passengers = true, -- required for auto-control turret
-        allow_remote_driving = false,
-        is_military_target = false,
         max_health = logistic_cannon_health,
-        collision_mask = { layers = { is_object = true } },
-        collision_box = { { -1.21, -1.21 }, { 1.21, 1.21 } },
-        selection_box = { { 0, 0 }, { 0, 0 } },
-        selectable_in_game = false,
-        open_sound = sounds.metallic_chest_open,
-        close_sound = sounds.metallic_chest_close,
-        quality_indicator_scale = 0,
-        hidden = true,
-        turret_animation = {
+        is_military_target = false,
+        shoot_in_prepare_state = true,
+        prepare_range = 2,
+        -- collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        selection_box = { { 2, 0 }, { 3, 1 } }, -- FIXME remove this after gui complete
+        rotation_speed = 0.1 / 60,
+        preparing_speed = 0.08,
+        preparing_sound = sounds.gun_turret_activate,
+        folding_sound = sounds.gun_turret_deactivate,
+        folding_speed = 0.08,
+        inventory_size = 1,
+        automated_ammo_count = 5,
+        alert_when_attacking = false,
+        turret_base_has_direction = true,
+        folded_animation = {
             layers = {
                 {
-                    filename = "__base__/graphics/entity/tank/tank-turret.png",
+                    filename = "__aai-vehicles-ironclad__/graphics/entity/mortar-turret/mortar-turret.png",
                     priority = "low",
-                    line_length = 8,
-                    width = 179,
-                    height = 132,
+                    line_length = 16,
+                    width = 2048 / 16,
+                    height = 448 / 4,
+                    frame_count = 1,
                     direction_count = 64,
-                    shift = util.by_pixel(2.25 - 2, -40.5 + turret_shift_y),
+                    shift = util.by_pixel(0, -28),
                     animation_speed = 8,
-                    scale = 0.5
+                    scale = 0.65
                 },
                 {
-                    filename = "__base__/graphics/entity/tank/tank-turret-mask.png",
+                    filename = "__aai-vehicles-ironclad__/graphics/entity/mortar-turret/mortar-turret-mask.png",
                     priority = "low",
-                    line_length = 8,
-                    width = 72,
-                    height = 66,
+                    line_length = 16,
+                    width = 2048 / 16,
+                    height = 448 / 4,
+                    frame_count = 1,
                     apply_runtime_tint = true,
                     direction_count = 64,
-                    shift = util.by_pixel(2 - 2, -41.5 + turret_shift_y),
-                    scale = 0.5
+                    shift = util.by_pixel(0, -28),
+                    scale = 0.65
                 },
                 {
-                    filename = "__base__/graphics/entity/tank/tank-turret-shadow.png",
+                    filename = "__aai-vehicles-ironclad__/graphics/entity/mortar-turret/mortar-turret-shadow.png",
                     priority = "low",
-                    line_length = 8,
-                    width = 193,
-                    height = 134,
+                    line_length = 4,
+                    width = 672 / 4,
+                    height = 1472 / 16,
+                    frame_count = 1,
                     draw_as_shadow = true,
                     direction_count = 64,
-                    shift = util.by_pixel(58.25 - 2, 0.5 + turret_shift_y),
-                    scale = 0.5
+                    shift = util.by_pixel(20, -3.5),
+                    scale = 0.65
                 }
             }
         },
-        animation = container_animation,
-        -- unused properties
-        effectivity = 1.0,
-        consumption = "0W",
-        rotation_speed = 0,
-        rotation_snap_angle = 0.01,
-        energy_source = { type = "void" },
-        weight = 1000,
-        braking_power = "1J",
-        friction = 1.0,
-        energy_per_hit_point = 1.0,
-    },
-    {
-        type = "proxy-container",
-        name = "logistic-cannon-launcher",
-        draw_inventory_content = true,
-        is_military_target = false,
-        max_health = logistic_cannon_health,
-        flags = { "player-creation" },
-        map_color = { 0.9, 0.1, 0.1 },
-        icon = "__base__/graphics/icons/tank-cannon.png",
-        minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
-        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
-        selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
-        mined_sound = sounds.deconstruct_large(0.8),
-        open_sound = sounds.metallic_chest_open,
-        close_sound = sounds.metallic_chest_close,
-        circuit_wire_max_distance = 9,
-        picture = container_animation,
-        created_effect = {
-            type = "direct",
-            action_delivery = {
-                type = "instant",
-                target_effects = {
-                    type = "script",
-                    effect_id = "create-logistic-cannon-launcher",
-                }
+        graphics_set = {
+            base_visualisation = {
+                animation = container_animation
             }
+        },
+        attack_parameters = {
+            type = "projectile",
+            ammo_category = "logistic-cannon-capsule",
+            cooldown = 60,
+            movement_slow_down_factor = 0,
+            projectile_creation_distance = 1.15,
+            projectile_center = { 0, -0.85 },
+            health_penalty = 0,
+            rotate_penalty = 0,
+            range = 0,
+            sound = sounds.tank_gunshot
+        },
+        call_for_help_radius = 0,
+        water_reflection = {
+            pictures = {
+                filename = "__base__/graphics/entity/gun-turret/gun-turret-reflection.png",
+                priority = "extra-high",
+                width = 20,
+                height = 32,
+                shift = util.by_pixel(0, 40),
+                variation_count = 1,
+                scale = 5
+            },
+            rotate = false,
+            orientation_to_variation = false
         },
     },
 }

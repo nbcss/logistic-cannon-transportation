@@ -43,8 +43,7 @@ end)
 -- end)
 
 local function on_cannon_launched(event)
-    if event.source_position and event.source_entity and event.source_entity.valid
-        and event.source_entity.name == "logistic-cannon-launcher-entity" then
+    if event.source_position and event.source_entity and event.source_entity.valid then
         local launcher = LauncherStation.get(event.source_entity)
         if launcher then
             launcher:launch(event.source_position)
@@ -81,6 +80,11 @@ script.on_event(defines.events.on_object_destroyed, function(event)
     end
 end)
 
+script.on_event(defines.events.on_built_entity, function (event)
+    -- game.print(event.entity.name)
+end)
+
+-- TODO fix below
 script.on_event(defines.events.on_space_platform_pre_mined, function(event)
     if event.entity.name == constants.entity_receiver then
         local station = ReceiverStation.get(event.entity)
@@ -150,17 +154,18 @@ script.on_event(defines.events.on_tick, function(event)
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
         -- TODO add visualization
-        if player.selected and player.selected.name == constants.entity_launcher then
+        if player.selected and player.selected.name == constants.entity_launcher_inventory then
             local launcher = LauncherStation.get(player.selected)
             if launcher then
                 launcher:update_diode_status()
             end
         end
-        if player.opened and player.opened.type == "car" and player.opened.name == constants.entity_launcher_entity then
-            local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+        if player.opened and player.opened.object_name == "LuaEntity" and player.opened.name == constants.entity_launcher_gui_proxy then
+            local entity = player.opened--[[@as LuaEntity]]
+            local launcher = LauncherStation.get(entity)
             if launcher then
                 launcher:update_diode_status()
-                launcher_gui.refresh(player, player.opened --[[@as LuaEntity]])
+                launcher_gui.refresh(player, entity)
             end
         end
     end
@@ -176,8 +181,14 @@ script.on_event(defines.events.on_gui_opened, function(event)
     if event.entity and event.entity.valid then
         launcher_gui.on_gui_opened(game.players[event.player_index], event.entity)
         receiver_gui.on_gui_opened(game.players[event.player_index], event.entity)
-        if event.entity.name == "logistic-cannon-launcher" or event.entity.name == "logistic-cannon-receiver" then
+        if event.entity.name == "logistic-cannon-receiver" then
             game.players[event.player_index].opened = event.entity.proxy_target_entity
+        end
+        if event.entity.name == constants.entity_launcher_inventory then
+            local launcher = LauncherStation.get(event.entity)
+            if launcher and launcher:valid() then
+                game.players[event.player_index].opened = launcher:get_gui_proxy()
+            end
         end
     end
 end)
