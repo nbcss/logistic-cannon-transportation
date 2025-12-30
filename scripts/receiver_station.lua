@@ -13,9 +13,8 @@ end
 
 ---Represents a cannon receiver in storage, lifetime synchronized with associated entities.
 ---@class ReceiverStation
----@field proxy_entity LuaEntity The proxy container.
----@field station_entity LuaEntity The regular container.
----@field proxy_id uint64 The unit number of proxy container
+---@field inventory_entity LuaEntity The inventory container.
+---@field proxy_entity LuaEntity? The proxy container.
 ---@field station_id uint64 The unit number of station entity
 ---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_deliveries table<uint64, ScheduledDelivery> Anticipated deliveries to this receiver.
@@ -35,48 +34,29 @@ ReceiverStation.default_settings = {
 function ReceiverStation.on_init()
     ---@type table<uint64, ReceiverStation?> ReceiverStation's indexed by station_entity.unit_number.
     storage.receiver_stations = storage.receiver_stations or {}
-    ---@type table<uint64, uint64?> Index of ReceiverStation proxy_entity.unit_number to station_entity.unit_number.
-    storage.receiver_stations_index_proxy_entity = storage.receiver_stations_index_proxy_entity or {}
 end
 
 ---Create a ReceiverStation in storage and associated entities for a newly placed entity.
 ---@param entity LuaEntity Entity the user has placed.
 ---@return ReceiverStation
 function ReceiverStation.create(entity)
-    assert(entity.name == constants.entity_receiver)
+    assert(entity.name == constants.entity_receiver_inventory)
+    local surface = entity.surface
+    local force = entity.force --[[@as LuaForce]]
 
-    if storage.receiver_stations_index_proxy_entity[entity.unit_number] then
-        error()
-    end
-
-    local station_entity = entity.surface.create_entity {
-        name = constants.entity_receiver_entity,
-        position = entity.position,
-        force = entity.force,
-        quality = entity.quality
-    } or error()
-
-    local network = CannonNetwork.get_or_create(entity.force --[[@as LuaForce]], entity.surface)
+    local network = CannonNetwork.get_or_create(force, surface)
     
     local instance = setmetatable({
-        proxy_entity = entity,
-        station_entity = station_entity,
-        proxy_id = entity.unit_number,
-        station_id = station_entity.unit_number,
+        inventory_entity = entity,
+        station_id = entity.unit_number,
         network = network,
         scheduled_deliveries = {},
         settings = util.table.deepcopy(ReceiverStation.default_settings),
     } --[[@as ReceiverStation]], ReceiverStation.prototype)
 
-    script.register_on_object_destroyed(instance.proxy_entity)
-    script.register_on_object_destroyed(instance.station_entity)
-
-    instance.station_entity.destructible = false
-    instance.proxy_entity.proxy_target_entity = instance.station_entity
-    instance.proxy_entity.proxy_target_inventory = defines.inventory.chest
+    script.register_on_object_destroyed(instance.inventory_entity)
 
     storage.receiver_stations[instance:id()] = instance
-    storage.receiver_stations_index_proxy_entity[instance.proxy_entity.unit_number] = instance:id()
     network:add_receiver(instance)
 
     return instance
@@ -86,9 +66,15 @@ end
 ---@param entity LuaEntity | uint64 An associated entity or a unit number thereof.
 ---@return ReceiverStation?
 function ReceiverStation.get(entity)
-    local unit_number = type(entity) == "number" and entity or entity.unit_number
-    return storage.receiver_stations[unit_number] or
-        storage.receiver_stations[storage.receiver_stations_index_proxy_entity[unit_number]]
+    local unit_number
+    if type(entity) == "number" then
+        unit_number = entity
+    elseif entity.name == constants.entity_receiver_gui_proxy then
+        unit_number = entity.proxy_target_entity.unit_number
+    else
+        unit_number = entity.unit_number
+    end
+    return storage.receiver_stations[unit_number]
 end
 
 ---Destroy a ReceiverStation following the destruction an associated entity.
@@ -98,12 +84,11 @@ function ReceiverStation.on_object_destroyed(unit_number)
     if not instance then return end
 
     storage.receiver_stations[instance.station_id] = nil
-    storage.receiver_stations_index_proxy_entity[instance.proxy_id] = nil
-    if instance.proxy_entity.valid then
-        instance.proxy_entity.destroy()
+    if instance.inventory_entity.valid then
+        instance.inventory_entity.destroy()
     end
-    if instance.station_entity.valid then
-        instance.station_entity.destroy()
+    if instance.proxy_entity and instance.proxy_entity.valid then
+        instance.proxy_entity.destroy()
     end
     instance.network:remove_receiver(instance.station_id)
 end
@@ -121,8 +106,8 @@ end
 
 ---@param signal SignalID?
 function ReceiverStation.prototype:set_network_signal(signal)
-    local force = self.station_entity.force --[[@as LuaForce]]
-    local surface = self.station_entity.surface
+    local force = self.inventory_entity.force --[[@as LuaForce]]
+    local surface = self.inventory_entity.surface
     local network = CannonNetwork.get_or_create(force, surface, signal)
     if network ~= self.network then
         self.network:remove_receiver(self:id())
@@ -146,7 +131,7 @@ end
 
 ---@return LuaInventory
 function ReceiverStation.prototype:get_inventory()
-    return self.station_entity.get_inventory(defines.inventory.chest) --[[@as LuaInventory]]
+    return self.inventory_entity.get_inventory(defines.inventory.chest) --[[@as LuaInventory]]
 end
 
 ---@return uint64
@@ -156,12 +141,28 @@ end
 
 ---@return boolean
 function ReceiverStation.prototype:valid()
-    return self.proxy_entity.valid and self.station_entity.valid
+    return self.inventory_entity.valid
 end
 
 ---@return MapPosition
 function ReceiverStation.prototype:position()
-    return self.station_entity.position
+    return self.inventory_entity.position
+end
+
+---@return LuaEntity
+function ReceiverStation.prototype:get_gui_proxy()
+    if self.proxy_entity and self.proxy_entity.valid then
+        return self.proxy_entity
+    end
+    self.proxy_entity = self.inventory_entity.surface.create_entity {
+        name = constants.entity_receiver_gui_proxy,
+        position = self.inventory_entity.position,
+        force = self.inventory_entity.force,
+    } or error()
+    self.proxy_entity.destructible = false
+    self.proxy_entity.proxy_target_entity = self.inventory_entity
+    self.proxy_entity.proxy_target_inventory = defines.inventory.chest
+    return self.proxy_entity
 end
 
 return ReceiverStation

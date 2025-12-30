@@ -6,14 +6,14 @@ local launch_consumption = 25000 -- J per tile
 data:extend {
     {
         type = "mod-data",
-        name = constants.name_prefix .. "payload-sizes",
+        name = constants.data_capsule_payload_size,
         data = {
             ["basic-logistic-cannon-capsule"] = capsule_payload_size,
         },
     },
     {
         type = "mod-data",
-        name = constants.name_prefix .. "launch-consumptions",
+        name = constants.data_capsule_consumption,
         data = {
             ["basic-logistic-cannon-capsule"] = launch_consumption,
         },
@@ -21,9 +21,10 @@ data:extend {
     {
         type = "ammo",
         name = "basic-logistic-cannon-capsule",
-        ammo_category = "logistic-cannon-capsule",
+        ammo_category = constants.ammo_category,
         icon = "__base__/graphics/icons/rocket-part.png",
-        subgroup = "ammo",
+        subgroup = constants.item_subgroup,
+        order = "ca[capsule]",
         stack_size = 5,
         custom_tooltip_fields = {
             {

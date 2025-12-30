@@ -51,39 +51,45 @@ end
 
 ---Create a LauncherStation in storage and associated entities for a newly placed entity.
 ---@param entity LuaEntity Entity the user has placed.
+---@param player_index uint32? The player that placed the entity.
 ---@return LauncherStation
-function LauncherStation.create(entity)
-    assert(entity.name == constants.entity_launcher_placement)
+function LauncherStation.create(entity, player_index)
+    assert(entity.name == constants.entity_launcher_inventory)
+    local surface = entity.surface
+    local position = entity.position
+    local force = entity.force --[[@as LuaForce]]
 
-    local station_turret = entity.surface.create_entity {
+    local turret_entity = surface.create_entity {
         name = constants.entity_launcher_turret,
-        position = entity.position,
-        force = entity.force,
+        position = math2d.position.add(position, {0, 0.001}),
+        force = force,
         quality = entity.quality,
     } or error()
 
-    local station_inventory = entity.surface.create_entity {
-        name = constants.entity_launcher_inventory,
-        position = entity.position,
-        force = entity.force,
-        quality = entity.quality,
-    } or error()
+    local inventory_entity = entity
 
-    local electric_interface = entity.surface.create_entity {
+    -- local inventory_entity = surface.create_entity {
+    --     name = constants.entity_launcher_inventory,
+    --     position = position,
+    --     force = force,
+    --     quality = entity.quality,
+    -- } or error()
+
+    local electric_interface = surface.create_entity {
         name = constants.entity_launcher_energy_interface,
-        position = entity.position,
-        force = entity.force,
+        position = position,
+        force = force,
         quality = entity.quality,
     } or error()
 
-    local network = CannonNetwork.get_or_create(entity.force --[[@as LuaForce]], entity.surface)
+    local network = CannonNetwork.get_or_create(force, surface)
 
     local instance = setmetatable({
-        inventory_entity = station_inventory,
-        turret_entity = station_turret,
+        inventory_entity = inventory_entity,
+        turret_entity = turret_entity,
         electric_interface = electric_interface,
-        station_id = station_inventory.unit_number,
-        turret_id = station_turret.unit_number,
+        station_id = inventory_entity.unit_number,
+        turret_id = turret_entity.unit_number,
         loaded_ammo = "",
         overflow_energy = 0,
         launcher_range = 0,
@@ -100,10 +106,10 @@ function LauncherStation.create(entity)
     instance.launcher_range = instance:get_max_range()
 
     storage.launcher_stations[instance:id()] = instance
-    storage.launcher_stations_turret_index[instance.turret_entity.unit_number] = instance
+    storage.launcher_stations_turret_index[instance.turret_id] = instance
     network:add_launcher(instance)
-    -- destroy placement entity
-    entity.destroy()
+    -- hide placement entity
+    -- placement_entity.render_to_forces = { "enemy" }
     return instance
 end
 
@@ -119,8 +125,8 @@ function LauncherStation.get(entity)
     else
         unit_number = entity.unit_number
     end
-    return storage.launcher_stations[unit_number] or
-        storage.launcher_stations_turret_index[unit_number]
+    return storage.launcher_stations[unit_number]
+        or storage.launcher_stations_turret_index[unit_number]
 end
 
 ---Destroy a ReceiverStation following the destruction an associated entity.
@@ -196,7 +202,7 @@ end
 
 function LauncherStation.prototype:get_max_range()
     if not self:valid() then return 0 end
-    local range = 100 -- FIXME
+    local range = prototypes.mod_data[constants.data_launcher_range].data[self.turret_entity.name] --[[@as number]]
     local quality_modifier = self.turret_entity.quality.range_multiplier
     local tech_modifier = 1.0 + bonus_control.get_launcher_range_bonus(self.turret_entity.force --[[@as LuaForce]])
     return range * quality_modifier * tech_modifier
@@ -396,18 +402,28 @@ end
 
 ---@return uint32?
 function LauncherStation.prototype:get_max_payload_size()
-    return prototypes.mod_data[constants.name_prefix .. "payload-sizes"].data[self.loaded_ammo] --[[@as integer?]]
+    return prototypes.mod_data[constants.data_capsule_payload_size].data[self.loaded_ammo] --[[@as integer?]]
 end
 
 ---@return number
 function LauncherStation.prototype:get_launch_consumption()
     if not self:valid() or self.loaded_ammo == "" then return 0 end
-    return prototypes.mod_data[constants.name_prefix .. "launch-consumptions"].data[self.loaded_ammo] --[[@as number]]
+    return prototypes.mod_data[constants.data_capsule_consumption].data[self.loaded_ammo] --[[@as number]]
 end
 
 ---@return uint64
 function LauncherStation.prototype:id()
     return self.station_id
+end
+
+---@return boolean
+function LauncherStation.prototype:valid()
+    return self.inventory_entity.valid and self.turret_entity.valid and self.electric_interface.valid
+end
+
+---@return MapPosition
+function LauncherStation.prototype:position()
+    return self.inventory_entity.position
 end
 
 ---@return LuaEntity
@@ -424,16 +440,6 @@ function LauncherStation.prototype:get_gui_proxy()
     self.proxy_entity.proxy_target_entity = self.inventory_entity
     self.proxy_entity.proxy_target_inventory = defines.inventory.chest
     return self.proxy_entity
-end
-
----@return boolean
-function LauncherStation.prototype:valid()
-    return self.inventory_entity.valid and self.turret_entity.valid and self.electric_interface.valid
-end
-
----@return MapPosition
-function LauncherStation.prototype:position()
-    return self.inventory_entity.position
 end
 
 return LauncherStation

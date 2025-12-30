@@ -1,13 +1,16 @@
 local constants = require("constants")
+local format = require("scripts.format")
 local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
-local logistic_cannon_health = 600
-local delivery_range = 100
-local storage_size = 80
+local icon = "__base__/graphics/icons/tank-cannon.png"
+local health = 600
+local range = 100
+local inventory_size = 80
+local charge_speed = 200 * 1000 -- in W
 local integration_patch = {
     sheets = {
         {
-            filename = "__base__/graphics/entity/logistic-chest/passive-provider-chest.png",
+            filename = "__base__/graphics/entity/logistic-chest/active-provider-chest.png",
             priority = "extra-high",
             width = 66,
             height = 74,
@@ -40,97 +43,150 @@ local container_animation = {
 
 data:extend {
     {
+        type = "mod-data",
+        name = constants.data_launcher_range,
+        data = {
+            [constants.entity_launcher_turret] = range,
+        },
+    },
+    {
         type = "item",
-        name = "logistic-cannon-launcher",
-        icon = "__base__/graphics/icons/tank-cannon.png",
+        name = constants.item_launcher,
+        icon = icon,
         icon_size = 64,
-        subgroup = "transport",
-        -- order = "b[turret]-a[gun-turret]-a",
-        place_result = constants.entity_launcher_placement,
+        subgroup = constants.item_subgroup,
+        order = "a[launcher]",
+        place_result = constants.entity_launcher_inventory,
         stack_size = 5,
         custom_tooltip_fields = {
             {
                 name = { "description.range" },
-                value = { "", tostring(delivery_range) },
-                quality_base_value = delivery_range,
+                value = { "", tostring(range) },
+                quality_base_value = range,
                 quality_multiplier = "range_multiplier",
+            },
+            {
+                name = { "description.max-energy-consumption" },
+                value = { "", format.energy(charge_speed, "W") },
+                -- TODO add quality effect
             },
         },
     },
     {
         type = "recipe",
-        name = "logistic-cannon-launcher",
+        name = constants.item_launcher,
         enabled = true,
         energy_required = 5,
         ingredients = {
             { type = "item", name = "steel-plate", amount = 5 },
         },
         results = {
-            { type = "item", name = "logistic-cannon-launcher", amount = 1 },
+            { type = "item", name = constants.item_launcher, amount = 1 },
         }
     },
-    {
-        type = "container",
-        name = constants.entity_launcher_placement,
-        icon = "__base__/graphics/icons/tank-cannon.png",
-        flags = { "placeable-player" },
-        localised_name = { "entity-name.logistic-cannon-launcher" },
-        localised_description = { "entity-description.logistic-cannon-launcher" },
-        inventory_size = storage_size,
-        picture = container_animation,
-        quality_affects_inventory_size = true,
-        inventory_type = "normal",
-        max_health = logistic_cannon_health,
-        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
-        selection_box = { { 0, 0 }, { 0, 0 } },
-        created_effect = {
-            type = "direct",
-            action_delivery = {
-                type = "instant",
-                target_effects = {
-                    type = "script",
-                    effect_id = "create-logistic-cannon-launcher",
-                }
-            }
-        },
-    },
+    -- {
+    --     type = "lamp",
+    --     name = constants.entity_launcher_placement,
+    --     icon = "__base__/graphics/icons/tank-cannon.png",
+    --     flags = { "player-creation", "placeable-player", "not-on-map" },
+    --     localised_name = { "entity-name.logistic-cannon-launcher" },
+    --     localised_description = { "entity-description.logistic-cannon-launcher" },
+    --     energy_usage_per_tick = "1W",
+    --     energy_source = {type = "void"},
+    --     always_on = true,
+    --     picture_on = {
+    --         layers = {
+    --             {
+    --                 filename = "__base__/graphics/entity/logistic-chest/passive-provider-chest.png",
+    --                 priority = "extra-high",
+    --                 width = 66,
+    --                 height = 74,
+    --                 shift = util.by_pixel(0, -2),
+    --                 scale = 1.5,
+    --                 premul_alpha = false,
+    --             }
+    --         }
+    --     },
+    --     quality_affects_inventory_size = true,
+    --     selectable_in_game = false,
+    --     is_military_target = false,
+    --     inventory_type = "normal",
+    --     max_health = logistic_cannon_health,
+    --     fast_replaceable_group = constants.entity_launcher,
+    --     create_ghost_on_death = false,
+    --     alert_when_damaged = false,
+    --     collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+    --     selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+    --     -- minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
+    --     -- placeable_by = { item = "logistic-cannon-launcher", count = 1 },
+    --     created_effect = {
+    --         type = "direct",
+    --         action_delivery = {
+    --             type = "instant",
+    --             target_effects = {
+    --                 type = "script",
+    --                 effect_id = "create-logistic-cannon-launcher",
+    --             }
+    --         }
+    --     },
+    -- },
     {
         type = "container",
         name = constants.entity_launcher_inventory,
-        icon = "__base__/graphics/icons/tank-cannon.png",
-        flags = { "placeable-player", "placeable-off-grid" },
-        localised_name = { "entity-name.logistic-cannon-launcher" },
-        localised_description = { "entity-description.logistic-cannon-launcher" },
+        icon = icon,
+        flags = { "player-creation", "placeable-player" },
         map_color = { 0.9, 0.1, 0.1 },
-        minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
-        mined_sound = sounds.deconstruct_large(0.8),
-        placeable_by = { item = "logistic-cannon-launcher", count = 1 },
+        minable = { mining_time = 1.0, result = constants.item_launcher },
+        placeable_by = { item = constants.item_launcher, count = 1 },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        max_health = health,
         circuit_wire_max_distance = 9,
-        -- logistic_mode = "passive-provider",
-        inventory_size = storage_size,
-        render_not_in_network_icon = false,
-        integration_patch_render_layer = "zero",
-        integration_patch = integration_patch,
+        inventory_type = "normal",
+        inventory_size = inventory_size,
         quality_affects_inventory_size = true,
+        render_not_in_network_icon = false,
+        is_military_target = false,
+        mined_sound = sounds.deconstruct_large(0.8),
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
-        inventory_type = "normal",
-        is_military_target = false,
-        quality_indicator_scale = 0,
+        integration_patch_render_layer = "lower-object",
+        integration_patch = integration_patch,
+        -- stateless_visualisation = {
+        --     animation = {
+        --         sheets = {
+        --             {
+        --                 filename = "__base__/graphics/entity/logistic-chest/active-provider-chest.png",
+        --                 frame_count = 7,
+        --                 animation_speed = 7 / 60,
+        --                 variation_count = 1,
+        --                 priority = "extra-high",
+        --                 width = 66,
+        --                 height = 74,
+        --                 shift = util.by_pixel(0, -2),
+        --                 scale = 1.5
+        --             },
+        --         }
+        --     },
+        --     render_layer = "object-under",
+        --     -- period = 7,
+        --     begin_scale = 1.0,
+        --     end_scale = 0,
+        --     can_lay_on_the_ground = false,
+        -- },
+        -- draw_stateless_visualisations_in_ghost = true,
     },
     {
         type = "proxy-container",
         name = constants.entity_launcher_gui_proxy,
-        draw_inventory_content = true,
+        icon = icon,
+        flags = { "not-on-map", "placeable-off-grid" },
+        localised_name = { "entity-name." .. constants.entity_launcher_inventory },
+        localised_description = { "entity-description." .. constants.entity_launcher_inventory },
+        draw_inventory_content = false,
         is_military_target = false,
-        max_health = logistic_cannon_health,
-        flags = { "player-creation", "not-selectable-in-game" },
-        localised_name = { "entity-name.logistic-cannon-launcher" },
-        localised_description = { "entity-description.logistic-cannon-launcher" },
-        -- map_color = { 0.9, 0.1, 0.1 },
-        icon = "__base__/graphics/icons/tank-cannon.png",
+        selectable_in_game = false,
+        max_health = health,
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
         integration_patch_render_layer = "zero",
@@ -139,14 +195,14 @@ data:extend {
     {
         type = "electric-energy-interface",
         name = constants.entity_launcher_energy_interface,
-        icon = "__base__/graphics/icons/tank-cannon.png",
-        localised_name = { "entity-name.logistic-cannon-launcher" },
-        localised_description = { "entity-description.logistic-cannon-launcher" },
+        icon = icon,
+        flags = { "not-on-map", "placeable-off-grid" },
+        localised_name = { "entity-name." .. constants.entity_launcher_inventory },
+        localised_description = { "entity-description." .. constants.entity_launcher_inventory },
         hidden = true,
-        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        selectable_in_game = false,
         selection_priority = 1,
-        flags = { "not-on-map", "not-rotatable", "not-blueprintable", "placeable-player", "placeable-off-grid", "not-selectable-in-game" },
         energy_source = {
             type = "electric",
             buffer_capacity = "0kJ",
@@ -159,15 +215,17 @@ data:extend {
     {
         type = "ammo-turret",
         name = constants.entity_launcher_turret,
-        icon = "__base__/graphics/icons/tank-cannon.png",
+        icon = icon,
         -- icon_size = 64,
-        flags = { "placeable-player", "placeable-off-grid" },
+        flags = { "not-on-map", "placeable-off-grid" },
         localised_name = { "entity-name.logistic-cannon-launcher" },
         localised_description = { "entity-description.logistic-cannon-launcher" },
-        max_health = logistic_cannon_health,
+        -- selectable_in_game = false,
+        max_health = health,
         is_military_target = false,
         shoot_in_prepare_state = true,
         prepare_range = 2,
+        attack_target_mask = { constants.entity_target },
         -- collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { 2, 0 }, { 3, 1 } }, -- FIXME remove this after gui complete
         rotation_speed = 0.1 / 60,
@@ -189,7 +247,7 @@ data:extend {
                     height = 448 / 4,
                     frame_count = 1,
                     direction_count = 64,
-                    shift = util.by_pixel(0, -28),
+                    shift = util.by_pixel(0, -38),
                     animation_speed = 8,
                     scale = 0.65
                 },
@@ -202,7 +260,7 @@ data:extend {
                     frame_count = 1,
                     apply_runtime_tint = true,
                     direction_count = 64,
-                    shift = util.by_pixel(0, -28),
+                    shift = util.by_pixel(0, -38),
                     scale = 0.65
                 },
                 {
@@ -214,7 +272,7 @@ data:extend {
                     frame_count = 1,
                     draw_as_shadow = true,
                     direction_count = 64,
-                    shift = util.by_pixel(20, -3.5),
+                    shift = util.by_pixel(20, -13.5),
                     scale = 0.65
                 }
             }
@@ -226,11 +284,11 @@ data:extend {
         },
         attack_parameters = {
             type = "projectile",
-            ammo_category = "logistic-cannon-capsule",
+            ammo_category = constants.ammo_category,
             cooldown = 60,
             movement_slow_down_factor = 0,
             projectile_creation_distance = 1.15,
-            projectile_center = { 0, -0.85 },
+            projectile_center = { 0, -1 },
             health_penalty = 0,
             rotate_penalty = 0,
             range = 0,
@@ -251,4 +309,40 @@ data:extend {
             orientation_to_variation = false
         },
     },
+    -- {
+    --     type = "decider-combinator",
+    --     name = "test-combinator",
+    --     flags = { "placeable-player", "player-creation", "hide-alt-info" },
+    --     icon = "__base__/graphics/icons/tank-cannon.png",
+    --     -- minable = { mining_time = 1.0, result = "logistic-cannon-launcher" },
+    --     -- placeable_by = { item = "logistic-cannon-launcher", count = 1 },
+    --     energy_source = { type = "void" },
+    --     active_energy_usage = "1W",
+    --     collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+    --     selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+    --     input_connection_bounding_box = { { 0, 1 }, { 0, 1 } },
+    --     output_connection_bounding_box = { { -1.5, -1.5 }, { 1.5, 1.532 } },
+    --     input_connection_points = {
+    --         { wire = {}, shadow = {} },
+    --         { wire = {}, shadow = {} },
+    --         { wire = {}, shadow = {} },
+    --         { wire = {}, shadow = {} },
+    --     },
+    --     output_connection_points = {
+    --         { wire = {}, shadow = {} },
+    --         { wire = {}, shadow = {} },
+    --         { wire = {}, shadow = {} },
+    --         { wire = {}, shadow = {} },
+    --     },
+    --     circuit_wire_max_distance = 9,
+    --     activity_led_light_offsets = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    --     screen_light_offsets = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    --     activity_led_hold_time = 0,
+    --     equal_symbol_sprites = integration_patch,
+    --     greater_symbol_sprites = integration_patch,
+    --     less_symbol_sprites = integration_patch,
+    --     not_equal_symbol_sprites = integration_patch,
+    --     greater_or_equal_symbol_sprites = integration_patch,
+    --     less_or_equal_symbol_sprites = integration_patch,
+    -- },
 }

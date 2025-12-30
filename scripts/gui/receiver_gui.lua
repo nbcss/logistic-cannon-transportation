@@ -20,7 +20,7 @@ function receiver_gui.on_gui_opened(player, entity)
     if player.gui.relative[name] then
         player.gui.relative[name].destroy()
     end
-    if entity.name ~= "logistic-cannon-receiver-entity" then
+    if entity.name ~= constants.entity_receiver_gui_proxy then
         return
     end
 
@@ -29,7 +29,8 @@ function receiver_gui.on_gui_opened(player, entity)
         name = name,
         direction = "vertical",
         anchor = {
-            gui = defines.relative_gui_type.container_gui,
+            gui = defines.relative_gui_type.proxy_container_gui,
+            name = constants.entity_receiver_gui_proxy,
             position = defines.relative_gui_position.right,
         },
     }

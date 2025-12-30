@@ -62,7 +62,7 @@ end
 
 script.on_event(defines.events.on_script_trigger_effect, function(event)
     if event.effect_id == "create-logistic-cannon-launcher" then
-        LauncherStation.create(event.target_entity)
+        -- LauncherStation.create(event.target_entity)
     elseif event.effect_id == "create-logistic-cannon-receiver" then
         ReceiverStation.create(event.target_entity)
     elseif event.effect_id == "logistic-cannon-capsule-launched" then
@@ -80,11 +80,21 @@ script.on_event(defines.events.on_object_destroyed, function(event)
     end
 end)
 
-script.on_event(defines.events.on_built_entity, function (event)
-    -- game.print(event.entity.name)
+script.on_event({
+    defines.events.on_built_entity,
+    defines.events.on_robot_built_entity,
+    defines.events.on_space_platform_built_entity,
+},
+---@param event
+---| EventData.on_built_entity
+---| EventData.on_robot_built_entity
+---| EventData.on_space_platform_built_entity
+function (event)
+    if event.entity.name == constants.entity_launcher_inventory then
+        LauncherStation.create(event.entity, event.player_index)
+    end
 end)
 
--- TODO fix below
 script.on_event(defines.events.on_space_platform_pre_mined, function(event)
     if event.entity.name == constants.entity_receiver then
         local station = ReceiverStation.get(event.entity)
@@ -181,8 +191,11 @@ script.on_event(defines.events.on_gui_opened, function(event)
     if event.entity and event.entity.valid then
         launcher_gui.on_gui_opened(game.players[event.player_index], event.entity)
         receiver_gui.on_gui_opened(game.players[event.player_index], event.entity)
-        if event.entity.name == "logistic-cannon-receiver" then
-            game.players[event.player_index].opened = event.entity.proxy_target_entity
+        if event.entity.name == constants.entity_receiver_inventory then
+            local receiver = ReceiverStation.get(event.entity)
+            if receiver and receiver:valid() then
+                game.players[event.player_index].opened = receiver:get_gui_proxy()
+            end
         end
         if event.entity.name == constants.entity_launcher_inventory then
             local launcher = LauncherStation.get(event.entity)
@@ -194,32 +207,133 @@ script.on_event(defines.events.on_gui_opened, function(event)
 end)
 
 script.on_event({
-        defines.events.on_gui_click,
-        defines.events.on_gui_elem_changed,
-        defines.events.on_gui_text_changed,
-    },
-    ---@param event
-    ---| EventData.on_gui_click
-    ---| EventData.on_gui_elem_changed
-    ---| EventData.on_gui_text_changed
-    function(event)
-        local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
-        if not handlers then return end
-        local handler_name
-        for k, v in pairs(handlers) do
-            if defines.events[k] == event.name then
-                handler_name = v
-                break
-            end
+    defines.events.on_gui_click,
+    defines.events.on_gui_elem_changed,
+    defines.events.on_gui_text_changed,
+},
+---@param event
+---| EventData.on_gui_click
+---| EventData.on_gui_elem_changed
+---| EventData.on_gui_text_changed
+function(event)
+    local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
+    if not handlers then return end
+    local handler_name
+    for k, v in pairs(handlers) do
+        if defines.events[k] == event.name then
+            handler_name = v
+            break
         end
-        if handler_name then
-            local sep = string.find(handler_name, ".", 0, true)
-            local handler_module = string.sub(handler_name, 0, sep - 1)
-            local handler_func = string.sub(handler_name, sep + 1)
-            if handler_module == "receiver_gui" then
-                receiver_gui[handler_func](game.get_player(event.player_index), event)
-            else
-                error("Invalid GUI event handler: " .. handler_name)
-            end
+    end
+    if handler_name then
+        local sep = string.find(handler_name, ".", 0, true)
+        local handler_module = string.sub(handler_name, 0, sep - 1)
+        local handler_func = string.sub(handler_name, sep + 1)
+        if handler_module == "receiver_gui" then
+            receiver_gui[handler_func](game.get_player(event.player_index), event)
+        else
+            error("Invalid GUI event handler: " .. handler_name)
         end
-    end)
+    end
+end)
+
+-- script.on_event(defines.events.on_player_setup_blueprint, function(event)
+--     local blueprint = event.stack or event.record
+--     if not blueprint then return end
+
+--     -- Replace entity_launcher_inventory with placemnent entity
+--     local entities = blueprint.get_blueprint_entities()
+--     if not entities then return end
+--     local relavant = false
+--     for index, entity in ipairs(entities) do
+--         if entity.name == constants.entity_launcher_inventory then
+--             relavant = true
+--             entity.name = constants.entity_launcher_placement
+--             local source = event.mapping.get()[index] --[[@as LuaEntity?]]
+--         end
+--     end
+--     if not relavant then return end
+--     blueprint.set_blueprint_entities(entities)
+-- end)
+
+-- script.on_event(defines.events.on_marked_for_deconstruction, function(event)
+--     if event.entity.name == constants.entity_launcher_placement then
+--         local player = event.player_index and game.get_player(event.player_index)
+--         local force = player and player.force_index or "neutral"
+--         event.entity.cancel_deconstruction(force, player)
+--         local station = LauncherStation.get(event.entity)
+--         if station then
+--             station.inventory_entity.order_deconstruction(force, player)
+--         end
+--     end
+-- end)
+
+-- script.on_event({
+--     defines.events.on_undo_applied,
+--     defines.events.on_redo_applied,
+-- },
+-- ---@param event
+-- ---| EventData.on_undo_applied
+-- ---| EventData.on_redo_applied
+-- function(event)
+--     local player = game.get_player(event.player_index)
+--     if not player then return end
+
+--     for _, action in ipairs(event.actions) do
+--         if action.type == "built-entity" then
+--             if action.target.name == constants.entity_launcher_inventory then
+--                 local surface = game.get_surface(action.surface_index)
+--                 if not surface then goto continue end
+--                 local entity = surface.find_entities_filtered{
+--                     ghost_name = constants.entity_launcher_placement,
+--                     quality = action.target.quality,
+--                     limit = 1,
+--                 }[1]
+--                 if not entity then goto continue end
+--                 entity.destroy()
+--             elseif action.target.name == constants.entity_launcher_placement then
+--                 local surface = game.get_surface(action.surface_index)
+--                 if not surface then goto continue end
+--                 local entity = surface.find_entities_filtered{
+--                     name = constants.entity_launcher_inventory,
+--                     quality = action.target.quality,
+--                     limit = 1,
+--                 }[1]
+--                 if not entity then goto continue end
+--                 entity.order_deconstruction(player.force)
+--             end
+--         elseif action.type == "removed-entity" then
+--             if action.target.name == constants.entity_launcher_inventory then
+--                 local surface = game.get_surface(action.surface_index)
+--                 if not surface then goto continue end
+--                 local entity = surface.find_entities_filtered{
+--                     ghost_name = constants.entity_launcher_inventory,
+--                     quality = action.target.quality,
+--                     limit = 1,
+--                 }[1]
+--                 if not entity then goto continue end
+--                 local ret = surface.create_entity{
+--                     name = "entity-ghost",
+--                     inner_name = constants.entity_launcher_placement,
+--                     quality = action.target.quality,
+--                     force = player.force,
+--                     tags = action.target.tags,
+--                     position = action.target.position,
+--                     direction = action.target.direction,
+--                     fast_replace = true,
+--                 }
+--             elseif action.target.name == constants.entity_launcher_placement then
+--                 local surface = game.get_surface(action.surface_index)
+--                 if not surface then goto continue end
+--                 local entity = surface.find_entities_filtered{
+--                     name = constants.entity_launcher_inventory,
+--                     quality = action.target.quality,
+--                     limit = 1,
+--                 }[1]
+--                 if not entity then goto continue end
+--                 entity.cancel_deconstruction(player.force)
+--             end
+--         end
+--         ::continue::
+--     end
+-- end)

@@ -3,15 +3,26 @@ local constants = require("constants")
 data.extend {
     {
         type = "ammo-category",
-        name = "logistic-cannon-capsule",
+        name = constants.ammo_category,
         icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
+    },
+    {
+        type = "item-subgroup",
+        name = constants.item_subgroup,
+        group = "logistics",
+        order = "z-cannon",
+    },
+    {
+        type = "trigger-target-type",
+        name = constants.entity_target,
     },
     {
         type = "simple-entity-with-owner",
         name = constants.entity_target,
         is_military_target = true,
         flags = { "placeable-off-grid", "not-selectable-in-game" },
+        trigger_target_mask = { constants.entity_target },
     },
     {
         type = "ammo-category",
