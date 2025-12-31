@@ -85,19 +85,19 @@ script.on_event(defines.events.on_object_destroyed, function(event)
 end)
 
 script.on_event({
-    defines.events.on_built_entity,
-    defines.events.on_robot_built_entity,
-    defines.events.on_space_platform_built_entity,
-},
----@param event
----| EventData.on_built_entity
----| EventData.on_robot_built_entity
----| EventData.on_space_platform_built_entity
-function (event)
-    if event.entity.name == constants.entity_launcher_inventory then
-        LauncherStation.create(event.entity, event.player_index)
-    end
-end)
+        defines.events.on_built_entity,
+        defines.events.on_robot_built_entity,
+        defines.events.on_space_platform_built_entity,
+    },
+    ---@param event
+    ---| EventData.on_built_entity
+    ---| EventData.on_robot_built_entity
+    ---| EventData.on_space_platform_built_entity
+    function(event)
+        if event.entity.name == constants.entity_launcher_inventory then
+            LauncherStation.create(event.entity, event.player_index)
+        end
+    end)
 
 script.on_event(defines.events.on_space_platform_pre_mined, function(event)
     if event.entity.name == constants.entity_receiver_inventory then
@@ -154,7 +154,7 @@ script.on_event(defines.events.on_research_finished, function(event) bonus_contr
 script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
 
-script.on_event(defines.events.on_runtime_mod_setting_changed, function (event)
+script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     if event.setting_type == "runtime-global" and event.setting == constants.update_interval_setting then
         CannonNetwork.resize_buckets()
     end
@@ -167,15 +167,12 @@ script.on_event(defines.events.on_tick, function(event)
     end
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
-        -- TODO add visualization
         if player.selected and player.selected.name == constants.entity_launcher_inventory then
             local launcher = LauncherStation.get(player.selected)
-            if launcher then
-                launcher:update_diode_status()
-            end
+            if launcher then launcher:update_diode_status() end
         end
         if player.opened and player.opened.object_name == "LuaEntity" and player.opened.name == constants.entity_launcher_gui_proxy then
-            local entity = player.opened--[[@as LuaEntity]]
+            local entity = player.opened --[[@as LuaEntity]]
             local launcher = LauncherStation.get(entity)
             if launcher then
                 launcher:update_diode_status()
@@ -183,17 +180,20 @@ script.on_event(defines.events.on_tick, function(event)
             end
         end
     end
-    -- update diode: on tick check player selected OR entity change
-    -- visualization: only need to update when player change selected
 end)
 
-script.on_event(defines.events.on_player_cursor_stack_changed, function (event)
+script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
     visualization_control.on_cursor_stack_changed(event)
 end)
-script.on_event(defines.events.on_selected_entity_changed, function (event)
+script.on_event(defines.events.on_selected_entity_changed, function(event)
     visualization_control.on_selected_entity_changed(event)
+    local player = game.players[event.player_index]
+    if player.selected and player.selected.name == constants.entity_launcher_inventory then
+        local launcher = LauncherStation.get(player.selected)
+        if launcher then launcher:update_diode_status() end
+    end
 end)
-script.on_event(defines.events.on_player_left_game, function (event)
+script.on_event(defines.events.on_player_left_game, function(event)
     visualization_control.on_player_left_game(event)
 end)
 
@@ -217,37 +217,37 @@ script.on_event(defines.events.on_gui_opened, function(event)
 end)
 
 script.on_event({
-    defines.events.on_gui_click,
-    defines.events.on_gui_elem_changed,
-    defines.events.on_gui_text_changed,
-},
----@param event
----| EventData.on_gui_click
----| EventData.on_gui_elem_changed
----| EventData.on_gui_text_changed
-function(event)
-    local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
-    if not handlers then return end
-    local handler_name
-    for k, v in pairs(handlers) do
-        if defines.events[k] == event.name then
-            handler_name = v
-            break
+        defines.events.on_gui_click,
+        defines.events.on_gui_elem_changed,
+        defines.events.on_gui_text_changed,
+    },
+    ---@param event
+    ---| EventData.on_gui_click
+    ---| EventData.on_gui_elem_changed
+    ---| EventData.on_gui_text_changed
+    function(event)
+        local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
+        if not handlers then return end
+        local handler_name
+        for k, v in pairs(handlers) do
+            if defines.events[k] == event.name then
+                handler_name = v
+                break
+            end
         end
-    end
-    if handler_name then
-        local sep = string.find(handler_name, ".", 0, true)
-        local handler_module = string.sub(handler_name, 0, sep - 1)
-        local handler_func = string.sub(handler_name, sep + 1)
-        if handler_module == "receiver_gui" then
-            receiver_gui[handler_func](game.get_player(event.player_index), event)
-        elseif handler_module == "launcher_gui" then
-            launcher_gui[handler_func](game.get_player(event.player_index), event)
-        else
-            error("Invalid GUI event handler: " .. handler_name)
+        if handler_name then
+            local sep = string.find(handler_name, ".", 0, true)
+            local handler_module = string.sub(handler_name, 0, sep - 1)
+            local handler_func = string.sub(handler_name, sep + 1)
+            if handler_module == "receiver_gui" then
+                receiver_gui[handler_func](game.get_player(event.player_index), event)
+            elseif handler_module == "launcher_gui" then
+                launcher_gui[handler_func](game.get_player(event.player_index), event)
+            else
+                error("Invalid GUI event handler: " .. handler_name)
+            end
         end
-    end
-end)
+    end)
 
 -- script.on_event(defines.events.on_player_setup_blueprint, function(event)
 --     local blueprint = event.stack or event.record

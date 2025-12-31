@@ -293,7 +293,6 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
     end
     local deliver_item = { name = item.name, quality = item.quality, count = payload_count }
     local delivery = ScheduledDelivery.create(self, receiver, deliver_item)
-    --todo check timeout
     self.scheduled_delivery = delivery
     self:set_aiming(delivery.position)
     return delivery
