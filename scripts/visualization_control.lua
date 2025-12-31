@@ -11,6 +11,7 @@ function Visualization.load_deps()
 end
 
 local range_color = { 0.02, 0.06, 0.02, 0 }
+local connection_color = { 0.7, 0.7, 0, 1 }
 local items_to_view_stations = {
     [constants.item_launcher] = "launcher",
     [constants.item_receiver] = "receiver",
@@ -32,53 +33,74 @@ end
 
 ---@param player LuaPlayer
 ---@param launcher LauncherStation
+---@param source_position MapPosition?
 ---@return { [number]: LuaEntity | LuaRenderObject }
-local function launcher_visaulization(player, launcher)
-    if not launcher:valid() then
-        return {}
+local function launcher_visaulization(player, launcher, source_position)
+    if not launcher:valid() then return {} end
+    if source_position then
+        return {
+            launcher.inventory_entity.surface.create_entity {
+                name = "lct-highlight-box",
+                position = launcher:position(),
+                bounding_box = launcher.inventory_entity.selection_box,
+                box_type = "logistics",
+                render_player_index = player.index
+            } or error(),
+            rendering.draw_line {
+                surface = launcher.inventory_entity.surface,
+                from = source_position,
+                to = launcher:position(),
+                color = connection_color,
+                width = 5,
+                gap_length = 1,
+                dash_length = 1
+            }  or error(),
+        }
+    else
+        local range = launcher:get_max_range()
+        return {
+            launcher.inventory_entity.surface.create_entity {
+                name = "lct-highlight-box",
+                position = launcher:position(),
+                bounding_box = launcher.inventory_entity.selection_box,
+                box_type = "logistics",
+                render_player_index = player.index
+            } or error(),
+            rendering.draw_circle {
+                color = range_color,
+                radius = range,
+                filled = true,
+                target = launcher.inventory_entity,
+                surface = launcher.inventory_entity.surface,
+                players = { player },
+                visible = true,
+                draw_on_ground = true,
+                render_mode = "game",
+            } or error(),
+            rendering.draw_circle {
+                color = range_color,
+                radius = range,
+                filled = true,
+                target = launcher.inventory_entity,
+                surface = launcher.inventory_entity.surface,
+                players = { player },
+                visible = true,
+                draw_on_ground = true,
+                render_mode = "chart",
+            } or error(),
+        }
     end
-    local range = launcher:get_max_range()
-    return {
-        launcher.inventory_entity.surface.create_entity {
-            name = "lct-highlight-box",
-            position = launcher:position(),
-            bounding_box = launcher.inventory_entity.selection_box,
-            box_type = "logistics",
-            render_player_index = player.index
-        } or error(),
-        rendering.draw_circle {
-            color = range_color,
-            radius = range,
-            filled = true,
-            target = launcher.inventory_entity,
-            surface = launcher.inventory_entity.surface,
-            players = { player },
-            visible = true,
-            draw_on_ground = true,
-            render_mode = "game",
-        } or error(),
-        rendering.draw_circle {
-            color = range_color,
-            radius = range,
-            filled = true,
-            target = launcher.inventory_entity,
-            surface = launcher.inventory_entity.surface,
-            players = { player },
-            visible = true,
-            draw_on_ground = true,
-            render_mode = "chart",
-        } or error(),
-    }
 end
 
 ---@param player LuaPlayer
 ---@param receiver ReceiverStation
+---@param source_position MapPosition?
 ---@return { [number]: LuaEntity | LuaRenderObject }
-local function receiver_visaulization(player, receiver)
+local function receiver_visaulization(player, receiver, source_position)
     if not receiver:valid() then
         return {}
     end
-    return {
+    local entities = {
         receiver.inventory_entity.surface.create_entity {
             name = "lct-highlight-box",
             position = receiver:position(),
@@ -87,6 +109,18 @@ local function receiver_visaulization(player, receiver)
             render_player_index = player.index
         } or error(),
     }
+    if source_position then
+        table.insert(entities, rendering.draw_line {
+            surface = receiver.inventory_entity.surface,
+            from = source_position,
+            to = receiver:position(),
+            color = connection_color,
+            width = 5,
+            gap_length = 1,
+            dash_length = 1
+        } or error())
+    end
+    return entities
 end
 
 ---@param player LuaPlayer
@@ -134,14 +168,14 @@ local function update_visualization(player, force_update)
         if launcher then
             entities[launcher:id()] = launcher_visaulization(player, launcher)
             for _, receiver in pairs(launcher.network.launcher_to_receivers[launcher:id()]) do
-                entities[receiver:id()] = receiver_visaulization(player, receiver)
+                entities[receiver:id()] = receiver_visaulization(player, receiver, launcher:position())
             end
         end
     elseif mode == "receiver" then
         local receiver = ReceiverStation.get(player.selected)
         if receiver then
             for _, launcher in pairs(receiver.network.receiver_to_launchers[receiver:id()]) do
-                entities[launcher:id()] = launcher_visaulization(player, launcher)
+                entities[launcher:id()] = launcher_visaulization(player, launcher, receiver:position())
             end
         end
     else
@@ -207,13 +241,13 @@ local function update_station(station_id, network, launcher, receiver)
         if visualization.mode == "launcher" and receiver then
             local source_launcher = LauncherStation.get(visualization.target)
             if source_launcher and network:is_connected(source_launcher, receiver) then
-                visualization.entities[station_id] = receiver_visaulization(player, receiver)
+                visualization.entities[station_id] = receiver_visaulization(player, receiver, source_launcher:position())
             end
         end
         if visualization.mode == "receiver" and launcher then
             local source_receiver = ReceiverStation.get(visualization.target)
             if source_receiver and network:is_connected(launcher, source_receiver) then
-                visualization.entities[station_id] = launcher_visaulization(player, launcher)
+                visualization.entities[station_id] = launcher_visaulization(player, launcher, source_receiver:position())
             end
         end
         ::continue::

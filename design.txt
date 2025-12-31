@@ -1,18 +1,16 @@
 Ammo properties
-- Payload size
-- Base consumption (scale with distance)
+- Payload size [+Quality]
+- Base consumption [+Quality]
 - Projectile speed
-- Maximum range?
 
 Launcher properties
 - Base Range [+Quality]
-- Base energy charging speed [+Quality?]
-- Base equipment grid? [+Quality?]
-- Storage capacity
+- Base energy charging speed [+Quality]
+- Storage capacity [+Quality]
 
 Receiver properties
-- Storage capacity [+Quality?]
-- Request slot
+- Storage capacity [+Quality]
+- Request slot?
 
 Technology bonus
 - Range [infinite]
@@ -53,5 +51,6 @@ Advanced
 TODO
 - handle station teleport/clone event
 - handle force merge event (destroy network)
+- Ammo quality
 - Network signal
 - GUI
