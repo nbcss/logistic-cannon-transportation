@@ -8,7 +8,7 @@ for index, speed in ipairs(projectiles) do
     data.raw["mod-data"][constants.data_projectile_properties].data[name] = {
         projectile_speed = speed,
         locale_string = { "logistic-cannon-transportation.projectile-speed-" .. name, tostring(speed) },
-    }
+    } --[[@as ProjectileProperties]]
     data:extend {
         {
             type = "projectile",

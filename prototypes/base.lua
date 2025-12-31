@@ -1,10 +1,10 @@
 local constants = require("constants")
 
 data.extend {
-    util.merge{data.raw["highlight-box"]["highlight-box"], {
+    util.merge { data.raw["highlight-box"]["highlight-box"], {
         name = "lct-highlight-box",
         hidden = true,
-    }},
+    } },
     {
         type = "ammo-category",
         name = constants.ammo_category,
@@ -47,17 +47,27 @@ data.extend {
     },
     {
         type = "mod-data",
-        name = constants.data_capsule_properties,
+        name = constants.data_projectile_properties,
+        ---@class ProjectileProperties
+        ---@field projectile_speed number
+        ---@field locale_string LocalisedString
         data = {},
     },
     {
         type = "mod-data",
-        name = constants.data_projectile_properties,
+        name = constants.data_capsule_properties,
+        ---@class CannonCapsuleProperties
+        ---@field speed_tier string
+        ---@field payload_size uint
+        ---@field energy_consumption number
+        data = {},
+    },
+    {
+        type = "mod-data",
+        name = constants.data_launcher_properties,
+        ---@class LauncherProperties
+        ---@field range number
+        ---@field energy_consumption number
         data = {},
     },
 }
-
----@class CannonCapsuleProperties
----@field speed_tier string
----@field payload_size uint
----@field energy_consumption number

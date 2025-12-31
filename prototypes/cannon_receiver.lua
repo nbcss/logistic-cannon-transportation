@@ -96,6 +96,7 @@ data:extend{
         draw_inventory_content = false,
         is_military_target = false,
         selectable_in_game = false,
+        hidden = true,
         max_health = health,
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,

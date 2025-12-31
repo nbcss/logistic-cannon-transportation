@@ -6,7 +6,7 @@ local icon = "__base__/graphics/icons/tank-cannon.png"
 local health = 600
 local range = 100
 local inventory_size = 80
-local charge_speed = 200 * 1000 -- in W
+local energy_consumption = 200 * 1000 -- in W
 local integration_patch = {
     sheets = {
         {
@@ -41,14 +41,12 @@ local container_animation = {
     }
 }
 
+data.raw["mod-data"][constants.data_launcher_properties].data[constants.entity_launcher_inventory] = {
+    range = range,
+    energy_consumption = energy_consumption,
+} --[[@as LauncherProperties]]
+
 data:extend {
-    {
-        type = "mod-data",
-        name = constants.data_launcher_range,
-        data = {
-            [constants.entity_launcher_turret] = range,
-        },
-    },
     {
         type = "item",
         name = constants.item_launcher,
@@ -67,8 +65,10 @@ data:extend {
             },
             {
                 name = { "description.max-energy-consumption" },
-                value = { "", format.energy(charge_speed, "W") },
-                -- TODO add quality effect
+                value = { "", format.energy(energy_consumption, "W") },
+                quality_base_value = energy_consumption,
+                quality_multiplier = "default_multiplier",
+                quality_formatting = setmetatable({}, {__call = function(self, value) return format.energy(value, "W") end})
             },
         },
     },
@@ -191,6 +191,7 @@ data:extend {
         draw_inventory_content = false,
         is_military_target = false,
         selectable_in_game = false,
+        hidden = true,
         max_health = health,
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
@@ -204,16 +205,16 @@ data:extend {
         flags = { "not-on-map", "placeable-off-grid", "hide-alt-info" },
         localised_name = { "entity-name." .. constants.entity_launcher_inventory },
         localised_description = { "entity-description." .. constants.entity_launcher_inventory },
-        quality_indicator_scale = 0,
-        hidden = true,
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        quality_indicator_scale = 0,
         selectable_in_game = false,
+        hidden = true,
         selection_priority = 1,
         energy_source = {
             type = "electric",
-            buffer_capacity = "0kJ",
+            buffer_capacity = "0J",
             usage_priority = "secondary-input",
-            input_flow_limit = "200kW",
+            input_flow_limit = energy_consumption .. "W",
             output_flow_limit = "0W",
             -- drain = "50kW",
         }
@@ -228,9 +229,10 @@ data:extend {
         localised_description = { "entity-description.logistic-cannon-launcher" },
         quality_indicator_scale = 0,
         selectable_in_game = false,
-        max_health = health,
         is_military_target = false,
         shoot_in_prepare_state = true,
+        hidden = true,
+        max_health = health,
         prepare_range = 2,
         attack_target_mask = { constants.entity_target },
         rotation_speed = 0.1 / 60,

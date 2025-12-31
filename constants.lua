@@ -1,7 +1,10 @@
 local constants = {}
 
+-- base
 constants.mod_name = "logistic-cannon-transportation"
 constants.name_prefix = "logistic-cannon-"
+constants.ammo_category = "logistic-cannon-capsule"
+constants.item_subgroup = "cannon-transport"
 constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
 -- settings
 constants.update_interval_setting = constants.name_prefix.."update-interval"
@@ -10,11 +13,7 @@ constants.range_upgrade_bonus = "logistic-cannon-launcher-range-bonus"
 -- data
 constants.data_capsule_properties = constants.name_prefix .. "capsule-properties"
 constants.data_projectile_properties = constants.name_prefix .. "projectile-properties"
-constants.data_launcher_range = constants.name_prefix .. "launcher-ranges"
-constants.data_projectile_speed = constants.name_prefix .. "projectile-speed"
--- base
-constants.ammo_category = "logistic-cannon-capsule"
-constants.item_subgroup = "cannon-transport"
+constants.data_launcher_properties = constants.name_prefix .. "launcher-properties"
 -- target
 constants.entity_target = constants.name_prefix.."target"
 -- capsule

@@ -7,7 +7,7 @@ data.raw["mod-data"][constants.data_capsule_properties].data[constants.item_caps
     speed_tier = projectile_speed,
     payload_size = capsule_payload_size,
     energy_consumption = launch_consumption,
-}--[[@as CannonCapsuleProperties]]
+} --[[@as CannonCapsuleProperties]]
 
 data:extend {
     {

@@ -53,7 +53,5 @@ Advanced
 TODO
 - handle station teleport/clone event
 - handle force merge event (destroy network)
-- Schedule algorithm optimization
 - Network signal
-- Range visualization
 - GUI

@@ -41,6 +41,8 @@ LauncherStation.default_settings = {
     load_capsule_from_inventory = true,
 }
 
+local launcher_properties = prototypes.mod_data[constants.data_launcher_properties].data
+
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by inventory entity's unit number
     storage.launcher_stations = storage.launcher_stations or {}
@@ -202,7 +204,7 @@ end
 
 function LauncherStation.prototype:get_max_range()
     if not self:valid() then return 0 end
-    local range = prototypes.mod_data[constants.data_launcher_range].data[self.turret_entity.name] --[[@as number]]
+    local range = prototypes.mod_data[constants.data_launcher_properties].data[self.inventory_entity.name].range --[[@as number]]
     local quality_modifier = self.turret_entity.quality.range_multiplier
     local tech_modifier = 1.0 + bonus_control.get_launcher_range_bonus(self.turret_entity.force --[[@as LuaForce]])
     return range * quality_modifier * tech_modifier
