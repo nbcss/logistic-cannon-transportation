@@ -287,7 +287,8 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
     end
     local inventory = self:get_inventory()
     local available_count = inventory.get_item_count_filtered { name = item.name, quality = item.quality }
-    local payload_count = self:get_max_payload_size() * prototypes.item[item.name].stack_size
+    local capsule_size = self:get_max_payload_size()
+    local payload_count = capsule_size * prototypes.item[item.name].stack_size
     if available_count < payload_count or payload_count > amount then
         return nil
     end

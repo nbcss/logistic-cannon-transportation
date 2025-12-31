@@ -19,6 +19,12 @@ local ScheduledDelivery = {}
 ScheduledDelivery.prototype = {}
 ScheduledDelivery.prototype.__index = ScheduledDelivery.prototype
 
+local alert_icon = {
+    type = "virtual",
+    name = "signal-alert",
+}
+local alert_message = {"", { "gui-alert-tooltip.capsule-delivery-failed" }}
+
 function ScheduledDelivery.on_init()
     ---@type table<uint64, ScheduledDelivery?> ScheduledDelivery's indexed by capsule_entity.unit_number.
     storage.scheduled_deliveries = storage.scheduled_deliveries or {}
@@ -30,14 +36,15 @@ end
 ---@param item ItemWithQualityCount
 ---@return ScheduledDelivery
 function ScheduledDelivery.create(launcher, receiver, item)
-    local capsule_storage = receiver.inventory_entity.surface.create_entity {
+    local capsule_entity = receiver.inventory_entity.surface.create_entity {
         name = "cannon-capsule-storage",
         position = receiver:position(),
+        force = launcher.network.force
     } or error()
 
     local instance = setmetatable({
-        delivery_id = capsule_storage.unit_number,
-        capsule_entity = capsule_storage,
+        delivery_id = capsule_entity.unit_number,
+        capsule_entity = capsule_entity,
         launcher = launcher,
         receiver = receiver,
         ammo_name = launcher.ammo_name,
@@ -49,7 +56,7 @@ function ScheduledDelivery.create(launcher, receiver, item)
         amount = item.count,
     } --[[@as ScheduledDelivery]], ScheduledDelivery.prototype)
 
-    script.register_on_object_destroyed(capsule_storage)
+    script.register_on_object_destroyed(capsule_entity)
 
     storage.scheduled_deliveries[instance:id()] = instance
     return instance
@@ -95,8 +102,9 @@ function ScheduledDelivery.prototype:is_matching_ammo(ammo_slot)
 end
 
 function ScheduledDelivery.prototype:deliver()
+    local surface = self.capsule_entity.surface
     local capsule_inventory = self:get_inventory()
-    local receiver_entity = self.capsule_entity.surface.find_entities_filtered {
+    local receiver_entity = surface.find_entities_filtered {
         name = "logistic-cannon-receiver",
         position = self.position,
         limit = 1,
@@ -109,10 +117,19 @@ function ScheduledDelivery.prototype:deliver()
         end
     end
     if not capsule_inventory.is_empty() then
-        -- TODO add alert/effect
-        self.capsule_entity.surface.spill_inventory { position = self.position, inventory = capsule_inventory }
+        local force = self.capsule_entity.force
+        local items = surface.spill_inventory { position = self.position, inventory = capsule_inventory }
+        surface.create_entity {
+            name = "medium-explosion",
+            position = self.position,
+        }
+        for _, item in ipairs(items) do
+            item.order_deconstruction(force)
+        end
+        for _, player in ipairs(force.players) do
+            player.add_custom_alert(self.capsule_entity, alert_icon, alert_message, true)
+        end
     end
-    -- destroy capsule container TODO it should subscribe destroy event?
     self:destroy()
 end
 
