@@ -9,7 +9,8 @@ local ScheduledDelivery = {}
 ---@field capsule_entity LuaEntity Temporary container containing items in the delivery.
 ---@field launcher LauncherStation
 ---@field receiver ReceiverStation
----@field delivery_ammo string Prototype name of ammo used.
+---@field ammo_name string Prototype name of ammo used.
+---@field ammo_quality LuaQualityPrototype? Quality of ammo used.
 ---@field created_time MapTick When the delivery was created.
 ---@field position MapPosition Target position
 ---@field item string Name of the item delivered.
@@ -39,7 +40,8 @@ function ScheduledDelivery.create(launcher, receiver, item)
         capsule_entity = capsule_storage,
         launcher = launcher,
         receiver = receiver,
-        delivery_ammo = launcher.loaded_ammo,
+        ammo_name = launcher.ammo_name,
+        ammo_quality = launcher.ammo_quality,
         created_time = game.tick,
         position = receiver:position(),
         item = item.name,
@@ -86,9 +88,15 @@ function ScheduledDelivery.prototype:get_inventory()
     return self.capsule_entity.get_inventory(defines.inventory.chest) --[[@as LuaInventory]]
 end
 
+---@param ammo_slot LuaItemStack
+---@return boolean
+function ScheduledDelivery.prototype:is_matching_ammo(ammo_slot)
+    return ammo_slot.valid_for_read and self.ammo_name == ammo_slot.name and self.ammo_quality == ammo_slot.quality
+end
+
 function ScheduledDelivery.prototype:deliver()
     local capsule_inventory = self:get_inventory()
-    local receiver_entity = self.capsule_entity.surface.find_entities_filtered{
+    local receiver_entity = self.capsule_entity.surface.find_entities_filtered {
         name = "logistic-cannon-receiver",
         position = self.position,
         limit = 1,

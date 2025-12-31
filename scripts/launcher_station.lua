@@ -23,7 +23,8 @@ end
 ---@field target_entity LuaEntity? The target entity for shoot.
 ---@field station_id uint64 The unit number of inventory entity.
 ---@field turret_id uint64 The unit number of turret entity.
----@field loaded_ammo string Prototype name of the loaded ammo, empty string means no ammo.
+---@field ammo_name string Prototype name of the loaded ammo, empty string means no ammo.
+---@field ammo_quality LuaQualityPrototype? Quality of loaded ammo, nil if no ammo.
 ---@field overflow_energy number The amount of overflow energy
 ---@field launcher_range number The range of the cannon launcher
 ---@field network CannonNetwork The netowrk that the station belongs to
@@ -41,7 +42,8 @@ LauncherStation.default_settings = {
     load_capsule_from_inventory = true,
 }
 
-local launcher_properties = prototypes.mod_data[constants.data_launcher_properties].data
+local launcher_properties = prototypes.mod_data[constants.data_launcher_properties].data--[[@as table<string, LauncherProperties>]]
+local capsule_properties = prototypes.mod_data[constants.data_capsule_properties].data--[[@as table<string, CannonCapsuleProperties?>]]
 
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by inventory entity's unit number
@@ -91,7 +93,7 @@ function LauncherStation.create(entity, player_index)
         electric_interface = electric_interface,
         station_id = inventory_entity.unit_number,
         turret_id = turret_entity.unit_number,
-        loaded_ammo = "",
+        ammo_name = "",
         overflow_energy = 0,
         launcher_range = 0,
         network = network,
@@ -171,24 +173,28 @@ end
 function LauncherStation.prototype:update_state()
     if not self:valid() then return false end
     local ammo_slot = self:get_ammo_inventory()[1]
-    -- TODO consider ammo quality
-    local current_ammo = ""
+    local ammo_name = ""
+    local ammo_quality = nil
     if not ammo_slot.valid_for_read and self.settings.load_capsule_from_inventory then
         inventory_tool.transfer_to_slot(self:get_inventory(), ammo_slot)
     end
     if ammo_slot.valid_for_read then
-        current_ammo = ammo_slot.name
+        ammo_name = ammo_slot.name
+        ammo_quality = ammo_slot.quality
     end
     local range = self:get_max_range()
-    if current_ammo == self.loaded_ammo and range == self.launcher_range then
+    if ammo_name == self.ammo_name and ammo_quality == self.ammo_quality and range == self.launcher_range then
         return
     end
     -- cancel ongoing delivery if ammo changed
-    if self.loaded_ammo ~= current_ammo and self.scheduled_delivery and self.scheduled_delivery:valid() then
-        self.scheduled_delivery:destroy()
-        self.scheduled_delivery = nil
+    if self.ammo_name ~= ammo_name or self.ammo_quality ~= ammo_quality then
+        if self.scheduled_delivery and self.scheduled_delivery:valid() then
+            self.scheduled_delivery:destroy()
+            self.scheduled_delivery = nil
+        end
     end
-    self.loaded_ammo = current_ammo
+    self.ammo_name = ammo_name
+    self.ammo_quality = ammo_quality
     -- transfer overflow energy
     self.overflow_energy = self.overflow_energy + self.electric_interface.energy
     self.electric_interface.energy = 0
@@ -204,7 +210,7 @@ end
 
 function LauncherStation.prototype:get_max_range()
     if not self:valid() then return 0 end
-    local range = prototypes.mod_data[constants.data_launcher_properties].data[self.inventory_entity.name].range --[[@as number]]
+    local range = launcher_properties[self.inventory_entity.name].range --[[@as number]]
     local quality_modifier = self.turret_entity.quality.range_multiplier
     local tech_modifier = 1.0 + bonus_control.get_launcher_range_bonus(self.turret_entity.force --[[@as LuaForce]])
     return range * quality_modifier * tech_modifier
@@ -220,7 +226,7 @@ function LauncherStation.prototype:update_diode_status()
     if not self:valid() then return end
     local status = "logistic-cannon-transportation.status-ready"
     local diode = defines.entity_status_diode.green --[[@as defines.entity_status_diode]]
-    if self.loaded_ammo == "" then
+    if self.ammo_name == "" then
         status = "logistic-cannon-transportation.status-no-capsule"
         diode = defines.entity_status_diode.red
     elseif self.scheduled_delivery then
@@ -299,7 +305,7 @@ function LauncherStation.prototype:is_ready(position)
     if not self:valid() or self.inventory_entity.to_be_deconstructed() then
         return false
     end
-    if self.loaded_ammo == "" or self.scheduled_delivery ~= nil then
+    if self.ammo_name == "" or self.scheduled_delivery ~= nil then
         return false
     end
     local distance = math2d.position.distance(self:position(), position)
@@ -340,7 +346,7 @@ function LauncherStation.prototype:launch(source_position)
     if not self:valid() or not delivery then return end
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_slot = self:get_ammo_inventory()[1]
-    if delivery:valid() and ammo_slot.valid_for_read and ammo_slot.name == delivery.delivery_ammo then
+    if delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
         local energy_cost = math2d.position.distance(self:position(), delivery.position) * self:get_launch_consumption()
         if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
@@ -408,32 +414,24 @@ end
 
 ---@return uint32?
 function LauncherStation.prototype:get_max_payload_size()
-    local data = prototypes.mod_data[constants.data_capsule_properties].data
-    [self.loaded_ammo] --[[@as CannonCapsuleProperties?]]
-    if data then
-        return data.payload_size
-    end
-    return 0
+    local data = capsule_properties[self.ammo_name]
+    local payload_size = data and data.payload_size or 0
+    local quality_modifier = self.ammo_quality and self.ammo_quality.default_multiplier or 1
+    return math.floor(0.5 + (payload_size * quality_modifier))
 end
 
 ---@return number
 function LauncherStation.prototype:get_launch_consumption()
-    local data = prototypes.mod_data[constants.data_capsule_properties].data
-    [self.loaded_ammo] --[[@as CannonCapsuleProperties?]]
-    if data then
-        return data.energy_consumption
-    end
-    return 0
+    local data = capsule_properties[self.ammo_name]
+    local consumption = data and data.energy_consumption or 0
+    local quality_modifier = self.ammo_quality and 1 / self.ammo_quality.default_multiplier or 1
+    return consumption * quality_modifier
 end
 
 ---@return string
 function LauncherStation.prototype:get_projectile_speed()
-    local data = prototypes.mod_data[constants.data_capsule_properties].data
-    [self.loaded_ammo] --[[@as CannonCapsuleProperties?]]
-    if data then
-        return data.speed_tier
-    end
-    return "slow"
+    local data = capsule_properties[self.ammo_name]
+    return data and data.speed_tier or "slow"
 end
 
 ---@return uint64

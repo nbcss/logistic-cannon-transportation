@@ -62,13 +62,15 @@ data:extend {
                 value = { "", tostring(range) },
                 quality_base_value = range,
                 quality_multiplier = "range_multiplier",
+                order = 1,
             },
             {
                 name = { "description.max-energy-consumption" },
                 value = { "", format.energy(energy_consumption, "W") },
                 quality_base_value = energy_consumption,
                 quality_multiplier = "default_multiplier",
-                quality_formatting = setmetatable({}, {__call = function(self, value) return format.energy(value, "W") end})
+                quality_formatting = setmetatable({}, {__call = function(self, value) return format.energy(value, "W") end}),
+                order = 2,
             },
         },
     },

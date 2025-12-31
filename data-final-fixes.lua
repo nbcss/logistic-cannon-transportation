@@ -1,4 +1,9 @@
-local tooltip_postprocessing = { item = { "logistic-cannon-launcher" } }
+local constants = require("constants")
+
+local tooltip_postprocessing = { 
+    item = { constants.item_launcher },
+    ammo = { constants.item_capsule_basic },
+}
 local default_quality_multipliers = {
     default_multiplier = function (level) return 1 + 0.3 * level end,
     range_multiplier = function (level) return math.min(1 + 0.1 * level, 3) end,
@@ -34,5 +39,3 @@ for category, prototypes in pairs(tooltip_postprocessing) do
     end
 end
 
--- data.raw["projectile"]["rocket"].flags = {}
--- data.raw["projectile"]["rocket"].map_color = {1, 0, 0}

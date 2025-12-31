@@ -48,9 +48,14 @@ Advanced
 - Consumption: 100 kJ/m
 - Speed: Moderate
 
+[Launcher]
+- Storage size: 80
+- Consumption: 200kW
+- Range: 100
+
 TODO
 - handle station teleport/clone event
 - handle force merge event (destroy network)
-- Ammo quality
+- Fix no ammo alert when deconstruct launcher
 - Network signal
 - GUI

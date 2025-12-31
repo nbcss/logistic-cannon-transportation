@@ -1,4 +1,5 @@
 local constants = require("constants")
+local format = require("scripts.format")
 local capsule_payload_size = 1
 local projectile_speed = "1"
 local launch_consumption = 25000 -- J per tile
@@ -22,17 +23,26 @@ data:extend {
             {
                 name = { "logistic-cannon-transportation.capsule-payload-size" },
                 value = { "logistic-cannon-transportation.stack", tostring(capsule_payload_size) },
-                order = 200,
+                quality_base_value = capsule_payload_size,
+                quality_multiplier = "default_multiplier",
+                quality_formatting = setmetatable({}, {__call = function(self, value)
+                    return { "logistic-cannon-transportation.stack", tostring(math.floor(0.5 + value)) } end}),
+                order = 1,
+            },
+            {
+                name = { "logistic-cannon-transportation.launch-consumption" },
+                value = { "", format.energy(launch_consumption, "J/m") },
+                quality_header = "quality-tooltip.reduced-energy",
+                quality_base_value = 1,
+                quality_multiplier = "default_multiplier",
+                quality_formatting = setmetatable({}, {__call = function(self, value)
+                    return { "", format.energy(launch_consumption / value, "J/m") } end}),
+                order = 2,
             },
             {
                 name = { "logistic-cannon-transportation.capsule-speed" },
                 value = data.raw["mod-data"][constants.data_projectile_properties].data[projectile_speed].locale_string,
-                order = 201,
-            },
-            {
-                name = { "logistic-cannon-transportation.launch-consumption" },
-                value = { "logistic-cannon-transportation.kj-per-meter", string.format("%.0f", launch_consumption / 1000) },
-                order = 202,
+                order = 3,
             },
         },
         ammo_type = {
