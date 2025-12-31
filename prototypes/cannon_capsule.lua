@@ -17,7 +17,7 @@ data:extend {
         icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = constants.item_subgroup,
         order = "c1[capsule]",
-        stack_size = 5,
+        stack_size = 20,
         custom_tooltip_fields = {
             {
                 name = { "logistic-cannon-transportation.capsule-payload-size" },
@@ -58,12 +58,13 @@ data:extend {
         type = "recipe",
         name = constants.item_capsule_basic,
         enabled = true,
-        energy_required = 5,
+        energy_required = 1,
         ingredients = {
-            { type = "item", name = "steel-plate", amount = 5 },
+            { type = "item", name = "iron-plate", amount = 1 },
+            { type = "item", name = "explosives", amount = 1 },
         },
         results = {
-            { type = "item", name = constants.item_capsule_basic, amount = 1 },
+            { type = "item", name = constants.item_capsule_basic, amount = 4 },
         }
     },
 }

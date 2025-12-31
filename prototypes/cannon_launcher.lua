@@ -76,9 +76,13 @@ data:extend {
         type = "recipe",
         name = constants.item_launcher,
         enabled = true,
-        energy_required = 5,
+        energy_required = 10,
         ingredients = {
-            { type = "item", name = "steel-plate", amount = 5 },
+            { type = "item", name = "radar", amount = 1 },
+            { type = "item", name = "steel-plate", amount = 20 },
+            { type = "item", name = "stone-brick", amount = 10 },
+            { type = "item", name = "iron-gear-wheel", amount = 10 },
+            { type = "item", name = "engine-unit", amount = 5 },
         },
         results = {
             { type = "item", name = constants.item_launcher, amount = 1 },

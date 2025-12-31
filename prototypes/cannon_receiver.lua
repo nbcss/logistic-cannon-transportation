@@ -45,7 +45,9 @@ data:extend{
         enabled = true,
         energy_required = 5,
         ingredients = {
-            { type = "item", name = "steel-plate", amount = 5 },
+            { type = "item", name = "radar", amount = 1 },
+            { type = "item", name = "steel-plate", amount = 20 },
+            { type = "item", name = "stone-brick", amount = 10 },
         },
         results = {
             { type = "item", name = constants.item_receiver, amount = 1 },
