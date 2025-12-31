@@ -1,6 +1,10 @@
 local constants = require("constants")
 
 data.extend {
+    util.merge{data.raw["highlight-box"]["highlight-box"], {
+        name = "lct-highlight-box",
+        hidden = true,
+    }},
     {
         type = "ammo-category",
         name = constants.ammo_category,
@@ -23,6 +27,7 @@ data.extend {
         is_military_target = true,
         flags = { "placeable-off-grid", "not-selectable-in-game" },
         trigger_target_mask = { constants.entity_target },
+        hidden = true,
     },
     {
         type = "ammo-category",

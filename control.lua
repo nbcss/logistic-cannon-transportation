@@ -8,9 +8,11 @@ local inventory_tool = require("scripts.inventory_tool")
 local launcher_gui = require("scripts.gui.launcher_gui")
 local receiver_gui = require("scripts.gui.receiver_gui")
 local bonus_control = require("scripts.bonus_control")
+local visualization_control = require("scripts.visualization_control")
 
 LauncherStation.load_deps()
 ReceiverStation.load_deps()
+visualization_control.load_deps()
 
 script.register_metatable("BucketSet.prototype", BucketSet.prototype)
 script.register_metatable("CannonNetwork.prototype", CannonNetwork.prototype)
@@ -23,6 +25,7 @@ script.on_init(function()
     LauncherStation.on_init()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
+    visualization_control.on_init()
 end)
 
 script.on_configuration_changed(function()
@@ -30,6 +33,7 @@ script.on_configuration_changed(function()
     LauncherStation.on_init()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
+    visualization_control.on_init()
     for _, force in pairs(game.forces) do
         bonus_control.update_bonus(force)
     end
@@ -183,8 +187,14 @@ script.on_event(defines.events.on_tick, function(event)
     -- visualization: only need to update when player change selected
 end)
 
+script.on_event(defines.events.on_player_cursor_stack_changed, function (event)
+    visualization_control.on_cursor_stack_changed(event)
+end)
 script.on_event(defines.events.on_selected_entity_changed, function (event)
-    
+    visualization_control.on_selected_entity_changed(event)
+end)
+script.on_event(defines.events.on_player_left_game, function (event)
+    visualization_control.on_player_left_game(event)
 end)
 
 script.on_event(defines.events.on_gui_opened, function(event)

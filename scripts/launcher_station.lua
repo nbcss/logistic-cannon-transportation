@@ -3,6 +3,7 @@ local util = require("util")
 local math2d = require("math2d")
 local format = require("scripts.format")
 local bonus_control = require("scripts.bonus_control")
+local visualization_control = require("scripts.visualization_control")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
@@ -151,6 +152,7 @@ function LauncherStation.on_object_destroyed(unit_number)
         instance.target_entity.destroy()
     end
     instance.network:remove_launcher(instance:id())
+    visualization_control.on_station_remove(instance:id())
 end
 
 ---Get an iterator over all LauncherStation's.

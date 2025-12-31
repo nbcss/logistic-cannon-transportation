@@ -55,10 +55,22 @@ function launcher_gui.on_gui_opened(player, entity)
         name = "energy_bar",
         style = "production_progressbar",
     }
-    inventory_slot.create(inner_frame, "ammo_slot").tags = {
+    local ammo_frame = outer_frame.add {
+        type = "frame",
+        name = "ammo_frame",
+        style = "inside_shallow_frame_with_padding_and_vertical_spacing",
+        direction = "vertical",
+    }
+    inventory_slot.create(ammo_frame, "ammo_slot").tags = {
         [constants.gui_tag_event_handlers] = {
             on_gui_click = "launcher_gui.on_click_ammo_slot",
         },
+    }
+    local setting_frame = outer_frame.add {
+        type = "frame",
+        name = "setting_frame",
+        style = "inside_shallow_frame_with_padding_and_vertical_spacing",
+        direction = "vertical",
     }
     launcher_gui.refresh(player, entity)
 end
@@ -78,7 +90,7 @@ function launcher_gui.refresh(player, entity)
     end
     gui.inner_frame.energy_bar.value = energy_ratio
     gui.inner_frame.energy_bar.caption = { "", string.format("Energy: %s/%s", energy, capacity) }
-    inventory_slot.refresh(gui.inner_frame.ammo_slot, data:get_ammo_inventory()[1])
+    inventory_slot.refresh(gui.ammo_frame.ammo_slot, data:get_ammo_inventory()[1])
 end
 
 ---@param player LuaPlayer

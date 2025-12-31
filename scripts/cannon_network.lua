@@ -1,6 +1,7 @@
 local math2d = require("math2d")
 local constants = require("constants")
 local BucketSet = require("scripts.bucket_set")
+local visualization_control = require("scripts.visualization_control")
 
 local CannonNetwork = {}
 
@@ -197,6 +198,16 @@ function CannonNetwork.prototype:update(tick)
 end
 
 ---@param launcher LauncherStation
+---@param receiver ReceiverStation
+---@return boolean
+function CannonNetwork.prototype:is_connected(launcher, receiver)
+    if not self.launchers:contains(launcher:id()) or not self.receivers:contains(receiver:id()) then
+        return false
+    end
+    return self.launcher_to_receivers[launcher:id()][receiver:id()] ~= nil
+end
+
+---@param launcher LauncherStation
 function CannonNetwork.prototype:update_launcher_connections(launcher)
     if not launcher:valid() or not self.launchers:contains(launcher:id()) then return end
     local receivers_in_range = self.launcher_to_receivers[launcher:id()]
@@ -218,6 +229,7 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
             end
         end
     end
+    visualization_control.on_launcher_update(launcher)
 end
 
 ---@param receiver ReceiverStation
@@ -242,6 +254,7 @@ function CannonNetwork.prototype:update_receiver_connections(receiver)
             game.print("Invalid launcher: " .. launcher:id()) -- debug
         end
     end
+    visualization_control.on_receiver_update(receiver)
 end
 
 ---@param launcher LauncherStation

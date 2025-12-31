@@ -1,5 +1,6 @@
 local constants = require("constants")
 local util = require("util")
+local visualization_control = require("scripts.visualization_control")
 local CannonNetwork ---@module "scripts.cannon_network"
 
 local ReceiverStation = {}
@@ -87,6 +88,7 @@ function ReceiverStation.on_object_destroyed(unit_number)
         instance.proxy_entity.destroy()
     end
     instance.network:remove_receiver(instance.station_id)
+    visualization_control.on_station_remove(instance:id())
 end
 
 ---Get an iterator over all ReceiverStation's.
