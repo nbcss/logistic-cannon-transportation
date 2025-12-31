@@ -55,5 +55,5 @@ TODO
 - handle force merge event (destroy network)
 - Schedule algorithm optimization
 - Network signal
-- Range visualize
+- Range visualization
 - GUI

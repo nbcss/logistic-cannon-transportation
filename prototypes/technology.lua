@@ -7,9 +7,9 @@ data:extend {
         icon = "__base__/graphics/technology/artillery.png",
         icon_size = 64,
         effects = {
-            { type = "unlock-recipe", recipe = "logistic-cannon-launcher"},
-            { type = "unlock-recipe", recipe = "logistic-cannon-receiver"},
-            { type = "unlock-recipe", recipe = "basic-logistic-cannon-capsule"},
+            { type = "unlock-recipe", recipe = constants.item_launcher},
+            { type = "unlock-recipe", recipe = constants.item_receiver},
+            { type = "unlock-recipe", recipe = constants.item_capsule_basic},
         },
         prerequisites = { "explosives", "radar" },
         order = "logistic-cannon",
@@ -50,7 +50,7 @@ data:extend {
         },
         prerequisites = { "logistic-cannon", "chemical-science-pack" },
         upgrade = true,
-        order = "logistic-cannon-r1",
+        order = "logistic-cannon-range-1",
         unit = {
             count = 300,
             time = 30,

@@ -19,7 +19,8 @@ local name = "logistic-cannon-launcher-gui"
 -- Network
 -- Payload size override?
 -- Enable auto-load ammo from trunk?
--- Read content (circuit)
+-- Read ammo (circuit)
+-- Read inventory (circuit)
 -- Enable/disable (circuit)
 
 ---@param player LuaPlayer

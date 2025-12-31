@@ -90,6 +90,7 @@ data:extend{
         flags = { "not-on-map", "placeable-off-grid" },
         localised_name = {"entity-name." .. constants.entity_receiver_inventory},
         localised_description = {"entity-description." .. constants.entity_receiver_inventory},
+        quality_indicator_scale = 0,
         draw_inventory_content = false,
         is_military_target = false,
         selectable_in_game = false,

@@ -4,14 +4,12 @@ local math2d = require("math2d")
 local format = require("scripts.format")
 local bonus_control = require("scripts.bonus_control")
 local CannonNetwork ---@module "scripts.cannon_network"
-local ReceiverStation ---@module "scripts.receiver_station"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
 
 local LauncherStation = {}
 function LauncherStation.load_deps()
     CannonNetwork = require("scripts.cannon_network")
-    ReceiverStation = require("scripts.receiver_station")
     ScheduledDelivery = require("scripts.scheduled_delivery")
 end
 
@@ -61,7 +59,7 @@ function LauncherStation.create(entity, player_index)
 
     local turret_entity = surface.create_entity {
         name = constants.entity_launcher_turret,
-        position = math2d.position.add(position, {0, 0.001}),
+        position = math2d.position.add(position, { 0, 0.001 }), -- to fix overlap sprite issue
         force = force,
         quality = entity.quality,
     } or error()
@@ -223,7 +221,7 @@ function LauncherStation.prototype:update_diode_status()
         diode = defines.entity_status_diode.red
     elseif self.scheduled_delivery then
         status = "logistic-cannon-transportation.status-preparing"
-        diode = defines.entity_status_diode.yellow
+        diode = defines.entity_status_diode.green
     elseif self.electric_interface.electric_buffer_size - self.electric_interface.energy > 1.0 then
         status = "logistic-cannon-transportation.status-charging"
         diode = defines.entity_status_diode.yellow
@@ -236,9 +234,9 @@ function LauncherStation.prototype:update_diode_status()
     local capacity = format.energy(self:get_energy_capacity())
     if self.proxy_entity and self.proxy_entity.valid then
         self.proxy_entity.custom_status = {
-        diode = diode,
-        label = { "", { status } }
-    }
+            diode = diode,
+            label = { "", { status } }
+        }
     end
     self.inventory_entity.custom_status = {
         diode = diode,
@@ -294,7 +292,10 @@ end
 ---@param position MapPosition
 ---@return boolean
 function LauncherStation.prototype:is_ready(position)
-    if not self:valid() or self.loaded_ammo == "" or self.scheduled_delivery ~= nil then
+    if not self:valid() or self.inventory_entity.to_be_deconstructed() then
+        return false
+    end
+    if self.loaded_ammo == "" or self.scheduled_delivery ~= nil then
         return false
     end
     local distance = math2d.position.distance(self:position(), position)
@@ -352,8 +353,9 @@ function LauncherStation.prototype:launch(source_position)
                     inventory_tool.transfer_to_slot(inventory, ammo_slot)
                 end
                 ammo_slot.drain_ammo(1)
+                local speed = self:get_projectile_speed()
                 self.turret_entity.surface.create_entity {
-                    name = "logistic-cannon-capsule-projectile",
+                    name = "logistic-cannon-capsule-projectile-" .. speed,
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
@@ -361,7 +363,7 @@ function LauncherStation.prototype:launch(source_position)
                     target = delivery.position,
                 }
                 self.turret_entity.surface.create_entity {
-                    name = "logistic-cannon-capsule-tracker",
+                    name = "logistic-cannon-capsule-tracker-" .. speed,
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
@@ -402,13 +404,32 @@ end
 
 ---@return uint32?
 function LauncherStation.prototype:get_max_payload_size()
-    return prototypes.mod_data[constants.data_capsule_payload_size].data[self.loaded_ammo] --[[@as integer?]]
+    local data = prototypes.mod_data[constants.data_capsule_properties].data
+    [self.loaded_ammo] --[[@as CannonCapsuleProperties?]]
+    if data then
+        return data.payload_size
+    end
+    return 0
 end
 
 ---@return number
 function LauncherStation.prototype:get_launch_consumption()
-    if not self:valid() or self.loaded_ammo == "" then return 0 end
-    return prototypes.mod_data[constants.data_capsule_consumption].data[self.loaded_ammo] --[[@as number]]
+    local data = prototypes.mod_data[constants.data_capsule_properties].data
+    [self.loaded_ammo] --[[@as CannonCapsuleProperties?]]
+    if data then
+        return data.energy_consumption
+    end
+    return 0
+end
+
+---@return string
+function LauncherStation.prototype:get_projectile_speed()
+    local data = prototypes.mod_data[constants.data_capsule_properties].data
+    [self.loaded_ammo] --[[@as CannonCapsuleProperties?]]
+    if data then
+        return data.speed_tier
+    end
+    return "slow"
 end
 
 ---@return uint64

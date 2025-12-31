@@ -40,4 +40,19 @@ data.extend {
         hidden = true,
         flags = { "not-on-map", "not-blueprintable", "not-selectable-in-game", "hide-alt-info" }, --review flags
     },
+    {
+        type = "mod-data",
+        name = constants.data_capsule_properties,
+        data = {},
+    },
+    {
+        type = "mod-data",
+        name = constants.data_projectile_properties,
+        data = {},
+    },
 }
+
+---@class CannonCapsuleProperties
+---@field speed_tier string
+---@field payload_size uint
+---@field energy_consumption number

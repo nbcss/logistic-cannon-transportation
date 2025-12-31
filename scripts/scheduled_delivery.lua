@@ -29,7 +29,7 @@ end
 ---@param item ItemWithQualityCount
 ---@return ScheduledDelivery
 function ScheduledDelivery.create(launcher, receiver, item)
-    local capsule_storage = receiver.station_entity.surface.create_entity {
+    local capsule_storage = receiver.inventory_entity.surface.create_entity {
         name = "cannon-capsule-storage",
         position = receiver:position(),
     } or error()

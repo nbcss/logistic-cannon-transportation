@@ -1,14 +1,10 @@
 local constants = require("constants")
 local util = require("util")
 local CannonNetwork ---@module "scripts.cannon_network"
-local ScheduledDelivery ---@module "scripts.scheduled_delivery"
-local LauncherStation ---@module "scripts.launcher_station"
 
 local ReceiverStation = {}
 function ReceiverStation.load_deps()
     CannonNetwork = require("scripts.cannon_network")
-    LauncherStation = require("scripts.launcher_station")
-    ScheduledDelivery = require("scripts.scheduled_delivery")
 end
 
 ---Represents a cannon receiver in storage, lifetime synchronized with associated entities.
