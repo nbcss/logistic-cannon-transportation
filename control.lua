@@ -96,13 +96,13 @@ function (event)
 end)
 
 script.on_event(defines.events.on_space_platform_pre_mined, function(event)
-    if event.entity.name == constants.entity_receiver then
+    if event.entity.name == constants.entity_receiver_inventory then
         local station = ReceiverStation.get(event.entity)
         if station then
             local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
             inventory_tool.dump_items(station:get_inventory(), target)
         end
-    elseif event.entity.name == constants.entity_launcher then
+    elseif event.entity.name == constants.entity_launcher_inventory then
         local station = LauncherStation.get(event.entity)
         if station then
             local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
@@ -113,13 +113,13 @@ script.on_event(defines.events.on_space_platform_pre_mined, function(event)
 end)
 script.on_event(defines.events.on_pre_player_mined_item, function(event)
     local player = game.players[event.player_index]
-    if event.entity.name == constants.entity_receiver then
+    if event.entity.name == constants.entity_receiver_inventory then
         local station = ReceiverStation.get(event.entity)
         if station then
             local target = player.get_main_inventory() --[[@as LuaInventory]]
             inventory_tool.dump_items(station:get_inventory(), target)
         end
-    elseif event.entity.name == constants.entity_launcher then
+    elseif event.entity.name == constants.entity_launcher_inventory then
         local station = LauncherStation.get(event.entity)
         if station then
             local target = player.get_main_inventory() --[[@as LuaInventory]]
@@ -129,14 +129,14 @@ script.on_event(defines.events.on_pre_player_mined_item, function(event)
     end
 end)
 script.on_event(defines.events.on_robot_pre_mined, function(event)
-    if event.entity.name == constants.entity_receiver then
+    if event.entity.name == constants.entity_receiver_inventory then
         local station = ReceiverStation.get(event.entity)
         if station then
             -- FIXME only able to dispatch single bot at a time
             local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
             inventory_tool.dump_items(station:get_inventory(), target)
         end
-    elseif event.entity.name == constants.entity_launcher then
+    elseif event.entity.name == constants.entity_launcher_inventory then
         local station = LauncherStation.get(event.entity)
         if station then
             local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
@@ -231,6 +231,8 @@ function(event)
         local handler_func = string.sub(handler_name, sep + 1)
         if handler_module == "receiver_gui" then
             receiver_gui[handler_func](game.get_player(event.player_index), event)
+        elseif handler_module == "launcher_gui" then
+            launcher_gui[handler_func](game.get_player(event.player_index), event)
         else
             error("Invalid GUI event handler: " .. handler_name)
         end

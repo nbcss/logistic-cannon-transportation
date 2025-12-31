@@ -1,5 +1,6 @@
 local constants = require "constants"
 local format = require("scripts.format")
+local inventory_slot = require("scripts.gui.inventory_slot")
 local LauncherStation = require("scripts.launcher_station")
 local launcher_gui = {}
 local name = "logistic-cannon-launcher-gui"
@@ -54,6 +55,11 @@ function launcher_gui.on_gui_opened(player, entity)
         name = "energy_bar",
         style = "production_progressbar",
     }
+    inventory_slot.create(inner_frame, "ammo_slot").tags = {
+        [constants.gui_tag_event_handlers] = {
+            on_gui_click = "launcher_gui.on_click_ammo_slot",
+        },
+    }
     launcher_gui.refresh(player, entity)
 end
 
@@ -72,6 +78,15 @@ function launcher_gui.refresh(player, entity)
     end
     gui.inner_frame.energy_bar.value = energy_ratio
     gui.inner_frame.energy_bar.caption = { "", string.format("Energy: %s/%s", energy, capacity) }
+    inventory_slot.refresh(gui.inner_frame.ammo_slot, data:get_ammo_inventory()[1])
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_click
+function launcher_gui.on_click_ammo_slot(player, event)
+    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not data then return end
+    inventory_slot.click(event.element, data:get_ammo_inventory()[1], player, event.button)
 end
 
 return launcher_gui

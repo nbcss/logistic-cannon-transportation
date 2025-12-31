@@ -7,6 +7,6 @@ data:extend{
         order = "a",
         setting_type = "runtime-global",
         minimum_value = 1,
-        default_value = 60,
+        default_value = 30,
     },
 }
