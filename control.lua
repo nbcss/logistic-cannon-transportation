@@ -56,8 +56,8 @@ local function on_cannon_launched(event)
 end
 
 local function on_capsule_landed(event)
-    if event.target_entity and event.target_entity.valid and event.target_entity.name == "cannon-capsule-storage" then
-        local delivery = ScheduledDelivery.get(event.target_entity.unit_number)
+    if event.cause_entity and event.cause_entity.valid and event.cause_entity.name == "cannon-capsule-storage" then
+        local delivery = ScheduledDelivery.get(event.cause_entity.unit_number)
         if delivery then
             delivery:deliver()
         end

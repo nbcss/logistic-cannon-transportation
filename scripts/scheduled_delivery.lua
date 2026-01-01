@@ -34,13 +34,15 @@ end
 ---@param launcher LauncherStation
 ---@param receiver ReceiverStation
 ---@param item ItemWithQualityCount
+---@param capsule_size uint
 ---@return ScheduledDelivery
-function ScheduledDelivery.create(launcher, receiver, item)
+function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     local capsule_entity = receiver.inventory_entity.surface.create_entity {
         name = "cannon-capsule-storage",
         position = receiver:position(),
         force = launcher.network.force
     } or error()
+    capsule_entity.set_inventory_size_override(defines.inventory.chest, capsule_size)
 
     local instance = setmetatable({
         delivery_id = capsule_entity.unit_number,

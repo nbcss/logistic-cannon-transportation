@@ -11,25 +11,6 @@ for index, speed in ipairs(projectiles) do
     } --[[@as ProjectileProperties]]
     data:extend {
         {
-            type = "projectile",
-            name = "logistic-cannon-capsule-tracker-" .. name,
-            max_speed = speed / 60,
-            acceleration = 99999999,
-            map_color = { 0.4, 1.0, 0.4, 0.8 },
-            flags = {},
-            hidden = true,
-            action = {
-                type = "direct",
-                action_delivery = {
-                    type = "instant",
-                    target_effects = {
-                        type = "script",
-                        effect_id = "logistic-cannon-capsule-landed"
-                    }
-                }
-            },
-        },
-        {
             type = "stream",
             name = "logistic-cannon-capsule-projectile-" .. name,
             flags = { "not-on-map" },

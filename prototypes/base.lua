@@ -37,6 +37,34 @@ data.extend {
         hidden = true,
     },
     {
+        type = "artillery-projectile",
+        name = "logistic-cannon-capsule-tracker",
+        flags = { "not-on-map" },
+        map_color = { 0.4, 1.0, 0.4, 0.8 },
+        reveal_map = false,
+        hidden = true,
+        chart_picture = {
+            filename = "__base__/graphics/entity/artillery-projectile/artillery-shoot-map-visualization.png",
+            -- filename = "__core__/graphics/empty.png",
+            flags = { "icon" },
+            width = 64,
+            height = 64,
+            priority = "high",
+            tint = {0, 0.9, 0},
+            scale = 0.2,
+        },
+        action = {
+            type = "direct",
+            action_delivery = {
+                type = "instant",
+                target_effects = {
+                    type = "script",
+                    effect_id = "logistic-cannon-capsule-landed"
+                }
+            }
+        },
+    },
+    {
         type = "temporary-container",
         name = "cannon-capsule-storage",
         inventory_size = 100,

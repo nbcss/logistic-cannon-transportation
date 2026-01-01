@@ -13,18 +13,19 @@ Receiver properties
 - Request slot?
 
 Technology bonus
+- Capsule Productivity [infinite]
 - Range [infinite]
-- Charging speed [finite]
+- Charging speed [finite]? //cannot implement this (it's prototype value)
 
 More modifier
 - Allow bot integration?
 - Allow passenger transportation?
-- Reduce consumption per shot (+save electricity)
-- Increase charge speed (+shooting speed)
+- Reduce consumption per shot (+save electricity, +shooting speed)
+- Increase charge speed (+shooting speed) //cannot implement this (it's prototype value)
 - Increase range (+power capacity)
 - Projectile speed? (prototype value)
+- Inventory slot: set_inventory_size_override
 - More request slot
-- Station capacity
 
 Launcher Quality
 - Range
@@ -57,5 +58,6 @@ TODO
 - handle station teleport/clone event
 - handle force merge event (destroy network)
 - Fix no ammo alert when deconstruct launcher
+- Map setting to turn off projectile visualization
 - Network signal
 - GUI

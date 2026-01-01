@@ -19,7 +19,7 @@ local name = "logistic-cannon-launcher-gui"
 -- Change name (top)
 -- Network
 -- Payload size override?
--- Enable auto-load ammo from trunk?
+-- Enable auto-load ammo from inventory?
 -- Read ammo (circuit)
 -- Read inventory (circuit)
 -- Enable/disable (circuit)

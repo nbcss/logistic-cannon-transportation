@@ -44,6 +44,7 @@ LauncherStation.default_settings = {
 
 local launcher_properties = prototypes.mod_data[constants.data_launcher_properties].data--[[@as table<string, LauncherProperties>]]
 local capsule_properties = prototypes.mod_data[constants.data_capsule_properties].data--[[@as table<string, CannonCapsuleProperties?>]]
+local projectile_properties = prototypes.mod_data[constants.data_projectile_properties].data--[[@as table<string, ProjectileProperties?>]]
 
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by inventory entity's unit number
@@ -187,8 +188,8 @@ function LauncherStation.prototype:update_state()
     if ammo_name == self.ammo_name and ammo_quality == self.ammo_quality and range == self.launcher_range then
         return
     end
-    -- cancel ongoing delivery if ammo changed
-    if self.ammo_name ~= ammo_name or self.ammo_quality ~= ammo_quality then
+    -- cancel ongoing delivery if ammo changed/disabled
+    if self.ammo_name ~= ammo_name or self.ammo_quality ~= ammo_quality or self:is_disabled() then
         if self.scheduled_delivery and self.scheduled_delivery:valid() then
             self.scheduled_delivery:destroy()
             self.scheduled_delivery = nil
@@ -226,24 +227,35 @@ end
 
 function LauncherStation.prototype:update_diode_status()
     if not self:valid() then return end
-    local status = "logistic-cannon-transportation.status-ready"
+    local capacity = self:get_energy_capacity()
+    local energy = self:get_stored_energy()
+    local status = "entity-status.fully-charged"
     local diode = defines.entity_status_diode.green --[[@as defines.entity_status_diode]]
-    if self.ammo_name == "" then
-        status = "logistic-cannon-transportation.status-no-capsule"
-        diode = defines.entity_status_diode.red
-    elseif self.scheduled_delivery then
-        status = "logistic-cannon-transportation.status-preparing"
+    if self.scheduled_delivery then
+        status = "entity-status.working"
         diode = defines.entity_status_diode.green
-    elseif self.electric_interface.electric_buffer_size - self.electric_interface.energy > 1.0 then
-        status = "logistic-cannon-transportation.status-charging"
+    elseif self.ammo_name == "" then
+        status = "entity-status.no-ammo"
+        diode = defines.entity_status_diode.red
+    elseif self:is_disabled() then
+        status = "entity-status.disabled"
+        diode = defines.entity_status_diode.red
+    elseif not self.electric_interface.is_connected_to_electric_network() then
+        status = "entity-status.not-plugged-in-electric-network"
+        diode = defines.entity_status_diode.red
+    elseif energy <= capacity / 3 then
+        status = "entity-status.low-power"
         diode = defines.entity_status_diode.yellow
+    elseif capacity - energy > 1.0 then
+        status = "entity-status.charging"
+        diode = defines.entity_status_diode.green
     end
     local range = tostring(self:get_max_range())
     if range ~= "0" then
         range = tostring(string.format("%.0f", self:get_range())) .. "/" .. range
     end
-    local energy = format.energy(self:get_stored_energy())
-    local capacity = format.energy(self:get_energy_capacity())
+    local formatted_energy = format.energy(energy)
+    local formatted_capacity = format.energy(capacity)
     if self.proxy_entity and self.proxy_entity.valid then
         self.proxy_entity.custom_status = {
             diode = diode,
@@ -253,7 +265,7 @@ function LauncherStation.prototype:update_diode_status()
     self.inventory_entity.custom_status = {
         diode = diode,
         label = { "", { status },
-            "\n", { "logistic-cannon-transportation.energy-info", energy, capacity },
+            "\n", { "logistic-cannon-transportation.energy-info", formatted_energy, formatted_capacity },
             "\n", { "logistic-cannon-transportation.range-info", range },
         }
     }
@@ -289,13 +301,13 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
     end
     local inventory = self:get_inventory()
     local available_count = inventory.get_item_count_filtered { name = item.name, quality = item.quality }
-    local capsule_size = self:get_max_payload_size()
+    local capsule_size = self:get_max_payload_size() --[[@as number]]
     local payload_count = capsule_size * prototypes.item[item.name].stack_size
     if available_count < payload_count or payload_count > amount then
         return nil
     end
     local deliver_item = { name = item.name, quality = item.quality, count = payload_count }
-    local delivery = ScheduledDelivery.create(self, receiver, deliver_item)
+    local delivery = ScheduledDelivery.create(self, receiver, deliver_item, capsule_size)
     self.scheduled_delivery = delivery
     self:set_aiming(delivery.position)
     return delivery
@@ -375,12 +387,14 @@ function LauncherStation.prototype:launch(source_position)
                     target = delivery.position,
                 }
                 self.turret_entity.surface.create_entity {
-                    name = "logistic-cannon-capsule-tracker-" .. speed,
+                    name = "logistic-cannon-capsule-tracker",
+                    speed = projectile_properties[speed].projectile_speed / 60,
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
                     source = source_position,
                     target = delivery.capsule_entity,
+                    cause = delivery.capsule_entity,
                 }
                 return
             end
