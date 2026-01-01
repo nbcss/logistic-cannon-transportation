@@ -99,53 +99,46 @@ script.on_event({
         end
     end)
 
+local function transfer_ammo(station, ammo_inventory, target)
+    local force = station.turret_entity.force
+    station.turret_entity.force = "enemy"
+    inventory_tool.dump_items(ammo_inventory, target)
+    station.turret_entity.force = force
+end
 script.on_event(defines.events.on_space_platform_pre_mined, function(event)
-    if event.entity.name == constants.entity_receiver_inventory then
-        local station = ReceiverStation.get(event.entity)
-        if station then
-            local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
-            inventory_tool.dump_items(station:get_inventory(), target)
-        end
-    elseif event.entity.name == constants.entity_launcher_inventory then
+    if event.entity.name == constants.entity_launcher_inventory then
         local station = LauncherStation.get(event.entity)
         if station then
-            local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
-            inventory_tool.dump_items(station:get_inventory(), target)
-            inventory_tool.dump_items(station:get_ammo_inventory(), target)
+            local ammo_inventory = station:get_ammo_inventory()
+            if not ammo_inventory.is_empty() then
+                local target = event.platform.hub.get_inventory(defines.inventory.hub_main) --[[@as LuaInventory]]
+                transfer_ammo(station, ammo_inventory, target)
+            end
         end
     end
 end)
 script.on_event(defines.events.on_pre_player_mined_item, function(event)
     local player = game.players[event.player_index]
-    if event.entity.name == constants.entity_receiver_inventory then
-        local station = ReceiverStation.get(event.entity)
-        if station then
-            local target = player.get_main_inventory() --[[@as LuaInventory]]
-            inventory_tool.dump_items(station:get_inventory(), target)
-        end
-    elseif event.entity.name == constants.entity_launcher_inventory then
+    if event.entity.name == constants.entity_launcher_inventory then
         local station = LauncherStation.get(event.entity)
         if station then
-            local target = player.get_main_inventory() --[[@as LuaInventory]]
-            inventory_tool.dump_items(station:get_inventory(), target)
-            inventory_tool.dump_items(station:get_ammo_inventory(), target)
+            local ammo_inventory = station:get_ammo_inventory()
+            if not ammo_inventory.is_empty() then
+                local target = player.get_main_inventory() --[[@as LuaInventory]]
+                transfer_ammo(station, ammo_inventory, target)
+            end
         end
     end
 end)
 script.on_event(defines.events.on_robot_pre_mined, function(event)
-    if event.entity.name == constants.entity_receiver_inventory then
-        local station = ReceiverStation.get(event.entity)
-        if station then
-            -- FIXME only able to dispatch single bot at a time
-            local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
-            inventory_tool.dump_items(station:get_inventory(), target)
-        end
-    elseif event.entity.name == constants.entity_launcher_inventory then
+    if event.entity.name == constants.entity_launcher_inventory then
         local station = LauncherStation.get(event.entity)
         if station then
-            local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
-            inventory_tool.dump_items(station:get_inventory(), target)
-            inventory_tool.dump_items(station:get_ammo_inventory(), target)
+            local ammo_inventory = station:get_ammo_inventory()
+            if not ammo_inventory.is_empty() then
+                local target = event.robot.get_inventory(defines.inventory.robot_cargo) --[[@as LuaInventory]]
+                transfer_ammo(station, ammo_inventory, target)
+            end
         end
     end
 end)
