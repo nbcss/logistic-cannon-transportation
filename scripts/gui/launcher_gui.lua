@@ -24,6 +24,15 @@ local name = "logistic-cannon-launcher-gui"
 -- Read inventory (circuit)
 -- Enable/disable (circuit)
 
+local ammo_slot_options = {
+    empty_sprite = "utility/empty_ammo_slot",
+    empty_tooltip = {"", {"gui.ammo"}},
+}--[[@as GuiInventorySlot.Options]]
+for ammo, _ in pairs(prototypes.mod_data[constants.data_capsule_properties].data) do
+    table.insert(ammo_slot_options.empty_tooltip--[[@as table]], "\n[item="..ammo.."] ")
+    table.insert(ammo_slot_options.empty_tooltip--[[@as table]], prototypes.item[ammo].localised_name)
+end
+
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function launcher_gui.on_gui_opened(player, entity)
@@ -61,11 +70,12 @@ function launcher_gui.on_gui_opened(player, entity)
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
     }
-    inventory_slot.create(ammo_frame, "ammo_slot").tags = {
+    local ammo_slot = inventory_slot.create{parent = ammo_frame, name = "ammo_slot"}
+    ammo_slot.tags = util.merge{ammo_slot.tags, {
         [constants.gui_tag_event_handlers] = {
             on_gui_click = "launcher_gui.on_click_ammo_slot",
         },
-    }
+    }}
     local setting_frame = outer_frame.add {
         type = "frame",
         name = "setting_frame",
@@ -90,7 +100,11 @@ function launcher_gui.refresh(player, entity)
     end
     gui.inner_frame.energy_bar.value = energy_ratio
     gui.inner_frame.energy_bar.caption = { "", string.format("Energy: %s/%s", energy, capacity) }
-    inventory_slot.refresh(gui.ammo_frame.ammo_slot, data:get_ammo_inventory()[1])
+    inventory_slot.refresh{
+        element = gui.ammo_frame.ammo_slot,
+        target = data:get_ammo_inventory()[1],
+        options = ammo_slot_options,
+    }
 end
 
 ---@param player LuaPlayer
@@ -98,7 +112,13 @@ end
 function launcher_gui.on_click_ammo_slot(player, event)
     local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not data then return end
-    inventory_slot.click(event.element, data:get_ammo_inventory()[1], player, event.button)
+    inventory_slot.click{
+        element = event.element,
+        target = data:get_ammo_inventory()[1],
+        options = ammo_slot_options,
+        player = player,
+        button = event.button,
+    }
 end
 
 return launcher_gui
