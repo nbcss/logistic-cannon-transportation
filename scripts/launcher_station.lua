@@ -28,7 +28,7 @@ end
 ---@field overflow_energy number The amount of overflow energy
 ---@field launcher_range number The range of the cannon launcher
 ---@field network CannonNetwork The netowrk that the station belongs to
----@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.-- FIXME
+---@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.
 ---@field settings LauncherStationSettings
 LauncherStation.prototype = {}
 LauncherStation.prototype.__index = LauncherStation.prototype
@@ -175,7 +175,8 @@ function LauncherStation.prototype:update_state()
     local ammo_slot = self:get_ammo_inventory()[1]
     local ammo_name = ""
     local ammo_quality = nil
-    if not ammo_slot.valid_for_read and self.settings.load_capsule_from_inventory then
+    -- auto reload ammo for active launcher only
+    if not ammo_slot.valid_for_read and not self:is_disabled() and self.settings.load_capsule_from_inventory then
         inventory_tool.transfer_to_slot(self:get_inventory(), ammo_slot)
     end
     if ammo_slot.valid_for_read then
@@ -202,6 +203,7 @@ function LauncherStation.prototype:update_state()
     local transfer = math.min(self.overflow_energy, self.electric_interface.electric_buffer_size)
     self.overflow_energy = self.overflow_energy - transfer
     self.electric_interface.energy = transfer
+    -- update connections if range changed
     if range ~= self.launcher_range then
         self.network:update_launcher_connections(self)
     end
@@ -302,7 +304,7 @@ end
 ---@param position MapPosition
 ---@return boolean
 function LauncherStation.prototype:is_ready(position)
-    if not self:valid() or self.inventory_entity.to_be_deconstructed() then
+    if not self:valid() or self:is_disabled() then
         return false
     end
     if self.ammo_name == "" or self.scheduled_delivery ~= nil then
@@ -346,7 +348,7 @@ function LauncherStation.prototype:launch(source_position)
     if not self:valid() or not delivery then return end
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_slot = self:get_ammo_inventory()[1]
-    if delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
+    if not self:is_disabled() and delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
         local energy_cost = math2d.position.distance(self:position(), delivery.position) * self:get_launch_consumption()
         if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
@@ -447,6 +449,11 @@ end
 ---@return MapPosition
 function LauncherStation.prototype:position()
     return self.inventory_entity.position
+end
+
+---@return boolean
+function LauncherStation.prototype:is_disabled()
+    return self.inventory_entity.to_be_deconstructed()
 end
 
 ---@return LuaEntity
