@@ -50,6 +50,33 @@ function receiver_gui.on_gui_opened(player, entity)
         name = "name_button",
         style = "frame_action_button",
     }
+    
+    local setting_frame = outer_frame.add {
+        type = "frame",
+        name = "setting_frame",
+        style = "inside_shallow_frame_with_padding_and_vertical_spacing",
+        direction = "vertical",
+    }
+    local network_setting = setting_frame.add {
+        type = "flow",
+        name = "network",
+        direction = "horizontal",
+    }
+    network_setting.add {
+        type = "choose-elem-button",
+        name = "setting",
+        elem_type = "signal",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_elem_changed = "receiver_gui.on_set_network",
+            },
+        },
+    }
+    network_setting.add {
+        type = "label",
+        caption = { "logistic-cannon-transportation.network" }
+    }
+
     local inner_frame = outer_frame.add {
         type = "frame",
         name = "inner_frame",
@@ -76,7 +103,7 @@ function receiver_gui.refresh(player, entity)
     local data = ReceiverStation.get(entity)
     if not data then return end
     local gui = player.gui.relative[name] ---@type LuaGuiElement
-    gui.title_frame.station_name.caption = {"", data:get_display_name()}
+    gui.title_frame.station_name.caption = data.settings.name or { "logistic-cannon-transportation.receiver-default-name" }
 
     local requests_flow_children = gui.inner_frame.requests_flow.children
     for i = 1, math.max(#requests_flow_children, #data.settings.delivery_requests + 1) do
@@ -130,6 +157,7 @@ function receiver_gui.refresh(player, entity)
             end
         end
     end
+    gui.setting_frame.network.setting.elem_value = data.network.signal
 end
 
 ---@param player LuaPlayer
@@ -154,6 +182,15 @@ function receiver_gui.on_request_modified(player, event)
     end
 
     receiver_gui.refresh(player, entity)
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_click
+function receiver_gui.on_set_network(player, event)
+    local data = ReceiverStation.get(player.opened --[[@as LuaEntity]])
+    if not data then return end
+    local signal = event.element.elem_value --[[@as SignalID?]]
+    data:set_network_signal(signal)
 end
 
 return receiver_gui

@@ -26,11 +26,11 @@ local name = "logistic-cannon-launcher-gui"
 
 local ammo_slot_options = {
     empty_sprite = "utility/empty_ammo_slot",
-    empty_tooltip = {"", {"gui.ammo"}},
-}--[[@as GuiInventorySlot.Options]]
+    empty_tooltip = { "", { "gui.ammo" } },
+} --[[@as GuiInventorySlot.Options]]
 for ammo, _ in pairs(prototypes.mod_data[constants.data_capsule_properties].data) do
-    table.insert(ammo_slot_options.empty_tooltip--[[@as table]], "\n[item="..ammo.."] ")
-    table.insert(ammo_slot_options.empty_tooltip--[[@as table]], prototypes.item[ammo].localised_name)
+    table.insert(ammo_slot_options.empty_tooltip --[[@as table]], "\n[item=" .. ammo .. "] ")
+    table.insert(ammo_slot_options.empty_tooltip --[[@as table]], prototypes.item[ammo].localised_name)
 end
 
 ---@param player LuaPlayer
@@ -70,17 +70,36 @@ function launcher_gui.on_gui_opened(player, entity)
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
     }
-    local ammo_slot = inventory_slot.create{parent = ammo_frame, name = "ammo_slot"}
-    ammo_slot.tags = util.merge{ammo_slot.tags, {
+    local ammo_slot = inventory_slot.create { parent = ammo_frame, name = "ammo_slot" }
+    ammo_slot.tags = util.merge { ammo_slot.tags, {
         [constants.gui_tag_event_handlers] = {
             on_gui_click = "launcher_gui.on_click_ammo_slot",
         },
-    }}
+    } }
     local setting_frame = outer_frame.add {
         type = "frame",
         name = "setting_frame",
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
+    }
+    local network_setting = setting_frame.add {
+        type = "flow",
+        name = "network",
+        direction = "horizontal",
+    }
+    network_setting.add {
+        type = "choose-elem-button",
+        name = "setting",
+        elem_type = "signal",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_elem_changed = "launcher_gui.on_set_network",
+            },
+        },
+    }
+    network_setting.add {
+        type = "label",
+        caption = { "logistic-cannon-transportation.network" }
     }
     launcher_gui.refresh(player, entity)
 end
@@ -91,7 +110,7 @@ function launcher_gui.refresh(player, entity)
     local data = LauncherStation.get(entity)
     if not data then return end
     local gui = player.gui.relative[name] ---@type LuaGuiElement
-    gui.caption = { "", data:get_display_name() }
+    gui.caption = data.settings.name or { "logistic-cannon-transportation.launcher-default-name" }
     local energy_ratio = 0
     local energy = format.energy(data:get_stored_energy())
     local capacity = format.energy(data:get_energy_capacity())
@@ -100,11 +119,21 @@ function launcher_gui.refresh(player, entity)
     end
     gui.inner_frame.energy_bar.value = energy_ratio
     gui.inner_frame.energy_bar.caption = { "", string.format("Energy: %s/%s", energy, capacity) }
-    inventory_slot.refresh{
+    inventory_slot.refresh {
         element = gui.ammo_frame.ammo_slot,
         target = data:get_ammo_inventory()[1],
         options = ammo_slot_options,
     }
+    gui.setting_frame.network.setting.elem_value = data.network.signal
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_click
+function launcher_gui.on_set_network(player, event)
+    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not data then return end
+    local signal = event.element.elem_value --[[@as SignalID?]]
+    data:set_network_signal(signal)
 end
 
 ---@param player LuaPlayer
@@ -112,7 +141,7 @@ end
 function launcher_gui.on_click_ammo_slot(player, event)
     local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not data then return end
-    inventory_slot.click{
+    inventory_slot.click {
         element = event.element,
         target = data:get_ammo_inventory()[1],
         options = ammo_slot_options,

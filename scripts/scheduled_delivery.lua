@@ -42,7 +42,6 @@ function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
         position = receiver:position(),
         force = launcher.network.force
     } or error()
-    capsule_entity.set_inventory_size_override(defines.inventory.chest, capsule_size)
 
     local instance = setmetatable({
         delivery_id = capsule_entity.unit_number,
@@ -59,6 +58,8 @@ function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     } --[[@as ScheduledDelivery]], ScheduledDelivery.prototype)
 
     script.register_on_object_destroyed(capsule_entity)
+    instance.capsule_entity.set_inventory_size_override(defines.inventory.chest, capsule_size)
+    instance.capsule_entity.destructible = false
 
     storage.scheduled_deliveries[instance:id()] = instance
     return instance

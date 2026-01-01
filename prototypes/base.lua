@@ -71,7 +71,8 @@ data.extend {
         time_to_live = 60 * 60 * 60, -- 1 hour
         destroy_on_empty = false,
         hidden = true,
-        flags = { "not-on-map", "not-blueprintable", "not-selectable-in-game", "hide-alt-info" }, --review flags
+        flags = { "not-on-map", "hide-alt-info" },
+        selectable_in_game = false,
     },
     {
         type = "mod-data",

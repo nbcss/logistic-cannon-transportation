@@ -21,10 +21,10 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 
 ---User-configurable settings of a cannon receiver, POD.
 ---@class (exact) ReceiverStationSettings
----@field name string Custom name of the station.
+---@field name string? Custom name of the station.
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
 ReceiverStation.default_settings = {
-    name = "",
+    name = nil,
     delivery_requests = {},
 }
 
@@ -112,14 +112,6 @@ function ReceiverStation.prototype:set_network_signal(signal)
         self.network = network
         self.network:add_receiver(self)
     end
-end
-
----@return string
-function ReceiverStation.prototype:get_display_name()
-    if self.settings.name ~= "" then
-        return self.settings.name
-    end
-    return string.format("Receiver [%.0f, %.0f]", self:position().x, self:position().y)
 end
 
 ---@param delivery ScheduledDelivery

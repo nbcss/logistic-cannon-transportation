@@ -35,10 +35,10 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 
 ---User-configurable settings of a cannon launcher, POD.
 ---@class (exact) LauncherStationSettings
----@field name string Custom name of the station.
+---@field name string? Custom name of the station.
 ---@field load_capsule_from_inventory boolean
 LauncherStation.default_settings = {
-    name = "",
+    name = nil,
     load_capsule_from_inventory = true,
 }
 
@@ -281,14 +281,6 @@ function LauncherStation.prototype:set_network_signal(signal)
         self.network = network
         self.network:add_launcher(self)
     end
-end
-
----@return string
-function LauncherStation.prototype:get_display_name()
-    if self.settings.name ~= "" then
-        return self.settings.name
-    end
-    return string.format("Launcher [%.0f, %.0f]", self:position().x, self:position().y)
 end
 
 ---@param receiver ReceiverStation

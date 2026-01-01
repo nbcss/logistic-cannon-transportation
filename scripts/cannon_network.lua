@@ -27,7 +27,10 @@ CannonNetwork.prototype.__index = CannonNetwork.prototype
 local function get_network_id(force, surface, signal)
     local signal_name = ""
     if signal then
-        signal_name = "," .. signal.type .. "/" .. signal.name .. ":" .. signal.quality
+        local type = signal.type or "item"
+        local name = signal.name or error()
+        local quality = signal.quality or "normal"
+        signal_name = "," .. type .. "/" .. name .. ":" .. quality
     end
     return tostring(surface.index) .. "," .. tostring(force.index) .. signal_name
 end
