@@ -166,7 +166,7 @@ function CannonNetwork.prototype:update(tick)
         if empty_slots <= 0 then goto next_receiver end
         local demands = get_receiver_demand(receiver)
         local neighbours = self.receiver_to_launchers[receiver:id()]
-        local neighbour_size = table_size(neighbours)
+        local neighbour_size = self.connection_count[receiver:id()]
         for encoded_item, demand in pairs(demands) do
             local item_providers = self.item_to_launchers[encoded_item]
             if item_providers then
@@ -211,7 +211,6 @@ function CannonNetwork.prototype:is_connected(launcher, receiver)
     end
     return self.launcher_to_receivers[launcher:id()][receiver:id()] ~= nil
 end
-
 
 ---@param station_id uint64
 ---@return uint
@@ -314,7 +313,10 @@ function CannonNetwork.prototype:remove_launcher(launcher_id)
     -- delete connections
     local receivers_in_range = self.launcher_to_receivers[launcher_id]
     for receiver_id, _ in pairs(receivers_in_range) do
-        self.receiver_to_launchers[receiver_id][launcher_id] = nil
+        if self.receiver_to_launchers[receiver_id][launcher_id] then
+            self.receiver_to_launchers[receiver_id][launcher_id] = nil
+            self.connection_count[receiver_id] = self.connection_count[receiver_id] - 1
+        end
     end
     -- delete item index
     local items = self.launcher_to_items[launcher_id]
@@ -334,7 +336,10 @@ function CannonNetwork.prototype:remove_receiver(receiver_id)
     -- delete connections
     local launchers_in_range = self.receiver_to_launchers[receiver_id]
     for launcher_id, _ in pairs(launchers_in_range) do
-        self.launcher_to_receivers[launcher_id][receiver_id] = nil
+        if self.launcher_to_receivers[launcher_id][receiver_id] then
+            self.launcher_to_receivers[launcher_id][receiver_id] = nil
+            self.connection_count[launcher_id] = self.connection_count[launcher_id] - 1
+        end
     end
     self.receiver_to_launchers[receiver_id] = nil
     self.connection_count[receiver_id] = nil
