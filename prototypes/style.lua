@@ -4,6 +4,10 @@ styles["lct_config_frame"] = {
     type = "frame_style",
     minimal_width = 300,
     natural_width = 300,
+    vertical_flow_style = {
+        type = "vertical_flow_style",
+        vertical_spacing = 8,
+    }
 }
 
 styles["lct_player_input"] = {
@@ -28,9 +32,9 @@ styles["lct_energy_bar"] = {
     type = "progressbar_style",
     height = 24,
     bar_width = 24,
-    font_color = {0.8, 0.8, 0.8},
+    font_color = {0.9, 0.9, 0.9},
     filled_font_color = {0, 0, 0},
     horizontally_stretchable = "on",
     horizontally_squashable = "on",
-    vertical_align = "center",
+    embed_text_in_bar = true,
 }

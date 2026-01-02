@@ -1,6 +1,7 @@
 local constants = require("constants")
 local format = require("scripts.format")
 local util = require("util")
+local item_sounds = require("__base__.prototypes.item_sounds")
 local sounds = require("__base__/prototypes/entity/sounds")
 local icon = "__base__/graphics/icons/tank-cannon.png"
 local health = 600
@@ -55,6 +56,9 @@ data:extend {
         subgroup = constants.item_subgroup,
         order = "a[launcher]",
         place_result = constants.entity_launcher_inventory,
+        inventory_move_sound = item_sounds.mechanical_large_inventory_move,
+        pick_sound = item_sounds.mechanical_large_inventory_pickup,
+        drop_sound = item_sounds.mechanical_large_inventory_move,
         stack_size = 5,
         custom_tooltip_fields = {
             {
@@ -69,7 +73,7 @@ data:extend {
                 value = { "", format.energy(energy_consumption, "W") },
                 quality_base_value = energy_consumption,
                 quality_multiplier = "default_multiplier",
-                quality_formatting = setmetatable({}, {__call = function(self, value) return format.energy(value, "W") end}),
+                quality_formatting = setmetatable({}, { __call = function(self, value) return format.energy(value, "W") end }),
                 order = 2,
             },
         },
@@ -80,11 +84,11 @@ data:extend {
         enabled = true,
         energy_required = 10,
         ingredients = {
-            { type = "item", name = "radar", amount = 1 },
-            { type = "item", name = "steel-plate", amount = 20 },
-            { type = "item", name = "stone-brick", amount = 10 },
+            { type = "item", name = "radar",           amount = 1 },
+            { type = "item", name = "steel-plate",     amount = 20 },
+            { type = "item", name = "stone-brick",     amount = 10 },
             { type = "item", name = "iron-gear-wheel", amount = 10 },
-            { type = "item", name = "engine-unit", amount = 5 },
+            { type = "item", name = "engine-unit",     amount = 5 },
         },
         results = {
             { type = "item", name = constants.item_launcher, amount = 1 },
@@ -154,8 +158,8 @@ data:extend {
         render_not_in_network_icon = false,
         is_military_target = false,
         mined_sound = sounds.deconstruct_large(0.8),
-        open_sound = sounds.metallic_chest_open,
-        close_sound = sounds.metallic_chest_close,
+        open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
+        close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
         integration_patch_render_layer = "lower-object",
         integration_patch = integration_patch,
         -- stateless_visualisation = {
@@ -195,8 +199,8 @@ data:extend {
         selectable_in_game = false,
         hidden = true,
         max_health = health,
-        open_sound = sounds.metallic_chest_open,
-        close_sound = sounds.metallic_chest_close,
+        open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
+        close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
         integration_patch_render_layer = "zero",
         integration_patch = integration_patch,
     },
@@ -235,6 +239,8 @@ data:extend {
         shoot_in_prepare_state = true,
         hidden = true,
         max_health = health,
+        circuit_wire_max_distance = 1,
+        draw_circuit_wires = false,
         prepare_range = 2,
         attack_target_mask = { constants.entity_target },
         rotation_speed = 0.1 / 60,

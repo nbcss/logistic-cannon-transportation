@@ -108,7 +108,13 @@ function LauncherStation.create(entity, player_index)
     instance.turret_entity.destructible = false
     instance.electric_interface.destructible = false
     instance.launcher_range = instance:get_max_range()
-
+    instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)
+        .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true),
+        false, defines.wire_origin.script)
+    instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true)
+        .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true),
+        false, defines.wire_origin.script)
+    
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_turret_index[instance.turret_id] = instance
     network:add_launcher(instance)

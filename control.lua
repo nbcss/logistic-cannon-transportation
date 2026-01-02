@@ -39,13 +39,6 @@ script.on_configuration_changed(function()
     end
 end)
 
--- script.on_event(defines.events.on_player_driving_changed_state, function (event)
---     if event.entity and event.entity.valid and event.entity.name == "logistic-cannon-launcher-entity" then
---         local player = game.players[event.player_index]
---         event.entity.set_passenger(player)
---     end
--- end)
-
 local function on_cannon_launched(event)
     if event.source_position and event.source_entity and event.source_entity.valid then
         local launcher = LauncherStation.get(event.source_entity)
@@ -213,11 +206,15 @@ script.on_event({
         defines.events.on_gui_click,
         defines.events.on_gui_elem_changed,
         defines.events.on_gui_text_changed,
+        defines.events.on_gui_confirmed,
+        defines.events.on_gui_checked_state_changed,
     },
     ---@param event
     ---| EventData.on_gui_click
     ---| EventData.on_gui_elem_changed
     ---| EventData.on_gui_text_changed
+    ---| EventData.on_gui_confirmed
+    ---| EventData.on_gui_checked_state_changed
     function(event)
         local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
         if not handlers then return end
@@ -240,105 +237,5 @@ script.on_event({
                 error("Invalid GUI event handler: " .. handler_name)
             end
         end
-    end)
-
--- script.on_event(defines.events.on_player_setup_blueprint, function(event)
---     local blueprint = event.stack or event.record
---     if not blueprint then return end
-
---     -- Replace entity_launcher_inventory with placemnent entity
---     local entities = blueprint.get_blueprint_entities()
---     if not entities then return end
---     local relavant = false
---     for index, entity in ipairs(entities) do
---         if entity.name == constants.entity_launcher_inventory then
---             relavant = true
---             entity.name = constants.entity_launcher_placement
---             local source = event.mapping.get()[index] --[[@as LuaEntity?]]
---         end
---     end
---     if not relavant then return end
---     blueprint.set_blueprint_entities(entities)
--- end)
-
--- script.on_event(defines.events.on_marked_for_deconstruction, function(event)
---     if event.entity.name == constants.entity_launcher_placement then
---         local player = event.player_index and game.get_player(event.player_index)
---         local force = player and player.force_index or "neutral"
---         event.entity.cancel_deconstruction(force, player)
---         local station = LauncherStation.get(event.entity)
---         if station then
---             station.inventory_entity.order_deconstruction(force, player)
---         end
---     end
--- end)
-
--- script.on_event({
---     defines.events.on_undo_applied,
---     defines.events.on_redo_applied,
--- },
--- ---@param event
--- ---| EventData.on_undo_applied
--- ---| EventData.on_redo_applied
--- function(event)
---     local player = game.get_player(event.player_index)
---     if not player then return end
-
---     for _, action in ipairs(event.actions) do
---         if action.type == "built-entity" then
---             if action.target.name == constants.entity_launcher_inventory then
---                 local surface = game.get_surface(action.surface_index)
---                 if not surface then goto continue end
---                 local entity = surface.find_entities_filtered{
---                     ghost_name = constants.entity_launcher_placement,
---                     quality = action.target.quality,
---                     limit = 1,
---                 }[1]
---                 if not entity then goto continue end
---                 entity.destroy()
---             elseif action.target.name == constants.entity_launcher_placement then
---                 local surface = game.get_surface(action.surface_index)
---                 if not surface then goto continue end
---                 local entity = surface.find_entities_filtered{
---                     name = constants.entity_launcher_inventory,
---                     quality = action.target.quality,
---                     limit = 1,
---                 }[1]
---                 if not entity then goto continue end
---                 entity.order_deconstruction(player.force)
---             end
---         elseif action.type == "removed-entity" then
---             if action.target.name == constants.entity_launcher_inventory then
---                 local surface = game.get_surface(action.surface_index)
---                 if not surface then goto continue end
---                 local entity = surface.find_entities_filtered{
---                     ghost_name = constants.entity_launcher_inventory,
---                     quality = action.target.quality,
---                     limit = 1,
---                 }[1]
---                 if not entity then goto continue end
---                 local ret = surface.create_entity{
---                     name = "entity-ghost",
---                     inner_name = constants.entity_launcher_placement,
---                     quality = action.target.quality,
---                     force = player.force,
---                     tags = action.target.tags,
---                     position = action.target.position,
---                     direction = action.target.direction,
---                     fast_replace = true,
---                 }
---             elseif action.target.name == constants.entity_launcher_placement then
---                 local surface = game.get_surface(action.surface_index)
---                 if not surface then goto continue end
---                 local entity = surface.find_entities_filtered{
---                     name = constants.entity_launcher_inventory,
---                     quality = action.target.quality,
---                     limit = 1,
---                 }[1]
---                 if not entity then goto continue end
---                 entity.cancel_deconstruction(player.force)
---             end
---         end
---         ::continue::
---     end
--- end)
+    end
+)
