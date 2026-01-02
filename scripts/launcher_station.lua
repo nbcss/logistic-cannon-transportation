@@ -200,7 +200,7 @@ function LauncherStation.prototype:update_state()
     -- transfer overflow energy
     self.overflow_energy = self.overflow_energy + self.electric_interface.energy
     self.electric_interface.energy = 0
-    self.electric_interface.electric_buffer_size = range * self:get_launch_consumption()
+    self.electric_interface.electric_buffer_size = range * (self:get_launch_consumption() or 0)
     local transfer = math.min(self.overflow_energy, self.electric_interface.electric_buffer_size)
     self.overflow_energy = self.overflow_energy - transfer
     self.electric_interface.energy = transfer
@@ -221,7 +221,7 @@ end
 
 function LauncherStation.prototype:get_range()
     local consumption = self:get_launch_consumption()
-    if consumption == 0 then return 0 end
+    if not consumption then return 0 end
     return math.min(self:get_max_range(), self:get_stored_energy() / consumption)
 end
 
@@ -420,26 +420,34 @@ function LauncherStation.prototype:get_scheduled_delivery()
     return self.scheduled_delivery
 end
 
+---@return number #W
+function LauncherStation.prototype:get_charging_speed()
+    local quality = self.electric_interface.quality
+    return 60 * self.electric_interface.get_electric_input_flow_limit(quality) --[[@as number]]
+end
+
 ---@return uint32?
 function LauncherStation.prototype:get_max_payload_size()
     local data = capsule_properties[self.ammo_name]
     local payload_size = data and data.payload_size or 0
+    if payload_size == 0 then return nil end
     local quality_modifier = self.ammo_quality and self.ammo_quality.default_multiplier or 1
     return math.floor(0.5 + (payload_size * quality_modifier))
 end
 
----@return number
+---@return number?
 function LauncherStation.prototype:get_launch_consumption()
     local data = capsule_properties[self.ammo_name]
     local consumption = data and data.energy_consumption or 0
+    if consumption == 0 then return nil end
     local quality_modifier = self.ammo_quality and 1 / self.ammo_quality.default_multiplier or 1
     return consumption * quality_modifier
 end
 
----@return string
+---@return string?
 function LauncherStation.prototype:get_projectile_speed()
     local data = capsule_properties[self.ammo_name]
-    return data and data.speed_tier or "slow"
+    return data and data.speed_tier
 end
 
 ---@return uint64

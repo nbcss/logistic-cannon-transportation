@@ -30,7 +30,7 @@ data:extend {
                 order = 1,
             },
             {
-                name = { "logistic-cannon-transportation.launch-consumption" },
+                name = { "logistic-cannon-transportation.capsule-energy-consumption" },
                 value = { "", format.energy(launch_consumption, "J/m") },
                 quality_header = "quality-tooltip.reduced-energy",
                 quality_base_value = 1,

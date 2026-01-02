@@ -33,6 +33,8 @@ for ammo, _ in pairs(prototypes.mod_data[constants.data_capsule_properties].data
     table.insert(ammo_slot_options.empty_tooltip --[[@as table]], prototypes.item[ammo].localised_name)
 end
 
+local projectile_properties = prototypes.mod_data[constants.data_projectile_properties].data --[[@as table<string, ProjectileProperties>]]
+
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function launcher_gui.on_gui_opened(player, entity)
@@ -43,53 +45,189 @@ function launcher_gui.on_gui_opened(player, entity)
         return
     end
 
-    local outer_frame = player.gui.relative.add {
+    local frame = player.gui.relative.add {
         type = "frame",
         name = name,
         direction = "vertical",
+        style = "lct_config_frame",
+        caption = "\xE2\x80\x8B", --ZWSP
         anchor = {
             gui = defines.relative_gui_type.proxy_container_gui,
             name = constants.entity_launcher_gui_proxy,
             position = defines.relative_gui_position.right,
         },
     }
-    local inner_frame = outer_frame.add {
+    frame.add {
         type = "frame",
-        name = "inner_frame",
+        name = "station",
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
     }
-    inner_frame.add {
-        type = "progressbar",
-        name = "energy_bar",
-        style = "production_progressbar",
-    }
-    local ammo_frame = outer_frame.add {
+    frame.station.add {
         type = "frame",
-        name = "ammo_frame",
-        style = "inside_shallow_frame_with_padding_and_vertical_spacing",
-        direction = "vertical",
+        name = "header",
+        style = "lct_subheader_frame",
+        direction = "horizontal",
     }
-    local ammo_slot = inventory_slot.create { parent = ammo_frame, name = "ammo_slot" }
+    frame.station.header.style.bottom_margin = 5
+    frame.station.header.add{
+        type = "label",
+        name = "display_name",
+        style = "subheader_caption_label",
+    }
+    frame.station.header.add{
+        type = "sprite-button",
+        name = "edit_name_button",
+        sprite = "utility/rename_icon",
+        style = "mini_button_aligned_to_text_vertically_when_centered",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_click = "launcher_gui.begin_edit_display_name",
+            },
+        },
+    }
+    frame.station.add {
+        type = "flow",
+        name = "ammo_and_energy",
+        direction = "horizontal",
+        style = "player_input_horizontal_flow",
+    }
+    local ammo_slot = inventory_slot.create { parent = frame.station.ammo_and_energy, name = "ammo_slot" }
     ammo_slot.tags = util.merge { ammo_slot.tags, {
         [constants.gui_tag_event_handlers] = {
             on_gui_click = "launcher_gui.on_click_ammo_slot",
         },
     } }
-    local setting_frame = outer_frame.add {
-        type = "frame",
-        name = "setting_frame",
-        style = "inside_shallow_frame_with_padding_and_vertical_spacing",
-        direction = "vertical",
+    frame.station.ammo_and_energy.add {
+        type = "progressbar",
+        name = "energy_bar",
+        style = "lct_energy_bar",
     }
-    local network_setting = setting_frame.add {
+    frame.station.add {
+        type = "line",
+        style = "inside_shallow_frame_with_padding_line"
+    }
+    -- range
+    frame.station.add {
         type = "flow",
-        name = "network",
+        name = "range",
+        style = "lct_player_input",
         direction = "horizontal",
     }
-    network_setting.add {
+    frame.station.range.add {
+        type = "label",
+        caption = {"", { "logistic-cannon-transportation.launcher-range" }, " [img=info]"},
+        tooltip = { "logistic-cannon-transportation.launcher-range-tooltip" },
+    }
+    frame.station.range.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.range.add {
+        type = "label",
+        name = "value_label",
+    }
+    -- charging speed
+    frame.station.add {
+        type = "flow",
+        name = "charging_speed",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.charging_speed.add {
+        type = "label",
+        caption = {"", { "logistic-cannon-transportation.launcher-charging-speed" }, },
+    }
+    frame.station.charging_speed.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.charging_speed.add {
+        type = "label",
+        name = "value_label",
+    }
+    -- payload size
+    frame.station.add {
+        type = "flow",
+        name = "payload_size",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.payload_size.add {
+        type = "label",
+        caption = {"", { "logistic-cannon-transportation.launcher-payload-size" }, },
+    }
+    frame.station.payload_size.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.payload_size.add{
+        type = "sprite-button",
+        name = "edit_button",
+        sprite = "utility/rename_icon",
+        style = "mini_button_aligned_to_text_vertically_when_centered",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_click = "launcher_gui.begin_edit_payload_override",
+            },
+        },
+    }
+    frame.station.payload_size.add {
+        type = "label",
+        name = "value_label",
+    }
+    -- energy consumption
+    frame.station.add {
+        type = "flow",
+        name = "energy_consumption",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.energy_consumption.add {
+        type = "label",
+        caption = {"", { "logistic-cannon-transportation.launcher-energy-consumption" }, " [img=info]" },
+        tooltip = { "logistic-cannon-transportation.launcher-energy-consumption-tooltip" },
+    }
+    frame.station.energy_consumption.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.energy_consumption.add {
+        type = "label",
+        name = "value_label",
+    }
+    -- projectile speed
+    frame.station.add {
+        type = "flow",
+        name = "projectile_speed",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.projectile_speed.add {
+        type = "label",
+        caption = {"", { "logistic-cannon-transportation.launcher-projectile-speed" }, },
+    }
+    frame.station.projectile_speed.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.projectile_speed.add {
+        type = "label",
+        name = "value_label",
+    }
+    -- network
+    frame.station.add {
+        type = "flow",
+        name = "network",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.network.add {
+        type = "label",
+        caption = {"", { "logistic-cannon-transportation.network" }, " [img=info]"},
+        tooltip = { "logistic-cannon-transportation.network-tooltip" },
+    }
+    frame.station.network.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.network.add {
         type = "choose-elem-button",
-        name = "setting",
+        name = "value_signal",
         elem_type = "signal",
         tags = {
             [constants.gui_tag_event_handlers] = {
@@ -97,9 +235,11 @@ function launcher_gui.on_gui_opened(player, entity)
             },
         },
     }
-    network_setting.add {
-        type = "label",
-        caption = { "logistic-cannon-transportation.network" }
+    frame.add {
+        type = "frame",
+        name = "circuit",
+        style = "inside_shallow_frame_with_padding_and_vertical_spacing",
+        direction = "vertical",
     }
     launcher_gui.refresh(player, entity)
 end
@@ -109,22 +249,32 @@ end
 function launcher_gui.refresh(player, entity)
     local data = LauncherStation.get(entity)
     if not data then return end
-    local gui = player.gui.relative[name] ---@type LuaGuiElement
-    gui.caption = data.settings.name or { "logistic-cannon-transportation.launcher-default-name" }
+    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    frame.station.header.display_name.caption = data.settings.name or { "logistic-cannon-transportation.launcher-default-name" }
     local energy_ratio = 0
     local energy = format.energy(data:get_stored_energy())
     local capacity = format.energy(data:get_energy_capacity())
     if data:get_energy_capacity() > 0 then
         energy_ratio = math.min(1.0, data:get_stored_energy() / data:get_energy_capacity())
     end
-    gui.inner_frame.energy_bar.value = energy_ratio
-    gui.inner_frame.energy_bar.caption = { "", string.format("Energy: %s/%s", energy, capacity) }
+    frame.station.ammo_and_energy.energy_bar.value = energy_ratio
+    frame.station.ammo_and_energy.energy_bar.caption = { "", string.format("Energy: %s/%s", energy, capacity) }
+    frame.station.range.value_label.caption = data.launcher_range
+    frame.station.charging_speed.value_label.caption = format.energy(data:get_charging_speed(), "W")
+
+    local payload_size = data:get_max_payload_size()
+    frame.station.payload_size.edit_button.visible = payload_size ~= nil
+    frame.station.payload_size.value_label.caption = payload_size and { "logistic-cannon-transportation.stack", payload_size } or "-"
+    local energy_consumption = data:get_launch_consumption()
+    frame.station.energy_consumption.value_label.caption = energy_consumption and format.energy(energy_consumption, "J/m") or "-"
+    local projectile_speed = projectile_properties[data:get_projectile_speed()]
+    frame.station.projectile_speed.value_label.caption = projectile_speed and projectile_speed.locale_string or "-"
     inventory_slot.refresh {
-        element = gui.ammo_frame.ammo_slot,
+        element = frame.station.ammo_and_energy.ammo_slot,
         target = data:get_ammo_inventory()[1],
         options = ammo_slot_options,
     }
-    gui.setting_frame.network.setting.elem_value = data.network.signal
+    frame.station.network.value_signal.elem_value = data.network.signal
 end
 
 ---@param player LuaPlayer
@@ -148,6 +298,10 @@ function launcher_gui.on_click_ammo_slot(player, event)
         player = player,
         button = event.button,
     }
+end
+
+function launcher_gui.begin_edit_payload_override(player, event)
+
 end
 
 return launcher_gui
