@@ -243,7 +243,7 @@ data:extend {
         draw_circuit_wires = false,
         prepare_range = 2,
         attack_target_mask = { constants.entity_target },
-        rotation_speed = 0.1 / 60,
+        rotation_speed = 0.15 / 60,
         preparing_speed = 0.08,
         preparing_sound = sounds.gun_turret_activate,
         folding_sound = sounds.gun_turret_deactivate,
