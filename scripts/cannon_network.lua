@@ -15,6 +15,7 @@ local CannonNetwork = {}
 ---@field receivers BucketSet<ReceiverStation>
 ---@field launcher_to_receivers table<uint64, table<uint64, ReceiverStation>>
 ---@field receiver_to_launchers table<uint64, table<uint64, LauncherStation>>
+---@field connection_count table<uint64, uint>
 ---@field launcher_to_items table<uint64, table<string, ItemWithQualityCount>> -- launcher id to encoded item name set
 ---@field item_to_launchers table<string, table<uint64, LauncherStation>> -- encoded item name to set of launchers
 CannonNetwork.prototype = {}
@@ -75,6 +76,7 @@ function CannonNetwork.get_or_create(force, surface, signal)
         receivers = BucketSet.new(settings.global[constants.update_interval_setting].value),
         launcher_to_receivers = {},
         receiver_to_launchers = {},
+        connection_count = {},
         launcher_to_items = {},
         item_to_launchers = {},
     } --[[@as CannonNetwork]], CannonNetwork.prototype)
@@ -210,15 +212,26 @@ function CannonNetwork.prototype:is_connected(launcher, receiver)
     return self.launcher_to_receivers[launcher:id()][receiver:id()] ~= nil
 end
 
+
+---@param station_id uint64
+---@return uint
+function CannonNetwork.prototype:get_connection_count(station_id)
+    return self.connection_count[station_id] or 0
+end
+
 ---@param launcher LauncherStation
 function CannonNetwork.prototype:update_launcher_connections(launcher)
     if not launcher:valid() or not self.launchers:contains(launcher:id()) then return end
     local receivers_in_range = self.launcher_to_receivers[launcher:id()]
     for receiver_id, _ in pairs(receivers_in_range) do
-        self.receiver_to_launchers[receiver_id][launcher:id()] = nil
+        if self.receiver_to_launchers[receiver_id][launcher:id()] then
+            self.receiver_to_launchers[receiver_id][launcher:id()] = nil
+            self.connection_count[receiver_id] = self.connection_count[receiver_id] - 1
+        end
     end
     self.launcher_to_receivers[launcher:id()] = {}
     local maximum_range = launcher:get_max_range()
+    local count = 0
     if maximum_range > 0 then
         for receiver in self.receivers:all() do
             if receiver:valid() then
@@ -226,12 +239,15 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
                 if d <= maximum_range then
                     self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
                     self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
+                    self.connection_count[receiver:id()] = self.connection_count[receiver:id()] + 1
+                    count = count + 1
                 end
             else
                 game.print("Invalid receiver: " .. receiver:id()) -- debug
             end
         end
     end
+    self.connection_count[launcher:id()] = count
     visualization_control.on_launcher_update(launcher)
 end
 
@@ -240,9 +256,13 @@ function CannonNetwork.prototype:update_receiver_connections(receiver)
     if not receiver:valid() or not self.receivers:contains(receiver:id()) then return end
     local launchers_in_range = self.receiver_to_launchers[receiver:id()]
     for launcher_id, _ in pairs(launchers_in_range) do
-        self.launcher_to_receivers[launcher_id][receiver:id()] = nil
+        if self.launcher_to_receivers[launcher_id][receiver:id()] then
+            self.launcher_to_receivers[launcher_id][receiver:id()] = nil
+            self.connection_count[launcher_id] = self.connection_count[launcher_id] - 1
+        end
     end
     self.receiver_to_launchers[receiver:id()] = {}
+    local count = 0
     for launcher in self.launchers:all() do
         if launcher:valid() then
             local maximum_range = launcher:get_max_range()
@@ -251,12 +271,15 @@ function CannonNetwork.prototype:update_receiver_connections(receiver)
                 if d <= maximum_range then
                     self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
                     self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
+                    self.connection_count[launcher:id()] = self.connection_count[launcher:id()] + 1
+                    count = count + 1
                 end
             end
         else
             game.print("Invalid launcher: " .. launcher:id()) -- debug
         end
     end
+    self.connection_count[receiver:id()] = count
     visualization_control.on_receiver_update(receiver)
 end
 
@@ -266,6 +289,7 @@ function CannonNetwork.prototype:add_launcher(launcher)
     self.launchers:put(launcher:id(), launcher)
     self.launcher_to_receivers[launcher:id()] = {}
     self.launcher_to_items[launcher:id()] = {}
+    self.connection_count[launcher:id()] = 0
     self:update_launcher_connections(launcher)
 end
 
@@ -274,6 +298,7 @@ function CannonNetwork.prototype:add_receiver(receiver)
     if not receiver:valid() or self.receivers:contains(receiver:id()) then return end
     self.receivers:put(receiver:id(), receiver)
     self.receiver_to_launchers[receiver:id()] = {}
+    self.connection_count[receiver:id()] = 0
     self:update_receiver_connections(receiver)
 end
 
@@ -298,6 +323,7 @@ function CannonNetwork.prototype:remove_launcher(launcher_id)
     end
     self.launcher_to_receivers[launcher_id] = nil
     self.launcher_to_items[launcher_id] = nil
+    self.connection_count[launcher_id] = nil
     self.launchers:remove(launcher_id)
     self:destroy_if_empty()
 end
@@ -311,6 +337,7 @@ function CannonNetwork.prototype:remove_receiver(receiver_id)
         self.launcher_to_receivers[launcher_id][receiver_id] = nil
     end
     self.receiver_to_launchers[receiver_id] = nil
+    self.connection_count[receiver_id] = nil
     self.receivers:remove(receiver_id)
     self:destroy_if_empty()
 end

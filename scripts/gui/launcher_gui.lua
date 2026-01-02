@@ -108,12 +108,11 @@ function launcher_gui.on_gui_opened(player, entity)
         direction = "horizontal",
         style = "lct_player_input",
     }
-    local ammo_slot = inventory_slot.create { parent = frame.station.ammo_and_energy, name = "ammo_slot" }
-    ammo_slot.tags = util.merge { ammo_slot.tags, {
+    inventory_slot.create { parent = frame.station.ammo_and_energy, name = "ammo_slot" }.tags = {
         [constants.gui_tag_event_handlers] = {
             on_gui_click = "launcher_gui.on_click_ammo_slot",
         },
-    } }
+    }
     frame.station.ammo_and_energy.add {
         type = "progressbar",
         name = "energy_bar",
@@ -159,6 +158,24 @@ function launcher_gui.on_gui_opened(player, entity)
         type = "empty-widget",
     }.style.horizontally_stretchable = true
     frame.station.charging_speed.add {
+        type = "label",
+        name = "value_label",
+    }
+    -- connected receivers
+    frame.station.add {
+        type = "flow",
+        name = "connected_receivers",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.connected_receivers.add {
+        type = "label",
+        caption = { "", { "logistic-cannon-transportation.launcher-connected-receivers" }, },
+    }
+    frame.station.connected_receivers.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.connected_receivers.add {
         type = "label",
         name = "value_label",
     }
@@ -318,9 +335,8 @@ function launcher_gui.refresh(player, entity)
     end
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
-    frame.station.range.value_label.caption = data.launcher_range
+    frame.station.range.value_label.caption = string.format("%.0f/%.0f", data:get_range(), data.launcher_range)
     frame.station.charging_speed.value_label.caption = format.energy(data:get_charging_speed(), "W")
-
     local payload_size = data:get_max_payload_size()
     frame.station.payload_size.edit_button.visible = payload_size ~= nil
     frame.station.payload_size.value_label.caption = payload_size and
@@ -330,6 +346,7 @@ function launcher_gui.refresh(player, entity)
         format.energy(energy_consumption, "J/m") or "-"
     local projectile_speed = projectile_properties[data:get_projectile_speed()]
     frame.station.projectile_speed.value_label.caption = projectile_speed and projectile_speed.locale_string or "-"
+    frame.station.connected_receivers.value_label.caption = data.network:get_connection_count(data:id())
     inventory_slot.refresh {
         element = frame.station.ammo_and_energy.ammo_slot,
         target = data:get_ammo_inventory()[1],

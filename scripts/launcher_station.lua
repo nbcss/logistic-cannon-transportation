@@ -108,6 +108,7 @@ function LauncherStation.create(entity, player_index)
     instance.turret_entity.destructible = false
     instance.electric_interface.destructible = false
     instance.launcher_range = instance:get_max_range()
+    instance.turret_entity.get_or_create_control_behavior()--[[@as LuaTurretControlBehavior]].read_ammo = true
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)
         .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true),
         false, defines.wire_origin.script)
