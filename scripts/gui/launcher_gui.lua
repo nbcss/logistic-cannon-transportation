@@ -45,7 +45,7 @@ function launcher_gui.on_gui_opened(player, entity)
     if entity.name ~= constants.entity_launcher_gui_proxy then
         return
     end
-
+    --frame
     local frame = player.gui.relative.add {
         type = "frame",
         name = name,
@@ -321,51 +321,52 @@ end
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function launcher_gui.refresh(player, entity)
-    local data = LauncherStation.get(entity)
-    if not data or not data:valid() then return end
+    local launcher = LauncherStation.get(entity)
+    if not launcher or not launcher:valid() then return end
+
     local frame = player.gui.relative[name] ---@type LuaGuiElement
-    frame.station.header.display_name.caption = data.settings.name or
+    frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
     local energy_ratio = 0
-    local energy = format.energy(data:get_stored_energy())
-    local capacity = format.energy(data:get_energy_capacity())
-    if data:get_energy_capacity() > 0 then
-        energy_ratio = math.min(1.0, data:get_stored_energy() / data:get_energy_capacity())
+    local energy = format.energy(launcher:get_stored_energy())
+    local capacity = format.energy(launcher:get_energy_capacity())
+    if launcher:get_energy_capacity() > 0 then
+        energy_ratio = math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity())
     end
     inventory_slot.refresh {
         element = frame.station.ammo_and_energy.ammo_slot,
-        target = data:get_ammo_inventory()[1],
+        target = launcher:get_ammo_inventory()[1],
         options = ammo_slot_options,
     }
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
-    frame.station.range.value_label.caption = string.format("%.0f/%.0f", data:get_range(), data.launcher_range)
-    frame.station.charging_speed.value_label.caption = format.energy(data:get_charging_speed(), "W")
-    local payload_size = data:get_max_payload_size()
+    frame.station.range.value_label.caption = string.format("%.0f/%.0f", launcher:get_range(), launcher.launcher_range)
+    frame.station.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
+    local payload_size = launcher:get_max_payload_size()
     frame.station.payload_size.edit_button.visible = payload_size ~= nil
     frame.station.payload_size.value_label.caption = payload_size and
         { "logistic-cannon-transportation.stack", payload_size } or "-"
-    local energy_consumption = data:get_launch_consumption()
+    local energy_consumption = launcher:get_launch_consumption()
     frame.station.energy_consumption.value_label.caption = energy_consumption and
         format.energy(energy_consumption, "J/m") or "-"
-    local projectile_speed = projectile_properties[data:get_projectile_speed()]
+    local projectile_speed = projectile_properties[launcher:get_projectile_speed()]
     frame.station.projectile_speed.value_label.caption = projectile_speed and projectile_speed.locale_string or "-"
-    frame.station.connected_receivers.value_label.caption = data.network:get_connection_count(data:id())
-    frame.station.network.value_signal.elem_value = data.network.signal
-    frame.circuit.read_ammo.state = data.turret_entity.get_or_create_control_behavior().read_ammo --[[@as boolean]]
-    frame.circuit.read_contents.state = data.inventory_entity.get_or_create_control_behavior()
-         .read_contents --[[@as boolean]]
+    frame.station.connected_receivers.value_label.caption = launcher.network:get_connection_count(launcher:id())
+    frame.station.network.value_signal.elem_value = launcher.network.signal
+    frame.circuit.read_ammo.state = launcher.turret_entity.get_or_create_control_behavior().read_ammo --[[@as boolean]]
+    frame.circuit.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
+        .read_contents --[[@as boolean]]
 end
 
----@param data LauncherStation
+---@param launcher LauncherStation
 ---@param frame LuaGuiElement
-local function set_display_name(data, frame)
+local function set_display_name(launcher, frame)
     if frame.station.header.edit_name_field.text ~= "" then
-        data.settings.name = frame.station.header.edit_name_field.text
+        launcher.settings.name = frame.station.header.edit_name_field.text
     else
-        data.settings.name = nil
+        launcher.settings.name = nil
     end
-    frame.station.header.display_name.caption = data.settings.name or
+    frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
     frame.station.header.edit_name_field.visible = false
     frame.station.header.display_name.visible = true
@@ -374,22 +375,22 @@ end
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_confirmed
 function launcher_gui.on_confirm_display_name(player, event)
-    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
     local frame = player.gui.relative[name] ---@type LuaGuiElement
-    set_display_name(data, frame)
+    set_display_name(launcher, frame)
 end
 
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_click
 function launcher_gui.on_edit_display_name(player, event)
-    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
     local frame = player.gui.relative[name] ---@type LuaGuiElement
     if frame.station.header.edit_name_field.visible then
-        set_display_name(data, frame)
+        set_display_name(launcher, frame)
     else
-        frame.station.header.edit_name_field.text = data.settings.name or ""
+        frame.station.header.edit_name_field.text = launcher.settings.name or ""
         frame.station.header.edit_name_field.visible = true
         frame.station.header.display_name.visible = false
         frame.station.header.edit_name_field.focus()
@@ -399,11 +400,11 @@ end
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_click
 function launcher_gui.on_click_ammo_slot(player, event)
-    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
     inventory_slot.click {
         element = event.element,
-        target = data:get_ammo_inventory()[1],
+        target = launcher:get_ammo_inventory()[1],
         options = ammo_slot_options,
         player = player,
         button = event.button,
@@ -417,27 +418,27 @@ end
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_click
 function launcher_gui.on_set_network(player, event)
-    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
     local signal = event.element.elem_value --[[@as SignalID?]]
-    data:set_network_signal(signal)
+    launcher:set_network_signal(signal)
 end
 
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_checked_state_changed
 function launcher_gui.on_read_ammo_state_changed(player, event)
-    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
-    local control = data.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]]
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    local control = launcher.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]]
     control.read_ammo = event.element.state
 end
 
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_checked_state_changed
 function launcher_gui.on_read_contents_state_changed(player, event)
-    local data = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
-    local control = data.inventory_entity.get_or_create_control_behavior() --[[@as LuaContainerControlBehavior]]
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    local control = launcher.inventory_entity.get_or_create_control_behavior() --[[@as LuaContainerControlBehavior]]
     control.read_contents = event.element.state
 end
 

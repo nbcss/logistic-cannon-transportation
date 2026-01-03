@@ -31,12 +31,13 @@ function receiver_gui.on_gui_opened(player, entity)
     if entity.name ~= constants.entity_receiver_gui_proxy then
         return
     end
-
+    --frame
     local frame = player.gui.relative.add {
         type = "frame",
         name = name,
         direction = "vertical",
         style = "lct_config_frame",
+        -- visible = false,
         caption = "\xE2\x80\x8B", --ZWSP
         anchor = {
             gui = defines.relative_gui_type.proxy_container_gui,
@@ -139,7 +140,6 @@ function receiver_gui.on_gui_opened(player, entity)
     frame.station.add {
         type = "label",
         caption = { "logistic-cannon-transportation.receiver-requests" },
-        -- TODO style
     }
     frame.station.add {
         type = "flow",
@@ -358,6 +358,7 @@ function receiver_gui.refresh(player, entity)
     local receiver = ReceiverStation.get(entity)
     if not receiver or not receiver:valid() then return end
     local frame = player.gui.relative[name] ---@type LuaGuiElement
+
     frame.station.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
     frame.station.connected_launchers.value_label.caption = receiver.network:get_connection_count(receiver:id())
@@ -440,15 +441,15 @@ function receiver_gui.refresh(player, entity)
         .read_contents --[[@as boolean]]
 end
 
----@param data ReceiverStation
+---@param receiver ReceiverStation
 ---@param frame LuaGuiElement
-local function set_display_name(data, frame)
+local function set_display_name(receiver, frame)
     if frame.station.header.edit_name_field.text ~= "" then
-        data.settings.name = frame.station.header.edit_name_field.text
+        receiver.settings.name = frame.station.header.edit_name_field.text
     else
-        data.settings.name = nil
+        receiver.settings.name = nil
     end
-    frame.station.header.display_name.caption = data.settings.name or
+    frame.station.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
     frame.station.header.edit_name_field.visible = false
     frame.station.header.display_name.visible = true
@@ -457,22 +458,22 @@ end
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_confirmed
 function receiver_gui.on_confirm_display_name(player, event)
-    local data = ReceiverStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local receiver = ReceiverStation.get(player.opened --[[@as LuaEntity]])
+    if not receiver or not receiver:valid() then return end
     local frame = player.gui.relative[name] ---@type LuaGuiElement
-    set_display_name(data, frame)
+    set_display_name(receiver, frame)
 end
 
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_click
 function receiver_gui.on_edit_display_name(player, event)
-    local data = ReceiverStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local receiver = ReceiverStation.get(player.opened --[[@as LuaEntity]])
+    if not receiver or not receiver:valid() then return end
     local frame = player.gui.relative[name] ---@type LuaGuiElement
     if frame.station.header.edit_name_field.visible then
-        set_display_name(data, frame)
+        set_display_name(receiver, frame)
     else
-        frame.station.header.edit_name_field.text = data.settings.name or ""
+        frame.station.header.edit_name_field.text = receiver.settings.name or ""
         frame.station.header.edit_name_field.visible = true
         frame.station.header.display_name.visible = false
         frame.station.header.edit_name_field.focus()
@@ -482,10 +483,10 @@ end
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_click
 function receiver_gui.on_set_network(player, event)
-    local data = ReceiverStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
+    local receiver = ReceiverStation.get(player.opened --[[@as LuaEntity]])
+    if not receiver or not receiver:valid() then return end
     local signal = event.element.elem_value --[[@as SignalID?]]
-    data:set_network_signal(signal)
+    receiver:set_network_signal(signal)
 end
 
 ---@param player LuaPlayer
@@ -575,9 +576,9 @@ end
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_checked_state_changed
 function receiver_gui.on_read_contents_state_changed(player, event)
-    local data = ReceiverStation.get(player.opened --[[@as LuaEntity]])
-    if not data or not data:valid() then return end
-    local control = data.inventory_entity.get_or_create_control_behavior() --[[@as LuaContainerControlBehavior]]
+    local receiver = ReceiverStation.get(player.opened --[[@as LuaEntity]])
+    if not receiver or not receiver:valid() then return end
+    local control = receiver.inventory_entity.get_or_create_control_behavior() --[[@as LuaContainerControlBehavior]]
     control.read_contents = event.element.state
 end
 
