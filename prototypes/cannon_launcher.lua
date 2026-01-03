@@ -5,7 +5,7 @@ local item_sounds = require("__base__.prototypes.item_sounds")
 local sounds = require("__base__/prototypes/entity/sounds")
 local icon = "__base__/graphics/icons/tank-cannon.png"
 local health = 600
-local range = 100
+local range = 80
 local inventory_size = 39
 local energy_consumption = 200 * 1000 -- in W
 local integration_patch = {
@@ -193,6 +193,8 @@ data:extend {
         flags = { "not-on-map", "placeable-off-grid", "hide-alt-info" },
         localised_name = { "entity-name." .. constants.entity_launcher_inventory },
         localised_description = { "entity-description." .. constants.entity_launcher_inventory },
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        collision_mask = {layers = {}},
         quality_indicator_scale = 0,
         draw_inventory_content = false,
         is_military_target = false,
@@ -255,40 +257,37 @@ data:extend {
         folded_animation = {
             layers = {
                 {
-                    filename = "__aai-vehicles-ironclad__/graphics/entity/mortar-turret/mortar-turret.png",
+                    filename = "__base__/graphics/entity/tank/tank-turret.png",
                     priority = "low",
-                    line_length = 16,
-                    width = 2048 / 16,
-                    height = 448 / 4,
-                    frame_count = 1,
+                    line_length = 8,
+                    width = 179,
+                    height = 132,
                     direction_count = 64,
-                    shift = util.by_pixel(0, -38),
+                    shift = util.by_pixel(2.25 - 2, -40.5 +4),
                     animation_speed = 8,
-                    scale = 0.65
+                    scale = 0.5
                 },
                 {
-                    filename = "__aai-vehicles-ironclad__/graphics/entity/mortar-turret/mortar-turret-mask.png",
+                    filename = "__base__/graphics/entity/tank/tank-turret-mask.png",
                     priority = "low",
-                    line_length = 16,
-                    width = 2048 / 16,
-                    height = 448 / 4,
-                    frame_count = 1,
+                    line_length = 8,
+                    width = 72,
+                    height = 66,
                     apply_runtime_tint = true,
                     direction_count = 64,
-                    shift = util.by_pixel(0, -38),
-                    scale = 0.65
+                    shift = util.by_pixel(2 - 2, -41.5 +4),
+                    scale = 0.5
                 },
                 {
-                    filename = "__aai-vehicles-ironclad__/graphics/entity/mortar-turret/mortar-turret-shadow.png",
+                    filename = "__base__/graphics/entity/tank/tank-turret-shadow.png",
                     priority = "low",
-                    line_length = 4,
-                    width = 672 / 4,
-                    height = 1472 / 16,
-                    frame_count = 1,
+                    line_length = 8,
+                    width = 193,
+                    height = 134,
                     draw_as_shadow = true,
                     direction_count = 64,
-                    shift = util.by_pixel(20, -13.5),
-                    scale = 0.65
+                    shift = util.by_pixel(58.25 - 2, 0.5 +4),
+                    scale = 0.5
                 }
             }
         },

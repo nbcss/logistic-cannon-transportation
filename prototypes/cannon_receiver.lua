@@ -1,5 +1,6 @@
 local constants = require("constants")
 local sounds = require("__base__/prototypes/entity/sounds")
+local item_sounds = require("__base__.prototypes.item_sounds")
 local icon = "__base__/graphics/icons/requester-chest.png"
 local health = 400
 local inventory_size = 59
@@ -28,7 +29,7 @@ local container_animation = {
     }
 }
 
-data:extend{
+data:extend {
     {
         type = "item",
         name = constants.item_receiver,
@@ -37,6 +38,9 @@ data:extend{
         subgroup = constants.item_subgroup,
         order = "b[receiver]",
         place_result = constants.entity_receiver_inventory,
+        inventory_move_sound = item_sounds.mechanical_large_inventory_move,
+        pick_sound = item_sounds.mechanical_large_inventory_pickup,
+        drop_sound = item_sounds.mechanical_large_inventory_move,
         stack_size = 5,
     },
     {
@@ -45,7 +49,7 @@ data:extend{
         enabled = true,
         energy_required = 5,
         ingredients = {
-            { type = "item", name = "radar", amount = 1 },
+            { type = "item", name = "radar",       amount = 1 },
             { type = "item", name = "steel-plate", amount = 20 },
             { type = "item", name = "stone-brick", amount = 10 },
         },
@@ -58,7 +62,7 @@ data:extend{
         name = constants.entity_receiver_inventory,
         icon = icon,
         flags = { "player-creation", "placeable-player" },
-        map_color = {0.1, 0.8, 0.9},
+        map_color = { 0.1, 0.8, 0.9 },
         minable = { mining_time = 1.0, result = constants.item_receiver },
         placeable_by = { item = constants.item_receiver, count = 1 },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
@@ -71,8 +75,8 @@ data:extend{
         render_not_in_network_icon = false,
         is_military_target = false,
         mined_sound = sounds.deconstruct_large(0.8),
-        open_sound = sounds.metallic_chest_open,
-        close_sound = sounds.metallic_chest_close,
+        open_sound = sounds.mech_large_open,
+        close_sound = sounds.mech_large_close,
         picture = container_animation,
         created_effect = {
             type = "direct",
@@ -90,16 +94,18 @@ data:extend{
         name = constants.entity_receiver_gui_proxy,
         icon = icon,
         flags = { "not-on-map", "placeable-off-grid" },
-        localised_name = {"entity-name." .. constants.entity_receiver_inventory},
-        localised_description = {"entity-description." .. constants.entity_receiver_inventory},
+        localised_name = { "entity-name." .. constants.entity_receiver_inventory },
+        localised_description = { "entity-description." .. constants.entity_receiver_inventory },
+        collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
+        collision_mask = { layers = {} },
         quality_indicator_scale = 0,
         draw_inventory_content = false,
         is_military_target = false,
         selectable_in_game = false,
         hidden = true,
         max_health = health,
-        open_sound = sounds.metallic_chest_open,
-        close_sound = sounds.metallic_chest_close,
+        open_sound = sounds.mech_large_open,
+        close_sound = sounds.mech_large_close,
         picture = container_animation,
     },
 }

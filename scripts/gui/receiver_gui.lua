@@ -186,8 +186,9 @@ end
 ---@param index integer
 ---@return LuaGuiElement
 function receiver_gui.create_request_list_item(parent, index)
-    local element = parent.add{
-        type = "flow",
+    local element = parent.add {
+        type = "frame",
+        style = "invisible_frame",
         direction = "vertical",
         tags = {
             request_index = index,
@@ -266,38 +267,27 @@ end
 function receiver_gui.create_request_editor_block(request_element, request)
     local index = tonumber(request_element.tags.request_index) or error()
 
-    request_element.add{
-        type = "frame",
-        name = "editor",
-        style = "deep_frame_in_shallow_frame",
-    }
-    request_element.editor.style.left_margin = -12
-    request_element.editor.style.right_margin = -12
-    request_element.editor.style.horizontally_stretchable = true
-    -- request_element.editor.style.padding = 5
-    request_element.editor.style.padding = 12
-
-    request_element.editor.add{
+    request_element.add {
         type = "flow",
-        name = "amount_editor",
+        name = "editor",
         direction = "horizontal",
         style = "player_input_horizontal_flow",
     }
-    request_element.editor.amount_editor.add{
+    request_element.editor.add {
         type = "slider",
         name = "input_slider",
         style = "notched_slider",
         discrete_values = true,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_value_changed = "receiver_gui.on_request_amount_editor_value_changed",
+                on_gui_value_changed = "receiver_gui.on_request_editor_value_changed",
             },
             request_index = index,
         },
     }
-    request_element.editor.amount_editor.input_slider.style.horizontally_stretchable = true
-    request_element.editor.amount_editor.input_slider.style.horizontally_squashable = true
-    request_element.editor.amount_editor.add{
+    request_element.editor.input_slider.style.horizontally_stretchable = true
+    request_element.editor.input_slider.style.horizontally_squashable = true
+    request_element.editor.add {
         type = "textfield",
         name = "input_text",
         numeric = true,
@@ -307,7 +297,7 @@ function receiver_gui.create_request_editor_block(request_element, request)
         text = "0",
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_text_changed = "receiver_gui.on_request_amount_editor_value_changed",
+                on_gui_text_changed = "receiver_gui.on_request_editor_value_changed",
                 on_gui_confirmed = "receiver_gui.on_request_editor_toggled"
             },
             request_index = index,
@@ -316,11 +306,12 @@ function receiver_gui.create_request_editor_block(request_element, request)
 
     receiver_gui.refresh_request_editor_block(request_element, request)
 
-    request_element.editor.amount_editor.input_slider.slider_value = request.amount
-    request_element.editor.amount_editor.input_text.text = tostring(request.amount)
+    request_element.editor.input_slider.slider_value = request.amount
+    request_element.editor.input_text.text = tostring(request.amount)
 
-    request_element.editor.amount_editor.input_text.focus()
-    request_element.editor.amount_editor.input_text.select_all()
+    request_element.editor.input_text.focus()
+    request_element.editor.input_text.select_all()
+    request_element.style = "lct_configuration_deep_frame"
     request_element.item.info.top.edit_button.style = "lct_configuration_confirm_button"
 end
 
@@ -328,21 +319,26 @@ end
 ---@param request { name: string, quality: string, amount: uint }
 function receiver_gui.refresh_request_editor_block(request_element, request)
     if not request_element.editor then return end
-    local index = tonumber(request_element.tags.request_index) or error()
 
     -- Set amount slider max value and step
     local stack_size = prototypes.item[request.name].stack_size
-    request_element.editor.amount_editor.input_slider.set_slider_minimum_maximum(stack_size, stack_size * 10)
-    request_element.editor.amount_editor.input_slider.set_slider_value_step(stack_size)
+    request_element.editor.input_slider.set_slider_minimum_maximum(stack_size, stack_size * 10)
+    request_element.editor.input_slider.set_slider_value_step(stack_size)
+end
+
+---@param request_element LuaGuiElement
+function receiver_gui.close_request_editor_block(request_element)
+    if request_element.editor then
+        request_element.style = "invisible_frame"
+        request_element.item.info.top.edit_button.style = "lct_configuration_select_button"
+        request_element.editor.destroy()
+    end
 end
 
 ---@param request_elements LuaGuiElement[]
 function receiver_gui.close_all_request_editor_blocks(request_elements)
     for _, element in ipairs(request_elements) do
-        if element.editor then
-            element.item.info.top.edit_button.style = "lct_configuration_select_button"
-            element.editor.destroy()
-        end
+        receiver_gui.close_request_editor_block(element)
     end
 end
 
@@ -396,15 +392,15 @@ function receiver_gui.refresh(player, entity)
                     string.format("[color=gray] (+%s)[/color]", format.number(item.incoming)) or ""
                 local item_text = string.format("%s%s / %s", format.number(item.stored), incoming_text,
                     format.number(item.demand))
-                local base_value = math.min(1, item.incoming > 0 and item.demand > 0 and
+                local base_value = math.min(1, item.incoming > 0 and
                     (item.stored + item.incoming) / item.demand or 0)
-                local top_value = math.min(1, item.demand > 0 and item.stored / item.demand or 0)
+                local top_value = math.min(1, item.stored > 0 and item.stored / item.demand or 0)
 
                 element.item.choose_elem.elem_value = { name = request.name, quality = request.quality }
                 element.item.info.top.item_text.caption = item_text
                 element.item.info.top.item_text.tooltip = { "",
                     { "logistic-cannon-transportation.receiver-item-tooltip-in-inventory", item.stored }, "\n",
-                    { "logistic-cannon-transportation.receiver-item-tooltip-incoming", item.incoming }, "\n",
+                    { "logistic-cannon-transportation.receiver-item-tooltip-incoming",     item.incoming }, "\n",
                     { "logistic-cannon-transportation.receiver-item-tooltip-requested", item.demand },
                 }
                 element.item.info.top.edit_button.visible = true
@@ -412,20 +408,16 @@ function receiver_gui.refresh(player, entity)
                 element.item.info.progress.base.value = base_value
                 element.item.info.progress.top.value = top_value
                 receiver_gui.refresh_request_editor_block(element, request)
-
             else
                 -- New request button
                 element.item.choose_elem.elem_value = nil
-                element.item.info.top.item_text.caption = {"logistic-cannon-transportation.receiver-add-request"}
+                element.item.info.top.item_text.caption = { "logistic-cannon-transportation.receiver-add-request" }
                 element.item.info.top.item_text.tooltip = nil
                 element.item.info.top.edit_button.visible = false
                 element.item.info.progress.visible = false
                 element.item.info.progress.base.value = 0
                 element.item.info.progress.top.value = 0
-                if element.editor then
-                    element.item.info.top.edit_button.style = "lct_configuration_select_button"
-                    element.editor.destroy()
-                end
+                receiver_gui.close_request_editor_block(element)
             end
         else
             if element then
@@ -517,7 +509,6 @@ function receiver_gui.on_request_elem_changed(player, event)
             -- Create editor for newly added requests
             receiver_gui.create_request_editor_block(element, receiver.settings.delivery_requests[index])
         end
-
     else
         table.remove(receiver.settings.delivery_requests, index)
     end
@@ -539,10 +530,9 @@ function receiver_gui.on_request_editor_toggled(player, event)
 
     if element.editor then
         -- Commit amount change and close editor
-        local amount = tonumber(element.editor.amount_editor.input_text.text) or 0
+        local amount = tonumber(element.editor.input_text.text) or 0
         request.amount = amount
-        element.item.info.top.edit_button.style = "lct_configuration_select_button"
-        element.editor.destroy()
+        receiver_gui.close_request_editor_block(element)
     else
         -- Create editor block for this request and close others'
         receiver_gui.close_all_request_editor_blocks(frame.station.requests.children)
@@ -554,13 +544,13 @@ end
 
 ---@param player LuaPlayer
 ---@param event EventData.on_gui_text_changed | EventData.on_gui_value_changed
-function receiver_gui.on_request_amount_editor_value_changed(player, event)
+function receiver_gui.on_request_editor_value_changed(player, event)
     local index = tonumber(event.element.tags.request_index) or error()
     local frame = player.gui.relative[name] --[[@as LuaGuiElement]]
     local element = frame.station.requests.children[index] or error()
 
-    local amount_slider = element.editor.amount_editor.input_slider
-    local amount_text = element.editor.amount_editor.input_text
+    local amount_slider = element.editor.input_slider
+    local amount_text = element.editor.input_text
 
     -- Synchronize slider with textfield
     if event.element == amount_slider then

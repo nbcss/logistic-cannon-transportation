@@ -28,43 +28,37 @@ styles["lct_subheader_frame"] = {
     horizontally_squashable = "on",
 }
 
+styles["lct_configuration_deep_frame"] = {
+    type = "frame_style",
+    parent = "deep_frame_in_shallow_frame",
+    vertical_flow_style = {
+        type = "vertical_flow_style",
+        vertical_spacing = 4,
+    },
+    left_margin = -12,
+    right_margin = -12,
+    top_margin = -2,
+    bottom_margin = -2,
+    left_padding = 12,
+    right_padding = 12,
+    top_padding = 2,
+    bottom_padding = 8,
+    horizontally_stretchable = "on",
+}
+
 styles["lct_configuration_select_button"] = {
     type = "button_style",
     parent = "mini_button_aligned_to_text_vertically_when_centered",
-    tooltip = nil,
 }
 
 styles["lct_configuration_confirm_button"] = {
     type = "button_style",
-    parent = "button",
-    default_graphical_set = {
-        base = { position = { 68, 17 }, corner_size = 8 },
-        shadow = styles.default_dirt--[[@as data.ElementImageSetLayer]]
-    },
-    hovered_graphical_set = {
-        base = { position = { 102, 17 }, corner_size = 8 },
-        shadow = styles.default_dirt--[[@as data.ElementImageSetLayer]],
-        glow = {
-            position = { 200, 128 },
-            corner_size = 8,
-            tint = { 135, 216, 139, 128 },
-            scale = 0.5,
-            draw_type = "outer"
-        }
-    },
-    clicked_graphical_set = {
-        base = { position = { 119, 17 }, corner_size = 8 },
-        shadow = styles.default_dirt--[[@as data.ElementImageSetLayer]]
-    },
-    disabled_graphical_set = {
-        base = { position = { 85, 17 }, corner_size = 8 },
-        shadow = styles.default_dirt--[[@as data.ElementImageSetLayer]]
-    },
-    left_click_sound = "__core__/sound/gui-green-confirm.ogg",
+    parent = "green_button",
     padding = 0,
     size = 16,
     top_margin = 1,
     invert_colors_of_picture_when_disabled = true,
+    tooltip = "",
 }
 
 styles["lct_overlay_progressbar_flow"] = {
