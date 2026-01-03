@@ -258,6 +258,10 @@ function receiver_gui.create_request_list_item(parent, index)
         style = "lct_overlay_progressbar_top",
         value = 0
     }.style.color = item_bar_top_color
+    -- extra settings
+    element.item.info.top.edit_button.tooltip = {
+        "logistic-cannon-transportation.receiver-edit-request-amount"
+    }
     return element
 end
 
@@ -313,6 +317,9 @@ function receiver_gui.create_request_editor_block(request_element, request)
     request_element.editor.input_text.select_all()
     request_element.style = "lct_configuration_deep_frame"
     request_element.item.info.top.edit_button.style = "lct_configuration_confirm_button"
+    request_element.item.info.top.edit_button.tooltip = {
+        "logistic-cannon-transportation.receiver-confirm-request-amount"
+    }
 end
 
 ---@param request_element LuaGuiElement
@@ -331,6 +338,9 @@ function receiver_gui.close_request_editor_block(request_element)
     if request_element.editor then
         request_element.style = "invisible_frame"
         request_element.item.info.top.edit_button.style = "lct_configuration_select_button"
+        request_element.item.info.top.edit_button.tooltip = {
+            "logistic-cannon-transportation.receiver-edit-request-amount"
+        }
         request_element.editor.destroy()
     end
 end
