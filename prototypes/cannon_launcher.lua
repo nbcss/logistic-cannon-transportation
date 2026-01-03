@@ -6,7 +6,7 @@ local sounds = require("__base__/prototypes/entity/sounds")
 local icon = "__base__/graphics/icons/tank-cannon.png"
 local health = 600
 local range = 100
-local inventory_size = 80
+local inventory_size = 39
 local energy_consumption = 200 * 1000 -- in W
 local integration_patch = {
     sheets = {
@@ -152,7 +152,7 @@ data:extend {
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
         max_health = health,
         circuit_wire_max_distance = 9,
-        inventory_type = "normal",
+        inventory_type = "with_filters_and_bar",
         inventory_size = inventory_size,
         quality_affects_inventory_size = true,
         render_not_in_network_icon = false,

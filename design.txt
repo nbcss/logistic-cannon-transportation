@@ -57,7 +57,5 @@ Advanced
 TODO
 - handle station teleport/clone event
 - handle force merge event (destroy network)
-- Fix no ammo alert when deconstruct launcher
 - Map setting to turn off projectile visualization
-- Network signal
 - GUI

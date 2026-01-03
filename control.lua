@@ -136,6 +136,21 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
     end
 end)
 
+script.on_event(defines.events.on_entity_settings_pasted, function (event)
+    --TODO
+    game.print(event.destination)
+end)
+
+script.on_event(defines.events.on_entity_cloned, function (event)
+    -- TODO
+    game.print(event.destination)
+end)
+
+script.on_event(defines.events.script_raised_teleported, function (event)
+    -- TODO
+    game.print(event.entity)
+end)
+
 script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
@@ -163,6 +178,13 @@ script.on_event(defines.events.on_tick, function(event)
             if launcher then
                 launcher:update_diode_status()
                 launcher_gui.refresh(player, entity)
+            end
+        end
+        if player.opened and player.opened.object_name == "LuaEntity" and player.opened.name == constants.entity_receiver_gui_proxy then
+            local entity = player.opened --[[@as LuaEntity]]
+            local receiver = ReceiverStation.get(entity)
+            if receiver then
+                receiver_gui.refresh(player, entity)
             end
         end
     end
@@ -208,6 +230,7 @@ script.on_event({
         defines.events.on_gui_text_changed,
         defines.events.on_gui_confirmed,
         defines.events.on_gui_checked_state_changed,
+        defines.events.on_gui_value_changed,
     },
     ---@param event
     ---| EventData.on_gui_click
@@ -215,6 +238,7 @@ script.on_event({
     ---| EventData.on_gui_text_changed
     ---| EventData.on_gui_confirmed
     ---| EventData.on_gui_checked_state_changed
+    ---| EventData.on_gui_value_changed
     function(event)
         local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
         if not handlers then return end

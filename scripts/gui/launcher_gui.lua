@@ -64,13 +64,13 @@ function launcher_gui.on_gui_opened(player, entity)
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
     }
+    -- header
     frame.station.add {
         type = "frame",
         name = "header",
         style = "lct_subheader_frame",
         direction = "horizontal",
     }
-    frame.station.header.style.bottom_margin = 5
     frame.station.header.add {
         type = "label",
         name = "display_name",
@@ -102,6 +102,7 @@ function launcher_gui.on_gui_opened(player, entity)
     frame.station.header.add {
         type = "empty-widget",
     }.style.horizontally_stretchable = true
+    -- ammo/energy
     frame.station.add {
         type = "flow",
         name = "ammo_and_energy",
@@ -118,11 +119,9 @@ function launcher_gui.on_gui_opened(player, entity)
         name = "energy_bar",
         style = "lct_energy_bar",
     }
-    -- frame.station.ammo_and_energy.energy_bar.style.height = 25
-    -- frame.station.ammo_and_energy.energy_bar.style.natural_height = 25
     frame.station.add {
         type = "line",
-        style = "inside_shallow_frame_with_padding_line"
+        style = "inside_shallow_frame_with_padding_line",
     }
     -- range
     frame.station.add {
@@ -333,6 +332,11 @@ function launcher_gui.refresh(player, entity)
     if data:get_energy_capacity() > 0 then
         energy_ratio = math.min(1.0, data:get_stored_energy() / data:get_energy_capacity())
     end
+    inventory_slot.refresh {
+        element = frame.station.ammo_and_energy.ammo_slot,
+        target = data:get_ammo_inventory()[1],
+        options = ammo_slot_options,
+    }
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
     frame.station.range.value_label.caption = string.format("%.0f/%.0f", data:get_range(), data.launcher_range)
@@ -347,14 +351,10 @@ function launcher_gui.refresh(player, entity)
     local projectile_speed = projectile_properties[data:get_projectile_speed()]
     frame.station.projectile_speed.value_label.caption = projectile_speed and projectile_speed.locale_string or "-"
     frame.station.connected_receivers.value_label.caption = data.network:get_connection_count(data:id())
-    inventory_slot.refresh {
-        element = frame.station.ammo_and_energy.ammo_slot,
-        target = data:get_ammo_inventory()[1],
-        options = ammo_slot_options,
-    }
     frame.station.network.value_signal.elem_value = data.network.signal
     frame.circuit.read_ammo.state = data.turret_entity.get_or_create_control_behavior().read_ammo --[[@as boolean]]
-    frame.circuit.read_contents.state = data.inventory_entity.get_or_create_control_behavior().read_contents --[[@as boolean]]
+    frame.circuit.read_contents.state = data.inventory_entity.get_or_create_control_behavior()
+         .read_contents --[[@as boolean]]
 end
 
 ---@param data LauncherStation

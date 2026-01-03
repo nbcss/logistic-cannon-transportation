@@ -2,7 +2,7 @@ local constants = require("constants")
 local sounds = require("__base__/prototypes/entity/sounds")
 local icon = "__base__/graphics/icons/requester-chest.png"
 local health = 400
-local inventory_size = 100
+local inventory_size = 59
 
 local container_animation = {
     layers = {
@@ -65,7 +65,7 @@ data:extend{
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
         max_health = health,
         circuit_wire_max_distance = 9,
-        inventory_type = "normal",
+        inventory_type = "with_bar",
         inventory_size = inventory_size,
         quality_affects_inventory_size = true,
         render_not_in_network_icon = false,
