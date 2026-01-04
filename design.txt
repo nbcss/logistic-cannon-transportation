@@ -56,7 +56,5 @@ Advanced
 
 TODO
 - handle station teleport/clone event
-- handle force merge event (destroy network)
 - Map setting to turn off projectile visualization
-- Cannot reach proxy container inside
-- GUI
+- Range override

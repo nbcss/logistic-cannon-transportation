@@ -280,16 +280,21 @@ function LauncherStation.prototype:update_diode_status()
     }
 end
 
----@param signal SignalID?
-function LauncherStation.prototype:set_network_signal(signal)
-    local force = self.inventory_entity.force --[[@as LuaForce]]
-    local surface = self.inventory_entity.surface
-    local network = CannonNetwork.get_or_create(force, surface, signal)
+---@param network CannonNetwork
+function LauncherStation.prototype:set_network(network)
     if network ~= self.network then
         self.network:remove_launcher(self:id())
         self.network = network
         self.network:add_launcher(self)
     end
+end
+
+---@param signal SignalID?
+function LauncherStation.prototype:set_network_signal(signal)
+    local force = self.inventory_entity.force --[[@as LuaForce]]
+    local surface = self.inventory_entity.surface
+    local network = CannonNetwork.get_or_create(force, surface, signal)
+    self:set_network(network)
 end
 
 ---@param receiver ReceiverStation

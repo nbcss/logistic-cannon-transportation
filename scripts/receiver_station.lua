@@ -102,16 +102,21 @@ function ReceiverStation.all()
     end
 end
 
----@param signal SignalID?
-function ReceiverStation.prototype:set_network_signal(signal)
-    local force = self.inventory_entity.force --[[@as LuaForce]]
-    local surface = self.inventory_entity.surface
-    local network = CannonNetwork.get_or_create(force, surface, signal)
+---@param network CannonNetwork
+function ReceiverStation.prototype:set_network(network)
     if network ~= self.network then
         self.network:remove_receiver(self:id())
         self.network = network
         self.network:add_receiver(self)
     end
+end
+
+---@param signal SignalID?
+function ReceiverStation.prototype:set_network_signal(signal)
+    local force = self.inventory_entity.force --[[@as LuaForce]]
+    local surface = self.inventory_entity.surface
+    local network = CannonNetwork.get_or_create(force, surface, signal)
+    self:set_network(network)
 end
 
 ---@param delivery ScheduledDelivery

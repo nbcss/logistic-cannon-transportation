@@ -151,6 +151,20 @@ script.on_event(defines.events.script_raised_teleported, function (event)
     game.print(event.entity)
 end)
 
+script.on_event(defines.events.on_forces_merging, function (event)
+    for network in CannonNetwork.all() do
+        if network.force == event.source then
+            local target_network = CannonNetwork.get_or_create(event.destination, network.surface, network.signal)
+            for launcher in network.launchers:all() do
+                launcher:set_network(target_network)
+            end
+            for receiver in network.receivers:all() do
+                receiver:set_network(target_network)
+            end
+        end
+    end
+end)
+
 script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
 script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
