@@ -67,6 +67,7 @@ data:extend {
         placeable_by = { item = constants.item_receiver, count = 1 },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+        default_status = "working",
         max_health = health,
         circuit_wire_max_distance = 9,
         inventory_type = "with_bar",

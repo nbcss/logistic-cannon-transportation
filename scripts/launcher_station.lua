@@ -36,9 +36,11 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---User-configurable settings of a cannon launcher, POD.
 ---@class (exact) LauncherStationSettings
 ---@field name string? Custom name of the station.
+---@field payload_size_override uint? Override payload size (stack)
 ---@field load_capsule_from_inventory boolean
 LauncherStation.default_settings = {
     name = nil,
+    payload_size_override = nil,
     load_capsule_from_inventory = true,
 }
 
@@ -433,13 +435,17 @@ function LauncherStation.prototype:get_charging_speed()
     return 60 * self.electric_interface.get_electric_input_flow_limit(quality) --[[@as number]]
 end
 
+---@param ignore_override boolean?
 ---@return uint32?
-function LauncherStation.prototype:get_max_payload_size()
+function LauncherStation.prototype:get_max_payload_size(ignore_override)
     local data = capsule_properties[self.ammo_name]
     local payload_size = data and data.payload_size or 0
     if payload_size == 0 then return nil end
     local quality_modifier = self.ammo_quality and self.ammo_quality.default_multiplier or 1
-    return math.floor(0.5 + (payload_size * quality_modifier))
+    local value = math.floor(0.5 + (payload_size * quality_modifier))
+    if ignore_override then return value end
+    local override = self.settings.payload_size_override or 99999999
+    return math.min(override, value)
 end
 
 ---@return number?

@@ -152,6 +152,10 @@ function ReceiverStation.prototype:get_gui_proxy()
     self.proxy_entity.destructible = false
     self.proxy_entity.proxy_target_entity = self.inventory_entity
     self.proxy_entity.proxy_target_inventory = defines.inventory.chest
+    self.proxy_entity.custom_status = {
+        diode = defines.entity_status_diode.green,
+        label = { "entity-status.working" },
+    }
     return self.proxy_entity
 end
 

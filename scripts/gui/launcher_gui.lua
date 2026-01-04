@@ -180,32 +180,76 @@ function launcher_gui.on_gui_opened(player, entity)
     }
     -- payload size
     frame.station.add {
-        type = "flow",
+        type = "frame",
         name = "payload_size",
+        style = "invisible_frame",
+        direction = "vertical",
+    }
+    frame.station.payload_size.add {
+        type = "flow",
+        name = "info",
         style = "lct_player_input",
         direction = "horizontal",
     }
-    frame.station.payload_size.add {
+    frame.station.payload_size.info.add {
         type = "label",
         caption = { "", { "logistic-cannon-transportation.launcher-payload-size" }, },
     }
-    frame.station.payload_size.add {
+    frame.station.payload_size.info.add {
         type = "empty-widget",
     }.style.horizontally_stretchable = true
-    frame.station.payload_size.add {
+    frame.station.payload_size.info.add {
         type = "sprite-button",
         name = "edit_button",
         sprite = "utility/rename_icon",
-        style = "mini_button_aligned_to_text_vertically_when_centered",
+        style = "lct_configuration_select_button",
+        tooltip = { "logistic-cannon-transportation.launcher-edit-payload-size-override" },
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_click = "launcher_gui.begin_edit_payload_override",
+                on_gui_click = "launcher_gui.on_edit_payload_override",
             },
         },
     }
-    frame.station.payload_size.add {
+    frame.station.payload_size.info.add {
         type = "label",
         name = "value_label",
+    }
+    frame.station.payload_size.add {
+        type = "flow",
+        name = "override",
+        direction = "horizontal",
+        style = "lct_player_input",
+        visible = false,
+    }
+    frame.station.payload_size.override.add {
+        type = "checkbox",
+        name = "checkbox",
+        style = "checkbox",
+        caption = {"", { "logistic-cannon-transportation.override" }, " [img=info]"},
+        tooltip = { "logistic-cannon-transportation.override-payload-size-info" },
+        state = false,
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_checked_state_changed = "launcher_gui.on_toggle_override",
+            },
+        },
+    }
+    frame.station.payload_size.override.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.payload_size.override.add {
+        type = "textfield",
+        name = "input_text",
+        numeric = true,
+        allow_decimal = false,
+        allow_negative = false,
+        style = "slider_value_textfield",
+        text = "1",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_confirmed = "launcher_gui.on_edit_payload_override"
+            },
+        },
     }
     -- energy consumption
     frame.station.add {
@@ -343,9 +387,12 @@ function launcher_gui.refresh(player, entity)
     frame.station.range.value_label.caption = string.format("%.0f/%.0f", launcher:get_range(), launcher.launcher_range)
     frame.station.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
     local payload_size = launcher:get_max_payload_size()
-    frame.station.payload_size.edit_button.visible = payload_size ~= nil
-    frame.station.payload_size.value_label.caption = payload_size and
-        { "logistic-cannon-transportation.stack", payload_size } or "-"
+    frame.station.payload_size.info.edit_button.visible = payload_size ~= nil
+    frame.station.payload_size.info.value_label.caption = { "",
+        launcher.settings.payload_size_override and "[color=yellow]" or "[color=#ffffff]",
+        payload_size and { "logistic-cannon-transportation.stack", payload_size } or "-",
+        "[/color]",
+    }
     local energy_consumption = launcher:get_launch_consumption()
     frame.station.energy_consumption.value_label.caption = energy_consumption and
         format.energy(energy_consumption, "J/m") or "-"
@@ -411,8 +458,44 @@ function launcher_gui.on_click_ammo_slot(player, event)
     }
 end
 
-function launcher_gui.begin_edit_payload_override(player, event)
+function launcher_gui.on_toggle_override(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    event.element.parent.input_text.enabled = event.element.state
+end
 
+function launcher_gui.on_edit_payload_override(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local payload_size = launcher:get_max_payload_size(true) or 1
+    local override = launcher.settings.payload_size_override
+    if frame.station.payload_size.override.visible then
+        -- Commit and save change
+        if frame.station.payload_size.override.checkbox.state then
+            local value = tonumber(frame.station.payload_size.override.input_text.text) or payload_size
+            launcher.settings.payload_size_override = math.max(1, math.min(payload_size, value))
+        else
+            launcher.settings.payload_size_override = nil
+        end
+        -- Hide override panel
+        frame.station.payload_size.info.edit_button.style = "lct_configuration_select_button"
+        frame.station.payload_size.info.edit_button.tooltip = {
+            "logistic-cannon-transportation.launcher-edit-payload-size-override"
+        }
+        frame.station.payload_size.style = "invisible_frame"
+        frame.station.payload_size.override.visible = false
+    else
+        frame.station.payload_size.override.checkbox.state = override ~= nil
+        frame.station.payload_size.override.input_text.enabled = override ~= nil
+        frame.station.payload_size.override.input_text.text = tostring(override or payload_size)
+        frame.station.payload_size.info.edit_button.style = "lct_configuration_confirm_button"
+        frame.station.payload_size.info.edit_button.tooltip = {
+            "logistic-cannon-transportation.launcher-confirm-payload-size-override"
+        }
+        frame.station.payload_size.style = "lct_configuration_deep_frame"
+        frame.station.payload_size.override.visible = true
+    end
 end
 
 ---@param player LuaPlayer

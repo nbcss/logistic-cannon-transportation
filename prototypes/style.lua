@@ -42,7 +42,7 @@ styles["lct_configuration_deep_frame"] = {
     left_padding = 12,
     right_padding = 12,
     top_padding = 2,
-    bottom_padding = 8,
+    bottom_padding = 6,
     horizontally_stretchable = "on",
 }
 
