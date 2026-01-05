@@ -221,7 +221,7 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
         end
     end
     self.launcher_to_receivers[launcher:id()] = {}
-    local maximum_range = launcher:get_max_range()
+    local maximum_range = launcher:get_effective_max_range()
     local count = 0
     if maximum_range > 0 then
         for receiver in self.receivers:all() do
@@ -256,7 +256,7 @@ function CannonNetwork.prototype:update_receiver_connections(receiver)
     local count = 0
     for launcher in self.launchers:all() do
         if launcher:valid() then
-            local maximum_range = launcher:get_max_range()
+            local maximum_range = launcher:get_effective_max_range()
             if maximum_range > 0 then
                 local d = math2d.position.distance(receiver:position(), launcher:position())
                 if d <= maximum_range then

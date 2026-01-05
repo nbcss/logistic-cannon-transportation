@@ -57,7 +57,7 @@ local function launcher_visaulization(player, launcher, source_position)
             }  or error(),
         }
     else
-        local range = launcher:get_max_range()
+        local range = launcher:get_effective_max_range()
         return {
             launcher.inventory_entity.surface.create_entity {
                 name = "lct-highlight-box",

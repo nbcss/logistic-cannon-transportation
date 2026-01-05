@@ -48,18 +48,18 @@ Data
 [Ammo]
 Basic
 - Payload: 1 stack
-- Consumption: 25 kJ/m
-- Speed: 30 m/s
-
-Advanced
-- Payload: 5 stacks
-- Consumption: 100 kJ/m
+- Consumption: 30 kJ/m
 - Speed: 40 m/s
 
-Express
+Reinforced
+- Payload: 8 stacks
+- Consumption: 200 kJ/m
+- Speed: 30 m/s
+
+Propelled
 - Payload: 3 stacks
-- Consumption: 50 kJ/m
-- Speed: 60 m/s
+- Consumption: 40 kJ/m
+- Speed: 75 m/s
 
 [Receiver]
 - Storage size: 59
@@ -71,8 +71,10 @@ Express
 
 TODO
 - handle station teleport/clone event
+- handle copy-paste setting & blueprint
 - Map setting to turn off projectile visualization
 - Range override
+- Fix negative efficiency bonus localised string
 
 Roadmap
 - Tool for manual drop point selection

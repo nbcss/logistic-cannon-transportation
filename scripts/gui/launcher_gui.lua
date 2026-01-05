@@ -125,22 +125,77 @@ function launcher_gui.on_gui_opened(player, entity)
     }
     -- range
     frame.station.add {
-        type = "flow",
+        type = "frame",
         name = "range",
+        style = "invisible_frame",
+        direction = "vertical",
+    }
+    frame.station.range.add {
+        type = "flow",
+        name = "info",
         style = "lct_player_input",
         direction = "horizontal",
     }
-    frame.station.range.add {
+    frame.station.range.info.add {
         type = "label",
         caption = { "", { "logistic-cannon-transportation.launcher-range" }, " [img=info]" },
         tooltip = { "logistic-cannon-transportation.launcher-range-tooltip" },
     }
-    frame.station.range.add {
+    frame.station.range.info.add {
         type = "empty-widget",
     }.style.horizontally_stretchable = true
-    frame.station.range.add {
+    frame.station.range.info.add {
+        type = "sprite-button",
+        name = "edit_button",
+        sprite = "utility/rename_icon",
+        style = "lct_configuration_select_button",
+        tooltip = { "logistic-cannon-transportation.launcher-edit-range-override" },
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_click = "launcher_gui.on_edit_range_override",
+            },
+        },
+    }
+    frame.station.range.info.add {
         type = "label",
         name = "value_label",
+    }
+    frame.station.range.add {
+        type = "flow",
+        name = "override",
+        direction = "horizontal",
+        style = "lct_player_input",
+        visible = false,
+    }
+    frame.station.range.override.add {
+        type = "checkbox",
+        name = "checkbox",
+        style = "checkbox",
+        caption = {"", { "logistic-cannon-transportation.override" }, " [img=info]"},
+        tooltip = { "logistic-cannon-transportation.override-range-info" },
+        state = false,
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_checked_state_changed = "launcher_gui.on_toggle_override",
+            },
+        },
+    }
+    frame.station.range.override.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.range.override.add {
+        type = "textfield",
+        name = "input_text",
+        numeric = true,
+        allow_decimal = false,
+        allow_negative = false,
+        style = "slider_value_textfield",
+        text = "1",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_confirmed = "launcher_gui.on_edit_range_override"
+            },
+        },
     }
     -- charging speed
     frame.station.add {
@@ -371,20 +426,20 @@ function launcher_gui.refresh(player, entity)
     local frame = player.gui.relative[name] ---@type LuaGuiElement
     frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
+    inventory_slot.refresh {
+        element = frame.station.ammo_and_energy.ammo_slot,
+        target = launcher:get_ammo_inventory()[1],
+        options = ammo_slot_options,
+    }
     local energy_ratio = 0
     local energy = format.energy(launcher:get_stored_energy())
     local capacity = format.energy(launcher:get_energy_capacity())
     if launcher:get_energy_capacity() > 0 then
         energy_ratio = math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity())
     end
-    inventory_slot.refresh {
-        element = frame.station.ammo_and_energy.ammo_slot,
-        target = launcher:get_ammo_inventory()[1],
-        options = ammo_slot_options,
-    }
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
-    frame.station.range.value_label.caption = string.format("%.0f/%.0f", launcher:get_current_range(), launcher.max_range)
+    frame.station.range.info.value_label.caption = string.format("%.0f/%.0f", launcher:get_current_range(), launcher:get_effective_max_range())
     frame.station.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
     local payload_size = launcher:get_max_payload_size()
     frame.station.payload_size.info.edit_button.visible = payload_size ~= nil
@@ -462,6 +517,40 @@ function launcher_gui.on_toggle_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
     event.element.parent.input_text.enabled = event.element.state
+end
+
+function launcher_gui.on_edit_range_override(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local range = launcher:compute_max_range()
+    local override = launcher.settings.range_override
+    if frame.station.range.override.visible then
+        -- Commit and save change
+        if frame.station.range.override.checkbox.state then
+            local value = tonumber(frame.station.range.override.input_text.text) or range
+            launcher.settings.range_override = math.max(1, math.min(range, value))
+        else
+            launcher.settings.range_override = nil
+        end
+        -- Hide override panel
+        frame.station.range.info.edit_button.style = "lct_configuration_select_button"
+        frame.station.range.info.edit_button.tooltip = {
+            "logistic-cannon-transportation.launcher-edit-range-override"
+        }
+        frame.station.range.style = "invisible_frame"
+        frame.station.range.override.visible = false
+    else
+        frame.station.range.override.checkbox.state = override ~= nil
+        frame.station.range.override.input_text.enabled = override ~= nil
+        frame.station.range.override.input_text.text = tostring(override or range)
+        frame.station.range.info.edit_button.style = "lct_configuration_confirm_button"
+        frame.station.range.info.edit_button.tooltip = {
+            "logistic-cannon-transportation.launcher-confirm-range-override"
+        }
+        frame.station.range.style = "lct_configuration_deep_frame"
+        frame.station.range.override.visible = true
+    end
 end
 
 function launcher_gui.on_edit_payload_override(player, event)
