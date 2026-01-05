@@ -9,7 +9,9 @@ constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
 -- settings
 constants.update_interval_setting = constants.name_prefix.."update-interval"
 -- bonus effect
-constants.range_upgrade_bonus = "logistic-cannon-launcher-range-bonus"
+constants.range_upgrade_bonus = "lct-launcher-range-bonus"
+constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"
+constants.energy_consumption_modifier = "lct-launcher-energy-consumption-modifier"
 -- data
 constants.data_capsule_properties = constants.name_prefix .. "capsule-properties"
 constants.data_projectile_properties = constants.name_prefix .. "projectile-properties"

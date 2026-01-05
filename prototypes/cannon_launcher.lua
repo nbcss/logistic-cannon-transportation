@@ -86,7 +86,7 @@ data:extend {
         ingredients = {
             { type = "item", name = "radar",           amount = 1 },
             { type = "item", name = "steel-plate",     amount = 20 },
-            { type = "item", name = "stone-brick",     amount = 10 },
+            { type = "item", name = "concrete",        amount = 10 },
             { type = "item", name = "iron-gear-wheel", amount = 10 },
             { type = "item", name = "engine-unit",     amount = 5 },
         },

@@ -34,7 +34,7 @@ data:extend {
                 value = { "", format.energy(launch_consumption, "J/m") },
                 quality_header = "quality-tooltip.reduced-energy",
                 quality_base_value = 1,
-                quality_multiplier = "default_multiplier",
+                quality_multiplier = "range_multiplier",
                 quality_formatting = setmetatable({}, {__call = function(self, value)
                     return { "", format.energy(launch_consumption / value, "J/m") } end}),
                 order = 2,

@@ -11,7 +11,7 @@ data:extend {
             { type = "unlock-recipe", recipe = constants.item_receiver},
             { type = "unlock-recipe", recipe = constants.item_capsule_basic},
         },
-        prerequisites = { "explosives", "radar" },
+        prerequisites = { "explosives", "radar", "concrete" },
         order = "logistic-cannon",
         unit = {
             count = 150,
@@ -136,7 +136,7 @@ data:extend {
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
                 { "military-science-pack",   1 },
-                { "utility-science-pack",   1 },
+                { "utility-science-pack",    1 },
             }
         },
     },
@@ -169,7 +169,7 @@ data:extend {
         upgrade = true,
         order = "logistic-cannon-range-4",
         unit = {
-            count = 700,
+            count = 750,
             time = 30,
             ingredients = {
                 { "automation-science-pack", 1 },
@@ -327,6 +327,292 @@ data:extend {
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
                 { "military-science-pack",   1 },
+                { "production-science-pack", 1 },
+                { "space-science-pack",      1 },
+            }
+        },
+    },
+    -- energy efficiency research
+    {
+        type = "technology",
+        name = "cannon-launcher-energy-efficiency-upgrade-1",
+        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icon_size = 64,
+        effects = {
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_consumption_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = -0.05,
+            },
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_capacity_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = 0.1,
+            },
+        },
+        prerequisites = { "logistic-cannon" },
+        upgrade = true,
+        order = "logistic-cannon-energy-efficiency-1",
+        unit = {
+            count = 500,
+            time = 60,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+            }
+        },
+    },
+    {
+        type = "technology",
+        name = "cannon-launcher-energy-efficiency-upgrade-2",
+        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icon_size = 64,
+        effects = {
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_consumption_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = -0.1,
+            },
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_capacity_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = 0.2,
+            },
+        },
+        prerequisites = { "cannon-launcher-energy-efficiency-upgrade-1", "chemical-science-pack" },
+        upgrade = true,
+        order = "logistic-cannon-energy-efficiency-2",
+        unit = {
+            count = 750,
+            time = 60,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+                { "chemical-science-pack",   1 },
+            }
+        },
+    },
+    {
+        type = "technology",
+        name = "cannon-launcher-energy-efficiency-upgrade-3",
+        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icon_size = 64,
+        effects = {
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_consumption_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = -0.1,
+            },
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_capacity_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = 0.2,
+            },
+        },
+        prerequisites = { "cannon-launcher-energy-efficiency-upgrade-2", "utility-science-pack" },
+        upgrade = true,
+        order = "logistic-cannon-energy-efficiency-3",
+        unit = {
+            count = 1000,
+            time = 60,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+                { "chemical-science-pack",   1 },
+                { "utility-science-pack",    1 },
+            }
+        },
+    },
+    {
+        type = "technology",
+        name = "cannon-launcher-energy-efficiency-upgrade-4",
+        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icon_size = 64,
+        effects = {
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_consumption_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = -0.1,
+            },
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_capacity_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = 0.2,
+            },
+        },
+        prerequisites = { "cannon-launcher-energy-efficiency-upgrade-3", "production-science-pack" },
+        upgrade = true,
+        order = "logistic-cannon-energy-efficiency-4",
+        unit = {
+            count = 1500,
+            time = 60,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+                { "chemical-science-pack",   1 },
+                { "utility-science-pack",    1 },
+                { "production-science-pack", 1 },
+            }
+        },
+    },
+    {
+        type = "technology",
+        name = "cannon-launcher-energy-efficiency-upgrade-5",
+        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icon_size = 64,
+        effects = {
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_consumption_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = -0.15,
+            },
+            {
+                type = "ammo-damage",
+                ammo_category = constants.energy_capacity_modifier,
+                icons = {
+                    {
+                        icon = "__base__/graphics/icons/tank-cannon.png",
+                        icon_size = 64,
+                    },
+                    {
+                        icon = "__core__/graphics/icons/technology/effect-constant/effect-constant-battery.png",
+                        icon_size = 64,
+                        scale = 0.5,
+                        floating = true
+                    }
+                },
+                use_icon_overlay_constant = false,
+                modifier = 0.3,
+            },
+        },
+        prerequisites = { "cannon-launcher-energy-efficiency-upgrade-4", "space-science-pack" },
+        upgrade = true,
+        order = "logistic-cannon-energy-efficiency-5",
+        unit = {
+            count = 2000,
+            time = 60,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+                { "chemical-science-pack",   1 },
+                { "utility-science-pack",    1 },
                 { "production-science-pack", 1 },
                 { "space-science-pack",      1 },
             }

@@ -384,7 +384,7 @@ function launcher_gui.refresh(player, entity)
     }
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
-    frame.station.range.value_label.caption = string.format("%.0f/%.0f", launcher:get_range(), launcher.launcher_range)
+    frame.station.range.value_label.caption = string.format("%.0f/%.0f", launcher:get_current_range(), launcher.max_range)
     frame.station.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
     local payload_size = launcher:get_max_payload_size()
     frame.station.payload_size.info.edit_button.visible = payload_size ~= nil

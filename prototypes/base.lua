@@ -37,6 +37,20 @@ data.extend {
         hidden = true,
     },
     {
+        type = "ammo-category",
+        name = constants.energy_capacity_modifier,
+        icon = "__base__/graphics/icons/rocket-part.png",
+        subgroup = "ammo-category",
+        hidden = true,
+    },
+    {
+        type = "ammo-category",
+        name = constants.energy_consumption_modifier,
+        icon = "__base__/graphics/icons/rocket-part.png",
+        subgroup = "ammo-category",
+        hidden = true,
+    },
+    {
         type = "artillery-projectile",
         name = "logistic-cannon-capsule-tracker",
         flags = { "not-on-map" },

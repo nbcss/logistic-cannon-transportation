@@ -7,29 +7,36 @@ Launcher properties
 - Base Range [+Quality]
 - Base energy charging speed [+Quality]
 - Storage capacity [+Quality]
+- Addon slot? [+Quality]
 
 Receiver properties
 - Storage capacity [+Quality]
 - Request slot?
+- Addon slot? [+Quality]
 
 Technology bonus
-- Capsule Productivity [infinite]
-- Range [infinite]
-- Charging speed [finite]? //cannot implement this (it's prototype value)
+- Capsule Productivity [infinite]: +10% Capsule Productivity per level
+- Range [infinite]: +10% range per level, +20% for infinite technology
+- Energy consumption [finite]: -10% consumption & +20% energy capacity per level, 5 level max
+- Passenger transportation: Allow cannon launcher to transport player
 
-More modifier
-- Allow bot integration?
-- Allow passenger transportation?
-- Reduce consumption per shot (+save electricity, +shooting speed)
-- Increase charge speed (+shooting speed) //cannot implement this (it's prototype value)
-- Increase range (+power capacity)
-- Projectile speed? (prototype value)
-- Inventory slot: set_inventory_size_override
-- More request slot
-
-Launcher Quality
-- Range
-- Equipment grid size?
+Addons
+[Inventory expansion addon] (L&R)
++10 Storage capacity
+[Launcher efficiency addon] (L)
+-5% Energy consumption
+[Launcher battery addon] (L)
++10% Charging speed
++10% Energy capacity (attach extra EI)
+[Launcher range addon] (L)
++10% Range
+[Projectile speed addon] (L)
++15m/s Projectile speed
++3% Energy consumption
+[Receiver request slot addon] (R)
++1 Request slot?
+[Receiver bot integration addon] (R)
++Allow bots to take items from receiver
 
 Data
 [Projectile speed]
@@ -42,19 +49,32 @@ Data
 Basic
 - Payload: 1 stack
 - Consumption: 25 kJ/m
-- Speed: Slow
+- Speed: 30 m/s
 
 Advanced
 - Payload: 5 stacks
 - Consumption: 100 kJ/m
-- Speed: Moderate
+- Speed: 40 m/s
+
+Express
+- Payload: 3 stacks
+- Consumption: 50 kJ/m
+- Speed: 60 m/s
+
+[Receiver]
+- Storage size: 59
 
 [Launcher]
-- Storage size: 80
+- Storage size: 39
 - Consumption: 200kW
-- Range: 100
+- Range: 80
 
 TODO
 - handle station teleport/clone event
 - Map setting to turn off projectile visualization
 - Range override
+
+Roadmap
+- Tool for manual drop point selection
+- Player launcher onboard
+- Module
