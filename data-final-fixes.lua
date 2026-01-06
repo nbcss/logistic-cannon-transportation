@@ -1,14 +1,18 @@
 local constants = require("constants")
 
-local tooltip_postprocessing = { 
+local tooltip_postprocessing = {
     item = { constants.item_launcher },
-    ammo = { constants.item_capsule_basic },
+    ammo = {},
 }
 local default_quality_multipliers = {
     default_multiplier = function (level) return 1 + 0.3 * level end,
     range_multiplier = function (level) return math.min(1 + 0.1 * level, 3) end,
     inventory_size_multiplier = function (level) return 1 + 0.3 * level end,
 }
+
+for ammo, _ in pairs(data.raw["mod-data"][constants.data_capsule_properties].data) do
+    table.insert(tooltip_postprocessing.ammo, ammo)
+end
 
 for category, prototypes in pairs(tooltip_postprocessing) do
     for _, prototype_name in ipairs(prototypes) do

@@ -81,7 +81,6 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_launcher,
-        enabled = true,
         energy_required = 10,
         ingredients = {
             { type = "item", name = "radar",           amount = 1 },

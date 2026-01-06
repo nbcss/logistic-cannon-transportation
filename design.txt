@@ -58,7 +58,7 @@ Reinforced
 
 Propelled
 - Payload: 3 stacks
-- Consumption: 40 kJ/m
+- Consumption: 50 kJ/m
 - Speed: 75 m/s
 
 [Receiver]
@@ -73,8 +73,7 @@ TODO
 - handle station teleport/clone event
 - handle copy-paste setting & blueprint
 - Map setting to turn off projectile visualization
-- Change capsule speed form
-- Add more ammo
+- Add technology & recipe for new ammos
 - Fix negative efficiency bonus localised string
 
 Roadmap

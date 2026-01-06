@@ -19,6 +19,8 @@ constants.data_launcher_properties = constants.name_prefix .. "launcher-properti
 constants.entity_target = constants.name_prefix.."target"
 -- capsule
 constants.item_capsule_basic = "logistic-cannon-capsule-basic"
+constants.item_capsule_reinforced = "logistic-cannon-capsule-reinforced"
+constants.item_capsule_propelled = "logistic-cannon-capsule-propelled"
 -- launcher
 constants.item_launcher = constants.name_prefix.."launcher"
 constants.entity_launcher_inventory = constants.item_launcher
