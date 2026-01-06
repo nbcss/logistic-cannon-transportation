@@ -6,6 +6,12 @@ data.extend {
         hidden = true,
     } },
     {
+        type = "font",
+        name = "lct-negative-effect",
+        from = "lct-negative-effect",
+        size = 14
+    },
+    {
         type = "ammo-category",
         name = constants.ammo_category,
         icon = "__base__/graphics/icons/rocket-part.png",
@@ -64,7 +70,7 @@ data.extend {
             width = 64,
             height = 64,
             priority = "high",
-            tint = {0, 0.9, 0},
+            tint = { 0, 0.9, 0 },
             scale = 0.2,
         },
         action = {

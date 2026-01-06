@@ -53,7 +53,7 @@ Basic
 
 Reinforced
 - Payload: 8 stacks
-- Consumption: 200 kJ/m
+- Consumption: 100 kJ/m
 - Speed: 30 m/s
 
 Propelled
@@ -73,7 +73,6 @@ TODO
 - handle station teleport/clone event
 - handle copy-paste setting & blueprint
 - Map setting to turn off projectile visualization
-- Fix negative efficiency bonus localised string
 
 Roadmap
 - Tool for manual drop point selection
