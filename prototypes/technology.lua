@@ -98,6 +98,46 @@ data:extend {
             }
         },
     },
+    {
+        type = "technology",
+        name = "reinforced-cannon-capsule",
+        icon = "__base__/graphics/technology/artillery.png",
+        icon_size = 256,
+        effects = {
+            { type = "unlock-recipe", recipe = constants.item_capsule_reinforced },
+        },
+        prerequisites = { "logistic-cannon", "low-density-structure" },
+        order = "reinforced-cannon-capsule",
+        unit = {
+            count = 200,
+            time = 30,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+                { "chemical-science-pack",   1 },
+            }
+        },
+    },
+    {
+        type = "technology",
+        name = "propelled-cannon-capsule",
+        icon = "__base__/graphics/technology/artillery.png",
+        icon_size = 256,
+        effects = {
+            { type = "unlock-recipe", recipe = constants.item_capsule_propelled },
+        },
+        prerequisites = { "reinforced-cannon-capsule", "rocket-fuel" },
+        order = "propelled-cannon-capsule",
+        unit = {
+            count = 250,
+            time = 30,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+                { "chemical-science-pack",   1 },
+            }
+        },
+    },
     -- range bonus researches
     {
         type = "technology",

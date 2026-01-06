@@ -11,7 +11,7 @@ capsule_properties[constants.item_capsule_basic] = {
 capsule_properties[constants.item_capsule_reinforced] = {
     speed = 30,
     payload_size = 8,
-    energy_consumption = 200000, -- J per tile
+    energy_consumption = 100000, -- J per tile
 } --[[@as CannonCapsuleProperties]]
 capsule_properties[constants.item_capsule_propelled] = {
     speed = 75,
@@ -115,10 +115,10 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_capsule_reinforced,
-        energy_required = 1,
+        energy_required = 2,
         ingredients = {
-            { type = "item", name = "steel-plate", amount = 1 },
-            { type = "item", name = "explosives",  amount = 1 },
+            { type = "item", name = "low-density-structure", amount = 1 },
+            { type = "item", name = "explosives",  amount = 4 },
         },
         results = {
             { type = "item", name = constants.item_capsule_reinforced, amount = 4 },
@@ -139,10 +139,11 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_capsule_propelled,
-        energy_required = 1,
+        energy_required = 2,
         ingredients = {
-            { type = "item", name = "steel-plate", amount = 1 },
+            { type = "item", name = "low-density-structure", amount = 1 },
             { type = "item", name = "explosives",  amount = 1 },
+            { type = "item", name = "rocket-fuel",  amount = 1 },
         },
         results = {
             { type = "item", name = constants.item_capsule_propelled, amount = 4 },
