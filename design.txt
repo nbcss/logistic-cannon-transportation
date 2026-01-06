@@ -73,10 +73,11 @@ TODO
 - handle station teleport/clone event
 - handle copy-paste setting & blueprint
 - Map setting to turn off projectile visualization
-- Range override
+- Change capsule speed form
+- Add more ammo
 - Fix negative efficiency bonus localised string
 
 Roadmap
 - Tool for manual drop point selection
 - Player launcher onboard
-- Module
+- Addon

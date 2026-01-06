@@ -1,18 +1,12 @@
 local constants = require("constants")
 local vertical_acceleration_coefficient = 150
--- tile per second
-local projectiles = { 30, 40, 50, 80 }
 
-for index, speed in ipairs(projectiles) do
-    local name = tostring(index)
-    data.raw["mod-data"][constants.data_projectile_properties].data[name] = {
-        projectile_speed = speed,
-        locale_string = { "logistic-cannon-transportation.projectile-speed-" .. name, tostring(speed) },
-    } --[[@as ProjectileProperties]]
+-- speed: tile per second
+for speed = 30, 100, 5 do
     data:extend {
         {
             type = "stream",
-            name = "logistic-cannon-capsule-projectile-" .. name,
+            name = "logistic-cannon-capsule-projectile-" .. tostring(speed),
             flags = { "not-on-map" },
             hidden = true,
             oriented_particle = true,

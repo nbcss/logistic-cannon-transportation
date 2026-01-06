@@ -52,8 +52,6 @@ local launcher_properties = prototypes.mod_data[constants.data_launcher_properti
     .data --[[@as table<string, LauncherProperties>]]
 local capsule_properties = prototypes.mod_data[constants.data_capsule_properties]
     .data --[[@as table<string, CannonCapsuleProperties?>]]
-local projectile_properties = prototypes.mod_data[constants.data_projectile_properties]
-    .data --[[@as table<string, ProjectileProperties?>]]
 
 ---@param force LuaForce
 ---@param ammo_name string
@@ -300,10 +298,10 @@ function LauncherStation.prototype:get_launch_consumption()
     return self.energy_consumption
 end
 
----@return string?
+---@return number?
 function LauncherStation.prototype:get_projectile_speed()
     local data = capsule_properties[self.ammo_name]
-    return data and data.speed_tier
+    return data and data.speed
 end
 
 ---@return LuaInventory
@@ -458,7 +456,7 @@ function LauncherStation.prototype:launch(source_position)
                 ammo_slot.drain_ammo(1)
                 local speed = self:get_projectile_speed()
                 self.turret_entity.surface.create_entity {
-                    name = "logistic-cannon-capsule-projectile-" .. speed,
+                    name = "logistic-cannon-capsule-projectile-" .. tostring(speed),
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
@@ -467,7 +465,7 @@ function LauncherStation.prototype:launch(source_position)
                 }
                 self.turret_entity.surface.create_entity {
                     name = "logistic-cannon-capsule-tracker",
-                    speed = projectile_properties[speed].projectile_speed / 60,
+                    speed = speed / 60,
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,

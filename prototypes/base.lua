@@ -90,17 +90,9 @@ data.extend {
     },
     {
         type = "mod-data",
-        name = constants.data_projectile_properties,
-        ---@class ProjectileProperties
-        ---@field projectile_speed number
-        ---@field locale_string LocalisedString
-        data = {},
-    },
-    {
-        type = "mod-data",
         name = constants.data_capsule_properties,
         ---@class CannonCapsuleProperties
-        ---@field speed_tier string
+        ---@field speed number
         ---@field payload_size uint
         ---@field energy_consumption number
         data = {},

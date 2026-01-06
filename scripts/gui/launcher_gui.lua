@@ -8,12 +8,11 @@ local name = "logistic-cannon-launcher-gui"
 -- Info:
 -- Energy (progressbar)
 -- Range
+-- X stations in range (include a button to show list of stations)
 -- Current capsule
 ---- Launch consumption
 ---- Payload size
----- Projectile speed?
--- Map view
--- X stations in range (include a button to show list of stations)
+---- Projectile speed
 
 -- Settings:
 -- Change name (top)
@@ -32,9 +31,6 @@ for ammo, _ in pairs(prototypes.mod_data[constants.data_capsule_properties].data
     table.insert(ammo_slot_options.empty_tooltip --[[@as table]], "\n[item=" .. ammo .. "] ")
     table.insert(ammo_slot_options.empty_tooltip --[[@as table]], prototypes.item[ammo].localised_name)
 end
-
-local projectile_properties = prototypes.mod_data[constants.data_projectile_properties]
-    .data --[[@as table<string, ProjectileProperties>]]
 
 ---@param player LuaPlayer
 ---@param entity LuaEntity
@@ -456,8 +452,9 @@ function launcher_gui.refresh(player, entity)
     local energy_consumption = launcher:get_launch_consumption()
     frame.station.energy_consumption.value_label.caption = energy_consumption and
         format.energy(energy_consumption, "J/m") or "-"
-    local projectile_speed = projectile_properties[launcher:get_projectile_speed()]
-    frame.station.projectile_speed.value_label.caption = projectile_speed and projectile_speed.locale_string or "-"
+    local projectile_speed = launcher:get_projectile_speed()
+    frame.station.projectile_speed.value_label.caption = projectile_speed and
+        { "logistic-cannon-transportation.meter-per-second", tostring(projectile_speed) } or "-"
     frame.station.connected_receivers.value_label.caption = launcher.network:get_connection_count(launcher:id())
     frame.station.network.value_signal.elem_value = launcher.network.signal
     frame.circuit.read_ammo.state = launcher.turret_entity.get_or_create_control_behavior().read_ammo --[[@as boolean]]

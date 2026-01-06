@@ -14,7 +14,6 @@ constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"
 constants.energy_consumption_modifier = "lct-launcher-energy-consumption-modifier"
 -- data
 constants.data_capsule_properties = constants.name_prefix .. "capsule-properties"
-constants.data_projectile_properties = constants.name_prefix .. "projectile-properties"
 constants.data_launcher_properties = constants.name_prefix .. "launcher-properties"
 -- target
 constants.entity_target = constants.name_prefix.."target"
