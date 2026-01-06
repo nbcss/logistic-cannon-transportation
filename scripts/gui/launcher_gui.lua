@@ -439,7 +439,11 @@ function launcher_gui.refresh(player, entity)
     end
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
-    frame.station.range.info.value_label.caption = string.format("%.0f/%.0f", launcher:get_current_range(), launcher:get_effective_max_range())
+    frame.station.range.info.value_label.caption = { "",
+        launcher.settings.range_override and "[color=yellow]" or "[color=#ffffff]",
+        string.format("%.0f/%.0f", launcher:get_current_range(), launcher:get_max_range()),
+        "[/color]",
+    }
     frame.station.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
     local payload_size = launcher:get_max_payload_size()
     frame.station.payload_size.info.edit_button.visible = payload_size ~= nil
@@ -523,7 +527,7 @@ function launcher_gui.on_edit_range_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
     local frame = player.gui.relative[name] ---@type LuaGuiElement
-    local range = launcher:compute_max_range()
+    local range = launcher:get_max_range(true)
     local override = launcher.settings.range_override
     if frame.station.range.override.visible then
         -- Commit and save change
