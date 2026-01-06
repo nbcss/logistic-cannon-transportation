@@ -8,24 +8,13 @@ local inventory_size = 59
 local container_animation = {
     layers = {
         {
-            filename = "__base__/graphics/entity/logistic-chest/requester-chest.png",
+            filename = "__logistic-cannon-transportation__/graphics/entity/receiver-base.png",
             priority = "extra-high",
-            width = 66,
-            height = 74,
-            frame_count = 7,
-            shift = util.by_pixel(0, -2),
-            scale = 1.5
+            width = 192,
+            height = 230,
+            shift = util.by_pixel(0, -9.5),
+            scale = 0.5
         },
-        {
-            filename = "__base__/graphics/entity/logistic-chest/logistic-chest-shadow.png",
-            priority = "extra-high",
-            width = 112,
-            height = 46,
-            repeat_count = 7,
-            shift = util.by_pixel(12, 4.5),
-            draw_as_shadow = true,
-            scale = 1.5
-        }
     }
 }
 
@@ -70,12 +59,18 @@ data:extend {
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
         default_status = "working",
         max_health = health,
-        circuit_wire_max_distance = 9,
         inventory_type = "with_bar",
         inventory_size = inventory_size,
         quality_affects_inventory_size = true,
         render_not_in_network_icon = false,
         is_military_target = false,
+        circuit_wire_max_distance = 9,
+        circuit_connector = {
+            points = {
+                wire = { red = util.by_pixel(37, 25), green = util.by_pixel(30, 28) },
+                shadow = { red = util.by_pixel(57, 45), green = util.by_pixel(50, 48) },
+            },
+        },
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = sounds.mech_large_open,
         close_sound = sounds.mech_large_close,
