@@ -1,3 +1,4 @@
+local constants = require("constants")
 local ReceiverStation = require("scripts.receiver_station")
 local inventory_tool = require("scripts.inventory_tool")
 
@@ -38,7 +39,7 @@ end
 ---@return ScheduledDelivery
 function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     local capsule_entity = receiver.inventory_entity.surface.create_entity {
-        name = "cannon-capsule-storage",
+        name = constants.entity_capsule_container,
         position = receiver:position(),
         force = launcher.network.force
     } or error()
@@ -108,7 +109,7 @@ function ScheduledDelivery.prototype:deliver()
     local surface = self.capsule_entity.surface
     local capsule_inventory = self:get_inventory()
     local receiver_entity = surface.find_entities_filtered {
-        name = "logistic-cannon-receiver",
+        name = constants.entity_receiver_inventory,
         position = self.position,
         limit = 1,
     }[1]

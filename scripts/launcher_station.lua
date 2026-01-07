@@ -332,6 +332,11 @@ function LauncherStation.prototype:consume_energy(energy)
     self.electric_interface.energy = math.max(0, self.electric_interface.energy - cost)
 end
 
+function LauncherStation.prototype:rotate()
+    local direction = self.turret_entity.direction
+    -- TODO launcher connection point is on inventory entity
+end
+
 function LauncherStation.prototype:update_diode_status()
     if not self:valid() then return end
     local capacity = self:get_energy_capacity()
@@ -464,7 +469,7 @@ function LauncherStation.prototype:launch(source_position)
                     target = delivery.position,
                 }
                 self.turret_entity.surface.create_entity {
-                    name = "logistic-cannon-capsule-tracker",
+                    name = constants.entity_tracker,
                     speed = speed / 60,
                     position = source_position,
                     direction = self.turret_entity.direction,

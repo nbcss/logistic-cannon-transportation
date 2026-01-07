@@ -49,7 +49,7 @@ local function on_cannon_launched(event)
 end
 
 local function on_capsule_landed(event)
-    if event.cause_entity and event.cause_entity.valid and event.cause_entity.name == "cannon-capsule-storage" then
+    if event.cause_entity and event.cause_entity.valid and event.cause_entity.name == constants.entity_capsule_container then
         local delivery = ScheduledDelivery.get(event.cause_entity.unit_number)
         if delivery then
             delivery:deliver()
@@ -151,6 +151,17 @@ script.on_event(defines.events.script_raised_teleported, function (event)
     game.print(event.entity)
 end)
 
+---@param event EventData.CustomInputEvent
+script.on_event(constants.rotate_input_event, function (event)
+    local player = game.players[event.player_index]
+    if player.selected and player.selected.name == constants.entity_launcher_inventory then
+        local launcher = LauncherStation.get(player.selected)
+        if launcher and launcher:valid() then
+            launcher:rotate()
+        end
+    end
+end)
+
 script.on_event(defines.events.on_forces_merging, function (event)
     for network in CannonNetwork.all() do
         if network.force == event.source then
@@ -204,6 +215,7 @@ script.on_event(defines.events.on_tick, function(event)
     end
 end)
 
+-- Visualization control events
 script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
     visualization_control.on_cursor_stack_changed(event)
 end)
@@ -219,6 +231,7 @@ script.on_event(defines.events.on_player_left_game, function(event)
     visualization_control.on_player_left_game(event)
 end)
 
+-- GUI events
 script.on_event(defines.events.on_gui_opened, function(event)
     if event.entity and event.entity.valid then
         launcher_gui.on_gui_opened(game.players[event.player_index], event.entity)
@@ -237,7 +250,6 @@ script.on_event(defines.events.on_gui_opened, function(event)
         end
     end
 end)
-
 script.on_event({
         defines.events.on_gui_click,
         defines.events.on_gui_elem_changed,

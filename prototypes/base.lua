@@ -12,6 +12,12 @@ data.extend {
         size = 14
     },
     {
+        type = "custom-input",
+        name = constants.rotate_input_event,
+        key_sequence = "",
+        linked_game_control = "rotate",
+    },
+    {
         type = "ammo-category",
         name = constants.ammo_category,
         icon = "__base__/graphics/icons/rocket-part.png",
@@ -58,7 +64,7 @@ data.extend {
     },
     {
         type = "artillery-projectile",
-        name = "logistic-cannon-capsule-tracker",
+        name = constants.entity_tracker,
         flags = { "not-on-map" },
         map_color = { 0.4, 1.0, 0.4, 0.8 },
         reveal_map = false,
@@ -86,7 +92,7 @@ data.extend {
     },
     {
         type = "temporary-container",
-        name = "cannon-capsule-storage",
+        name = constants.entity_capsule_container,
         inventory_size = 100,
         time_to_live = 60 * 60 * 60, -- 1 hour
         destroy_on_empty = false,
