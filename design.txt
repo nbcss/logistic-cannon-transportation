@@ -65,14 +65,15 @@ Addons [Planned]
 +Allow bots to take items from receiver
 
 TODO
-- handle station teleport/clone event
-- handle copy-paste setting & blueprint
-- Map setting to turn off projectile visualization
-- Proxy container to load launcher ammo (and option to turn off auto-load)
-- Option to disable receiver overflow protection
-- Use temporary container to hold items which unable to insert into receiver's inventory
-- Circuit enable/disable station
-- Add scroller view to request GUI
+- handle station teleport/clone event [A]
+- handle copy-paste setting & blueprint [A]
+- option to turn off auto-load/proxy-load [A]
+- Preview launcher's proxy-load position [A]
+- Add scroller view to request GUI [A]
+- Circuit enable/disable station [B]
+- Map setting to turn off projectile visualization [B]
+- Option to disable receiver overflow protection [C]
+- Use temporary container to hold items which unable to insert into receiver's inventory [C]
 
 Roadmap
 - Tool for manual drop point selection

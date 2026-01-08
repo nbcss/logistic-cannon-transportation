@@ -152,12 +152,12 @@ script.on_event(defines.events.script_raised_teleported, function (event)
 end)
 
 ---@param event EventData.CustomInputEvent
-script.on_event(constants.rotate_input_event, function (event)
+script.on_event({constants.rotate_input_event, constants.reverse_rotate_input_event}, function (event)
     local player = game.players[event.player_index]
     if player.selected and player.selected.name == constants.entity_launcher_inventory then
         local launcher = LauncherStation.get(player.selected)
         if launcher and launcher:valid() then
-            launcher:rotate()
+            launcher:rotate(player, event.input_name == constants.reverse_rotate_input_event)
         end
     end
 end)

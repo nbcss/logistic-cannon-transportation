@@ -18,6 +18,12 @@ data.extend {
         linked_game_control = "rotate",
     },
     {
+        type = "custom-input",
+        name = constants.reverse_rotate_input_event,
+        key_sequence = "",
+        linked_game_control = "reverse-rotate",
+    },
+    {
         type = "ammo-category",
         name = constants.ammo_category,
         icon = "__base__/graphics/icons/rocket-part.png",

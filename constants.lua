@@ -7,6 +7,7 @@ constants.ammo_category = "logistic-cannon-capsule"
 constants.item_subgroup = "cannon-transport"
 constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
 constants.rotate_input_event = "lct-rotate-entity-action"
+constants.reverse_rotate_input_event = "lct-reverse-rotate-entity-action"
 -- settings
 constants.update_interval_setting = constants.name_prefix.."update-interval"
 -- bonus effect
@@ -25,11 +26,12 @@ constants.item_launcher = constants.name_prefix.."launcher"
 constants.entity_launcher_inventory = constants.item_launcher
 constants.entity_launcher_turret = constants.name_prefix.."launcher-turret"
 constants.entity_launcher_energy_interface = constants.name_prefix.."launcher-energy-interface"
-constants.entity_launcher_gui_proxy = constants.name_prefix.."launcher-proxy"
+constants.entity_launcher_ammo_proxy = constants.name_prefix.."launcher-ammo-proxy"
+constants.entity_launcher_gui_proxy = constants.name_prefix.."launcher-gui-proxy"
 -- receiver
 constants.item_receiver = constants.name_prefix.."receiver"
 constants.entity_receiver_inventory = constants.item_receiver
-constants.entity_receiver_gui_proxy = constants.name_prefix.."receiver-proxy"
+constants.entity_receiver_gui_proxy = constants.name_prefix.."receiver-gui-proxy"
 -- other entities
 constants.entity_target = constants.name_prefix.."target"
 constants.entity_tracker = "logistic-cannon-capsule-tracker"

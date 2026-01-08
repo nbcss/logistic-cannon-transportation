@@ -21,6 +21,7 @@ end
 ---@field electric_interface LuaEntity The power interface.
 ---@field proxy_entity LuaEntity? The proxy container for gui.
 ---@field target_entity LuaEntity? The target entity for shoot.
+---@field ammo_proxy_entity LuaEntity? The ammo proxy entity of the launcher.
 ---@field station_id uint64 The unit number of inventory entity.
 ---@field turret_id uint64 The unit number of turret entity.
 ---@field ammo_name string Prototype name of the loaded ammo, empty string means no ammo.
@@ -40,11 +41,13 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field name string? Custom name of the station.
 ---@field range_override uint? Override launcher range
 ---@field payload_size_override uint? Override payload size (stack)
+---@field enable_ammo_proxy boolean
 ---@field load_capsule_from_inventory boolean
 LauncherStation.default_settings = {
     name = nil,
     range_override = nil,
     payload_size_override = nil,
+    enable_ammo_proxy = true,
     load_capsule_from_inventory = true,
 }
 
@@ -77,6 +80,14 @@ local function compute_payload_size(ammo_name, ammo_quality)
     return math.floor(0.5 + (payload_size * quality_modifier))
 end
 
+---@param inventory_entity LuaEntity
+---@param direction defines.direction
+local function compute_ammo_proxy_position(inventory_entity, direction)
+    local opposite = util.oppositedirection(direction)
+    local distance = inventory_entity.tile_height / 2 - 0.5
+    return util.moveposition(inventory_entity.position, opposite, distance)
+end
+
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by inventory entity's unit number
     storage.launcher_stations = storage.launcher_stations or {}
@@ -94,21 +105,14 @@ function LauncherStation.create(entity, player_index)
     local position = entity.position
     local force = entity.force --[[@as LuaForce]]
 
+    local inventory_entity = entity
+
     local turret_entity = surface.create_entity {
         name = constants.entity_launcher_turret,
         position = math2d.position.add(position, { 0, 0.001 }), -- to fix overlap sprite issue
         force = force,
         quality = entity.quality,
     } or error()
-
-    local inventory_entity = entity
-
-    -- local inventory_entity = surface.create_entity {
-    --     name = constants.entity_launcher_inventory,
-    --     position = position,
-    --     force = force,
-    --     quality = entity.quality,
-    -- } or error()
 
     local electric_interface = surface.create_entity {
         name = constants.entity_launcher_energy_interface,
@@ -133,6 +137,8 @@ function LauncherStation.create(entity, player_index)
         settings = util.table.deepcopy(LauncherStation.default_settings),
     } --[[@as LauncherStation]], LauncherStation.prototype)
 
+    -- TODO sync settings here
+
     script.register_on_object_destroyed(instance.inventory_entity)
     script.register_on_object_destroyed(instance.turret_entity)
 
@@ -146,6 +152,7 @@ function LauncherStation.create(entity, player_index)
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true)
         .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true),
             false, defines.wire_origin.script)
+    instance:update_ammo_proxy()
 
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_turret_index[instance.turret_id] = instance
@@ -193,6 +200,9 @@ function LauncherStation.on_object_destroyed(unit_number)
     end
     if instance.target_entity and instance.target_entity.valid then
         instance.target_entity.destroy()
+    end
+    if instance.ammo_proxy_entity and instance.ammo_proxy_entity.valid then
+        instance.ammo_proxy_entity.destroy()
     end
     instance.network:remove_launcher(instance:id())
     visualization_control.on_station_remove(instance:id())
@@ -332,9 +342,34 @@ function LauncherStation.prototype:consume_energy(energy)
     self.electric_interface.energy = math.max(0, self.electric_interface.energy - cost)
 end
 
-function LauncherStation.prototype:rotate()
-    local direction = self.turret_entity.direction
-    -- TODO launcher connection point is on inventory entity
+---@param player LuaPlayer
+---@param reverse boolean
+function LauncherStation.prototype:rotate(player, reverse)
+    self.turret_entity.rotate{by_player = player, reverse = reverse}
+    self:update_ammo_proxy()
+end
+
+function LauncherStation.prototype:update_ammo_proxy()
+    if not self.settings.enable_ammo_proxy then
+        if self.ammo_proxy_entity and self.ammo_proxy_entity.valid then
+            self.ammo_proxy_entity.destroy()
+        end
+        self.ammo_proxy_entity = nil
+        return
+    end
+    local position = compute_ammo_proxy_position(self.inventory_entity, self.turret_entity.direction)
+    if self.ammo_proxy_entity and self.ammo_proxy_entity.valid then
+        self.ammo_proxy_entity.teleport(position)
+    else
+        local surface = self.inventory_entity.surface
+        self.ammo_proxy_entity = surface.create_entity {
+            name = constants.entity_launcher_ammo_proxy,
+            position = position,
+            force = self.inventory_entity.force,
+        } or error()
+        self.ammo_proxy_entity.proxy_target_entity = self.turret_entity
+        self.ammo_proxy_entity.proxy_target_inventory = defines.inventory.turret_ammo
+    end
 end
 
 function LauncherStation.prototype:update_diode_status()
