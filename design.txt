@@ -67,7 +67,6 @@ Addons [Planned]
 TODO
 - handle station teleport/clone event [A]
 - handle copy-paste setting & blueprint [A]
-- Add scroller view to request GUI [A]
 - Circuit enable/disable station [B]
 - Map setting to turn off projectile visualization [B]
 - Option to disable receiver overflow protection [C]

@@ -142,9 +142,11 @@ function receiver_gui.on_gui_opened(player, entity)
         caption = { "logistic-cannon-transportation.receiver-requests" },
     }
     frame.station.add {
-        type = "flow",
+        type = "scroll-pane",
         name = "requests",
-        direction = "vertical",
+        style = "lct_request_shallow_scroll",
+        horizontal_scroll_policy = "never",
+        vertical_scroll_policy = "auto",
     }
     -- Circuit header
     frame.add {
@@ -316,6 +318,8 @@ function receiver_gui.create_request_editor_block(request_element, request)
     request_element.editor.input_text.focus()
     request_element.editor.input_text.select_all()
     request_element.style = "lct_configuration_deep_frame"
+    request_element.style.right_margin = -14
+    request_element.style.right_padding = 14
     request_element.item.info.top.edit_button.style = "lct_configuration_confirm_button"
     request_element.item.info.top.edit_button.tooltip = {
         "logistic-cannon-transportation.receiver-confirm-request-amount"

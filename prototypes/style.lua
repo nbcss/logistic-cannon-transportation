@@ -2,11 +2,33 @@ local styles = data.raw["gui-style"].default
 
 styles["lct_config_frame"] = {
     type = "frame_style",
-    minimal_width = 300,
-    natural_width = 300,
+    minimal_width = 320,
+    natural_width = 320,
     vertical_flow_style = {
         type = "vertical_flow_style",
         vertical_spacing = 8,
+    }
+}
+
+styles["lct_request_shallow_scroll"] = {
+    type = "scroll_pane_style",
+    parent = "shallow_scroll_pane",
+    horizontally_stretchable = "on",
+    vertical_stretchable = "on",
+    scrollbars_go_outside = false,
+    always_draw_borders = false,
+    dont_force_clipping_rect_for_contents = false,
+    left_margin = -12,
+    bottom_margin = -12,
+    right_margin = -12,
+    top_padding = 4,
+    bottom_padding = 8,
+    right_padding = 4,
+    left_padding = 12,
+    extra_right_padding_when_activated = -4,
+    vertical_flow_style = {
+        type = "vertical_flow_style",
+        right_padding = 10,
     }
 }
 
