@@ -81,14 +81,17 @@ script.on_event({
         defines.events.on_built_entity,
         defines.events.on_robot_built_entity,
         defines.events.on_space_platform_built_entity,
+        defines.events.script_raised_revive,
     },
     ---@param event
     ---| EventData.on_built_entity
     ---| EventData.on_robot_built_entity
     ---| EventData.on_space_platform_built_entity
+    ---| EventData.script_raised_revive
     function(event)
         if event.entity.name == constants.entity_launcher_inventory then
-            LauncherStation.create(event.entity, event.player_index)
+            local settings = LauncherStation.read_settings(event.tags)
+            LauncherStation.create(event.entity, settings)
         end
     end)
 
@@ -136,23 +139,46 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
     end
 end)
 
-script.on_event(defines.events.on_entity_settings_pasted, function (event)
-    --TODO
-    game.print(event.destination)
+script.on_event(defines.events.on_entity_settings_pasted, function(event)
+    -- Launcher
+    local launcher_settings = nil
+    if event.source.name == constants.entity_launcher_inventory then
+        local source = LauncherStation.get(event.source)
+        if source then
+            launcher_settings = source.settings
+        end
+    end
+    if event.source.name == "entity-ghost" and event.source.ghost_name == constants.entity_launcher_inventory then
+        launcher_settings = LauncherStation.read_settings(event.source.tags)
+    end
+    if launcher_settings then
+        if event.destination.name == constants.entity_launcher_inventory then
+            local destination = LauncherStation.get(event.destination)
+            if destination then
+                destination:set_settings(launcher_settings)
+            end
+        end
+        if event.destination.name == "entity-ghost" and event.destination.ghost_name == constants.entity_launcher_inventory then
+            local tags = event.destination.tags or {}
+            LauncherStation.write_settings(tags, launcher_settings)
+            event.destination.tags = tags
+        end
+    end
+    -- Receiver TODO
 end)
 
-script.on_event(defines.events.on_entity_cloned, function (event)
+script.on_event(defines.events.on_entity_cloned, function(event)
     -- TODO
     game.print(event.destination)
 end)
 
-script.on_event(defines.events.script_raised_teleported, function (event)
+script.on_event(defines.events.script_raised_teleported, function(event)
     -- TODO
     game.print(event.entity)
 end)
 
 ---@param event EventData.CustomInputEvent
-script.on_event({constants.rotate_input_event, constants.reverse_rotate_input_event}, function (event)
+script.on_event({ constants.rotate_input_event, constants.reverse_rotate_input_event }, function(event)
     local player = game.players[event.player_index]
     if (player.cursor_stack and player.cursor_stack.valid_for_read) or player.cursor_ghost then return end
     if player.selected and player.selected.name == constants.entity_launcher_inventory then
@@ -163,7 +189,7 @@ script.on_event({constants.rotate_input_event, constants.reverse_rotate_input_ev
     end
 end)
 
-script.on_event(defines.events.on_forces_merging, function (event)
+script.on_event(defines.events.on_forces_merging, function(event)
     for network in CannonNetwork.all() do
         if network.force == event.source then
             local target_network = CannonNetwork.get_or_create(event.destination, network.surface, network.signal)

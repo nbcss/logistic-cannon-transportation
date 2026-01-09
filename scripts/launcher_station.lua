@@ -39,17 +39,23 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---User-configurable settings of a cannon launcher, POD.
 ---@class (exact) LauncherStationSettings
 ---@field name string? Custom name of the station.
----@field range_override uint? Override launcher range
----@field payload_size_override uint? Override payload size (stack)
+---@field range_override uint? Override launcher range.
+---@field payload_size_override uint? Override payload size (stack).
+---@field network_signal SignalID? Signal for network.
+---@field direction defines.direction Direction of the launcher.
 ---@field enable_ammo_proxy boolean
 ---@field load_capsule_from_inventory boolean
----TBC: direction & network, read ammo circuit setting?
+---@field circuit_read_ammo boolean
+---TBC: read ammo circuit setting?
 LauncherStation.default_settings = {
     name = nil,
     range_override = nil,
     payload_size_override = nil,
+    network_signal = nil,
+    direction = defines.direction.north,
     enable_ammo_proxy = true,
     load_capsule_from_inventory = true,
+    circuit_read_ammo = true,
 }
 
 local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
@@ -98,9 +104,9 @@ end
 
 ---Create a LauncherStation in storage and associated entities for a newly placed entity.
 ---@param entity LuaEntity Entity the user has placed.
----@param player_index uint32? The player that placed the entity.
+---@param from_settings LauncherStationSettings?
 ---@return LauncherStation
-function LauncherStation.create(entity, player_index)
+function LauncherStation.create(entity, from_settings)
     assert(entity.name == constants.entity_launcher_inventory)
     local surface = entity.surface
     local position = entity.position
@@ -122,6 +128,8 @@ function LauncherStation.create(entity, player_index)
         quality = entity.quality,
     } or error()
 
+    local launcher_settings = from_settings or util.table.deepcopy(LauncherStation.default_settings)
+
     local instance = setmetatable({
         inventory_entity = inventory_entity,
         turret_entity = turret_entity,
@@ -131,12 +139,10 @@ function LauncherStation.create(entity, player_index)
         ammo_name = "",
         overflow_energy = 0,
         max_range = 0,
-        network = CannonNetwork.get_or_create(force, surface),
+        network = CannonNetwork.get_or_create(force, surface, launcher_settings.network_signal),
         scheduled_delivery = nil,
-        settings = util.table.deepcopy(LauncherStation.default_settings),
+        settings = launcher_settings,
     } --[[@as LauncherStation]], LauncherStation.prototype)
-
-    -- TODO sync settings here
 
     script.register_on_object_destroyed(instance.inventory_entity)
     script.register_on_object_destroyed(instance.turret_entity)
@@ -144,7 +150,9 @@ function LauncherStation.create(entity, player_index)
     instance.turret_entity.destructible = false
     instance.electric_interface.destructible = false
     instance.max_range = instance:get_max_range(true)
-    instance.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo = true
+    instance.turret_entity.direction = instance.settings.direction
+    instance.turret_entity.get_or_create_control_behavior()--[[@as LuaTurretControlBehavior]].read_ammo =
+        instance.settings.circuit_read_ammo
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)
         .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true),
             false, defines.wire_origin.script)
@@ -174,6 +182,14 @@ function LauncherStation.get(entity)
     end
     return storage.launcher_stations[unit_number]
         or storage.launcher_stations_turret_index[unit_number]
+end
+
+function LauncherStation.write_settings(tags, launcher_settings)
+    tags["cannon_launcher_settings"] = launcher_settings
+end
+
+function LauncherStation.read_settings(tags)
+    return tags and tags["cannon_launcher_settings"] or nil
 end
 
 ---Destroy a ReceiverStation following the destruction an associated entity.
@@ -268,10 +284,14 @@ function LauncherStation.prototype:update_state()
     self.energy_consumption = consumption
 end
 
----@param settings LauncherStationSettings
-function LauncherStation.prototype:set_settings(settings)
-    self.settings = util.table.deepcopy(settings)
+---@param launcher_settings LauncherStationSettings
+function LauncherStation.prototype:set_settings(launcher_settings)
+    self.settings = util.table.deepcopy(launcher_settings)
+    self.turret_entity.direction = self.settings.direction
+    self.turret_entity.get_or_create_control_behavior()--[[@as LuaTurretControlBehavior]].read_ammo =
+        self.settings.circuit_read_ammo
     self:update_ammo_proxy()
+    self:set_network_signal(self.settings.network_signal)
 end
 
 ---@param ignore_override boolean?
@@ -349,9 +369,11 @@ end
 ---@param player LuaPlayer
 ---@param reverse boolean
 function LauncherStation.prototype:rotate(player, reverse)
-    self.turret_entity.rotate{by_player = player, reverse = reverse}
-    self:update_ammo_proxy()
-    visualization_control.on_launcher_update(self)
+    if self.turret_entity.rotate { by_player = player, reverse = reverse } then
+        self.settings.direction = self.turret_entity.direction
+        self:update_ammo_proxy()
+        visualization_control.on_launcher_update(self)
+    end
 end
 
 function LauncherStation.prototype:update_ammo_proxy()
@@ -364,7 +386,7 @@ function LauncherStation.prototype:update_ammo_proxy()
     end
     -- for reset inserter targets
     local last_pos = self.inventory_entity.position
-    self.inventory_entity.teleport({0, 0}, nil, false)
+    self.inventory_entity.teleport({ 0, 0 }, nil, false)
     self.inventory_entity.teleport(last_pos, nil, false)
     -- update ammo proxy position
     local position = compute_ammo_proxy_position(self.inventory_entity, self.turret_entity.direction)
@@ -379,6 +401,7 @@ function LauncherStation.prototype:update_ammo_proxy()
         } or error()
         self.ammo_proxy_entity.proxy_target_entity = self.turret_entity
         self.ammo_proxy_entity.proxy_target_inventory = defines.inventory.turret_ammo
+        self.ammo_proxy_entity.destructible = false
     end
 end
 
@@ -434,6 +457,7 @@ function LauncherStation.prototype:set_network(network)
         self.network:remove_launcher(self:id())
         self.network = network
         self.network:add_launcher(self)
+        self.settings.network_signal = network.signal
     end
 end
 
@@ -573,6 +597,13 @@ end
 ---@return boolean
 function LauncherStation.prototype:is_disabled()
     return self.inventory_entity.to_be_deconstructed()
+end
+
+---@param state boolean
+function LauncherStation.prototype:set_read_ammo(state)
+    local control = self.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]]
+    self.settings.circuit_read_ammo = state
+    control.read_ammo = state
 end
 
 ---@return LuaEntity

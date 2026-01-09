@@ -649,8 +649,7 @@ end
 function launcher_gui.on_read_ammo_state_changed(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local control = launcher.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]]
-    control.read_ammo = event.element.state
+    launcher:set_read_ammo(event.element.state)
 end
 
 ---@param player LuaPlayer
