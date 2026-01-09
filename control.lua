@@ -190,6 +190,54 @@ script.on_event(defines.events.on_entity_settings_pasted, function(event)
     end
 end)
 
+script.on_event(defines.events.on_player_setup_blueprint, function(event)
+    local blueprint = event.stack or event.record
+    if not blueprint then return end
+    local updated = false
+    local entities = blueprint.get_blueprint_entities() --[[@as BlueprintEntity[]]
+    for index, entity in ipairs(entities) do
+        -- Launcher
+        if entity.name == constants.entity_launcher_inventory then
+            local source = event.mapping.get()[index] --[[@as LuaEntity?]]
+            if source then
+                local launcher_settings = nil
+                if source.name == "entity-ghost" then
+                    launcher_settings = LauncherStation.read_settings(source.tags)
+                else
+                    local launcher = LauncherStation.get(source)
+                    launcher_settings = launcher and launcher.settings
+                end
+                if launcher_settings then
+                    local tags = entity.tags or {}
+                    LauncherStation.write_settings(tags, launcher_settings)
+                    entity.tags = tags
+                    updated = true
+                end
+            end
+        end
+        -- Receiver
+        if entity.name == constants.entity_receiver_inventory then
+            local source = event.mapping.get()[index] --[[@as LuaEntity?]]
+            if source then
+                local receiver_settings = nil
+                if source.name == "entity-ghost" then
+                    receiver_settings = ReceiverStation.read_settings(source.tags)
+                else
+                    local receiver = ReceiverStation.get(source)
+                    receiver_settings = receiver and receiver.settings
+                end
+                if receiver_settings then
+                    local tags = entity.tags or {}
+                    ReceiverStation.write_settings(tags, receiver_settings)
+                    entity.tags = tags
+                    updated = true
+                end
+            end
+        end
+    end
+    if updated then blueprint.set_blueprint_entities(entities) end
+end)
+
 script.on_event(defines.events.on_entity_cloned, function(event)
     -- TODO
     game.print(event.destination)
