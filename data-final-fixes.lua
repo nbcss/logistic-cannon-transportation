@@ -42,4 +42,3 @@ for category, prototypes in pairs(tooltip_postprocessing) do
         end
     end
 end
-

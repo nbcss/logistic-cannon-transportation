@@ -115,7 +115,7 @@ end
 function LauncherStation.create(entity, from_settings)
     assert(entity.name == constants.entity_launcher_inventory)
     local surface = entity.surface
-    local position = entity.position --TODO fix position
+    local position = entity.position
     local force = entity.force --[[@as LuaForce]]
 
     local inventory_entity = entity

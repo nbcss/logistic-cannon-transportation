@@ -66,6 +66,7 @@ function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     return instance
 end
 
+---@param unit_number uint64 Unit number of the destroyed entity.
 function ScheduledDelivery.on_object_destroyed(unit_number)
     local delivery = ScheduledDelivery.get(unit_number)
     if not delivery then return end

@@ -7,18 +7,6 @@ local ReceiverStation = require("scripts.receiver_station")
 local receiver_gui = {}
 local name = "logistic-cannon-receiver-gui"
 
--- Info:
--- Map view
--- X stations in range (include a button to show list of stations)
-
--- Settings:
--- Change name (top)
--- Network
--- Requests
--- Read content (circuit)
--- Enable/disable (circuit)
-
-
 local item_bar_base_color = util.color "2e703b"
 local item_bar_top_color = util.color "3ccd5a"
 

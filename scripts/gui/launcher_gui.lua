@@ -5,24 +5,6 @@ local LauncherStation = require("scripts.launcher_station")
 local launcher_gui = {}
 local name = "logistic-cannon-launcher-gui"
 
--- Info:
--- Energy (progressbar)
--- Range
--- X stations in range (include a button to show list of stations)
--- Current capsule
----- Launch consumption
----- Payload size
----- Projectile speed
-
--- Settings:
--- Change name (top)
--- Network
--- Payload size override?
--- Enable auto-load ammo from inventory?
--- Read ammo (circuit)
--- Read inventory (circuit)
--- Enable/disable (circuit)
-
 local ammo_slot_options = {
     empty_sprite = "utility/empty_ammo_slot",
     empty_tooltip = { "", { "gui.ammo" } },
