@@ -89,7 +89,7 @@ data:extend {
         type = "proxy-container",
         name = constants.entity_receiver_gui_proxy,
         icon = icon,
-        flags = { "not-on-map", "placeable-off-grid" },
+        flags = { "not-on-map", "placeable-off-grid", "no-automated-item-removal", "no-automated-item-insertion" },
         localised_name = { "entity-name." .. constants.entity_receiver_inventory },
         localised_description = { "entity-description." .. constants.entity_receiver_inventory },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },

@@ -23,6 +23,7 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 ---@class (exact) ReceiverStationSettings
 ---@field name string? Custom name of the station.
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
+---TBC: network
 ReceiverStation.default_settings = {
     name = nil,
     delivery_requests = {},

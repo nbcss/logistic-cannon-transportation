@@ -150,7 +150,7 @@ data:extend {
         is_military_target = false,
         selectable_in_game = false,
         hidden = true,
-        selection_priority = 51,
+        selection_priority = 1,
         max_health = health,
     },
     {

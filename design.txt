@@ -67,12 +67,15 @@ Addons [Planned]
 TODO
 - handle station teleport/clone event [A]
 - handle copy-paste setting & blueprint [A]
+- handle undo/redo stack [B]
 - Circuit enable/disable station [B]
 - Map setting to turn off projectile visualization [B]
+- Handle EI destroy event [B]
 - Option to disable receiver overflow protection [C]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]
 
 Roadmap
+- Circuit set request
 - Tool for manual drop point selection
 - Player launcher onboard
 - Addon

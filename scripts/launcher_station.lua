@@ -43,6 +43,7 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field payload_size_override uint? Override payload size (stack)
 ---@field enable_ammo_proxy boolean
 ---@field load_capsule_from_inventory boolean
+---TBC: direction & network, read ammo circuit setting?
 LauncherStation.default_settings = {
     name = nil,
     range_override = nil,
@@ -121,8 +122,6 @@ function LauncherStation.create(entity, player_index)
         quality = entity.quality,
     } or error()
 
-    local network = CannonNetwork.get_or_create(force, surface)
-
     local instance = setmetatable({
         inventory_entity = inventory_entity,
         turret_entity = turret_entity,
@@ -132,7 +131,7 @@ function LauncherStation.create(entity, player_index)
         ammo_name = "",
         overflow_energy = 0,
         max_range = 0,
-        network = network,
+        network = CannonNetwork.get_or_create(force, surface),
         scheduled_delivery = nil,
         settings = util.table.deepcopy(LauncherStation.default_settings),
     } --[[@as LauncherStation]], LauncherStation.prototype)
@@ -156,9 +155,8 @@ function LauncherStation.create(entity, player_index)
 
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_turret_index[instance.turret_id] = instance
-    network:add_launcher(instance)
-    -- hide placement entity
-    -- placement_entity.render_to_forces = { "enemy" }
+    instance.network:add_launcher(instance)
+
     return instance
 end
 
@@ -270,6 +268,12 @@ function LauncherStation.prototype:update_state()
     self.energy_consumption = consumption
 end
 
+---@param settings LauncherStationSettings
+function LauncherStation.prototype:set_settings(settings)
+    self.settings = util.table.deepcopy(settings)
+    self:update_ammo_proxy()
+end
+
 ---@param ignore_override boolean?
 ---@return uint32
 function LauncherStation.prototype:get_max_range(ignore_override)
@@ -358,6 +362,11 @@ function LauncherStation.prototype:update_ammo_proxy()
         self.ammo_proxy_entity = nil
         return
     end
+    -- for reset inserter targets
+    local last_pos = self.inventory_entity.position
+    self.inventory_entity.teleport({0, 0}, nil, false)
+    self.inventory_entity.teleport(last_pos, nil, false)
+    -- update ammo proxy position
     local position = compute_ammo_proxy_position(self.inventory_entity, self.turret_entity.direction)
     if self.ammo_proxy_entity and self.ammo_proxy_entity.valid then
         self.ammo_proxy_entity.teleport(position)
