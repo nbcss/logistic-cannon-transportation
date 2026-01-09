@@ -382,11 +382,11 @@ function LauncherStation.prototype:update_diode_status()
     if self.scheduled_delivery then
         status = "entity-status.working"
         diode = defines.entity_status_diode.green
-    elseif self.ammo_name == "" then
-        status = "entity-status.no-ammo"
-        diode = defines.entity_status_diode.red
     elseif self:is_disabled() then
         status = "entity-status.disabled"
+        diode = defines.entity_status_diode.red
+    elseif self.ammo_name == "" then
+        status = "entity-status.no-ammo"
         diode = defines.entity_status_diode.red
     elseif not self.electric_interface.is_connected_to_electric_network() then
         status = "entity-status.not-plugged-in-electric-network"

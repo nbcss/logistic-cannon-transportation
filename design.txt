@@ -67,8 +67,6 @@ Addons [Planned]
 TODO
 - handle station teleport/clone event [A]
 - handle copy-paste setting & blueprint [A]
-- option to turn off auto-load/proxy-load [A]
-- Preview launcher's proxy-load position [A]
 - Add scroller view to request GUI [A]
 - Circuit enable/disable station [B]
 - Map setting to turn off projectile visualization [B]

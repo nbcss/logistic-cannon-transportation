@@ -118,10 +118,10 @@ data:extend {
         energy_required = 2,
         ingredients = {
             { type = "item", name = "low-density-structure", amount = 1 },
-            { type = "item", name = "explosives",  amount = 4 },
+            { type = "item", name = "explosives",  amount = 2 },
         },
         results = {
-            { type = "item", name = constants.item_capsule_reinforced, amount = 4 },
+            { type = "item", name = constants.item_capsule_reinforced, amount = 2 },
         }
     },
     -- propelled capsule

@@ -154,9 +154,10 @@ end)
 ---@param event EventData.CustomInputEvent
 script.on_event({constants.rotate_input_event, constants.reverse_rotate_input_event}, function (event)
     local player = game.players[event.player_index]
+    if (player.cursor_stack and player.cursor_stack.valid_for_read) or player.cursor_ghost then return end
     if player.selected and player.selected.name == constants.entity_launcher_inventory then
         local launcher = LauncherStation.get(player.selected)
-        if launcher and launcher:valid() then
+        if launcher and launcher:valid() and launcher.network.force == player.force then
             launcher:rotate(player, event.input_name == constants.reverse_rotate_input_event)
         end
     end

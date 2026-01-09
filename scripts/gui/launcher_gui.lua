@@ -116,6 +116,33 @@ function launcher_gui.on_gui_opened(player, entity)
         style = "lct_energy_bar",
     }
     frame.station.add {
+        type = "checkbox",
+        name = "auto_load_ammo",
+        style = "caption_checkbox",
+        caption = { "logistic-cannon-transportation.launcher-auto-load-ammo" },
+        tooltip = { "logistic-cannon-transportation.launcher-auto-load-ammo-tooltip" },
+        state = false,
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_checked_state_changed = "launcher_gui.on_auto_load_ammo_state_changed",
+            },
+        },
+    }
+    frame.station.add {
+        type = "checkbox",
+        name = "side_load_ammo",
+        style = "caption_checkbox",
+        caption = { "logistic-cannon-transportation.launcher-enable-side-load-ammo" },
+        tooltip = { "logistic-cannon-transportation.launcher-enable-side-load-ammo-tooltip" },
+        state = false,
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_checked_state_changed = "launcher_gui.on_side_load_ammo_state_changed",
+            },
+        },
+    }
+    -- line
+    frame.station.add {
         type = "line",
         style = "inside_shallow_frame_with_padding_line",
     }
@@ -435,6 +462,8 @@ function launcher_gui.refresh(player, entity)
     end
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
+    frame.station.auto_load_ammo.state = launcher.settings.load_capsule_from_inventory
+    frame.station.side_load_ammo.state = launcher.settings.enable_ammo_proxy
     frame.station.range.info.value_label.caption = { "",
         string.format("%.0f", launcher:get_current_range()),
         launcher.settings.range_override and "[color=yellow]" or "[color=#ffffff]",
@@ -596,6 +625,23 @@ function launcher_gui.on_set_network(player, event)
     if not launcher or not launcher:valid() then return end
     local signal = event.element.elem_value --[[@as SignalID?]]
     launcher:set_network_signal(signal)
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_checked_state_changed
+function launcher_gui.on_auto_load_ammo_state_changed(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    launcher.settings.load_capsule_from_inventory = event.element.state
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_checked_state_changed
+function launcher_gui.on_side_load_ammo_state_changed(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    launcher.settings.enable_ammo_proxy = event.element.state
+    launcher:update_ammo_proxy()
 end
 
 ---@param player LuaPlayer
