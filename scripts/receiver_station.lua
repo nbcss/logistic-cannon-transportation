@@ -22,11 +22,14 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 ---User-configurable settings of a cannon receiver, POD.
 ---@class (exact) ReceiverStationSettings
 ---@field name string? Custom name of the station.
+---@field network_signal SignalID? Signal for network.
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
----TBC: network
+---@field overflow_protection boolean
 ReceiverStation.default_settings = {
     name = nil,
+    network_signal = nil,
     delivery_requests = {},
+    overflow_protection = true,
 }
 
 function ReceiverStation.on_init()
@@ -36,26 +39,27 @@ end
 
 ---Create a ReceiverStation in storage and associated entities for a newly placed entity.
 ---@param entity LuaEntity Entity the user has placed.
+---@param from_settings ReceiverStationSettings?
 ---@return ReceiverStation
-function ReceiverStation.create(entity)
+function ReceiverStation.create(entity, from_settings)
     assert(entity.name == constants.entity_receiver_inventory)
     local surface = entity.surface
     local force = entity.force --[[@as LuaForce]]
 
-    local network = CannonNetwork.get_or_create(force, surface)
+    local receiver_settings = from_settings or util.table.deepcopy(ReceiverStation.default_settings)
     
     local instance = setmetatable({
         inventory_entity = entity,
         station_id = entity.unit_number,
-        network = network,
+        network = CannonNetwork.get_or_create(force, surface, receiver_settings.network_signal),
         scheduled_deliveries = {},
-        settings = util.table.deepcopy(ReceiverStation.default_settings),
+        settings = receiver_settings,
     } --[[@as ReceiverStation]], ReceiverStation.prototype)
 
     script.register_on_object_destroyed(instance.inventory_entity)
 
     storage.receiver_stations[instance:id()] = instance
-    network:add_receiver(instance)
+    instance.network:add_receiver(instance)
 
     return instance
 end
@@ -73,6 +77,14 @@ function ReceiverStation.get(entity)
         unit_number = entity.unit_number
     end
     return storage.receiver_stations[unit_number]
+end
+
+function ReceiverStation.write_settings(tags, receiver_settings)
+    tags["cannon_receiver_settings"] = receiver_settings
+end
+
+function ReceiverStation.read_settings(tags)
+    return tags and tags["cannon_receiver_settings"] or nil
 end
 
 ---Destroy a ReceiverStation following the destruction an associated entity.
@@ -109,6 +121,7 @@ function ReceiverStation.prototype:set_network(network)
         self.network:remove_receiver(self:id())
         self.network = network
         self.network:add_receiver(self)
+        self.settings.network_signal = network.signal
     end
 end
 
@@ -118,6 +131,12 @@ function ReceiverStation.prototype:set_network_signal(signal)
     local surface = self.inventory_entity.surface
     local network = CannonNetwork.get_or_create(force, surface, signal)
     self:set_network(network)
+end
+
+---@param receiver_settings ReceiverStationSettings
+function ReceiverStation.prototype:set_settings(receiver_settings)
+    self.settings = util.table.deepcopy(receiver_settings)
+    self:set_network_signal(self.settings.network_signal)
 end
 
 ---@param delivery ScheduledDelivery

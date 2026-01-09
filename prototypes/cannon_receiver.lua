@@ -74,16 +74,6 @@ data:extend {
         open_sound = sounds.mech_large_open,
         close_sound = sounds.mech_large_close,
         picture = container_animation,
-        created_effect = {
-            type = "direct",
-            action_delivery = {
-                type = "instant",
-                target_effects = {
-                    type = "script",
-                    effect_id = "create-logistic-cannon-receiver",
-                }
-            }
-        },
     },
     {
         type = "proxy-container",

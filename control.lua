@@ -58,11 +58,7 @@ local function on_capsule_landed(event)
 end
 
 script.on_event(defines.events.on_script_trigger_effect, function(event)
-    if event.effect_id == "create-logistic-cannon-launcher" then
-        -- LauncherStation.create(event.target_entity)
-    elseif event.effect_id == "create-logistic-cannon-receiver" then
-        ReceiverStation.create(event.target_entity)
-    elseif event.effect_id == "logistic-cannon-capsule-launched" then
+    if event.effect_id == "logistic-cannon-capsule-launched" then
         on_cannon_launched(event)
     elseif event.effect_id == "logistic-cannon-capsule-landed" then
         on_capsule_landed(event)
@@ -92,6 +88,10 @@ script.on_event({
         if event.entity.name == constants.entity_launcher_inventory then
             local settings = LauncherStation.read_settings(event.tags)
             LauncherStation.create(event.entity, settings)
+        end
+        if event.entity.name == constants.entity_receiver_inventory then
+            local settings = ReceiverStation.read_settings(event.tags)
+            ReceiverStation.create(event.entity, settings)
         end
     end)
 
@@ -164,7 +164,30 @@ script.on_event(defines.events.on_entity_settings_pasted, function(event)
             event.destination.tags = tags
         end
     end
-    -- Receiver TODO
+    -- Receiver
+    local receiver_settings = nil
+    if event.source.name == constants.entity_receiver_inventory then
+        local source = ReceiverStation.get(event.source)
+        if source then
+            receiver_settings = source.settings
+        end
+    end
+    if event.source.name == "entity-ghost" and event.source.ghost_name == constants.entity_receiver_inventory then
+        receiver_settings = ReceiverStation.read_settings(event.source.tags)
+    end
+    if receiver_settings then
+        if event.destination.name == constants.entity_receiver_inventory then
+            local destination = ReceiverStation.get(event.destination)
+            if destination then
+                destination:set_settings(receiver_settings)
+            end
+        end
+        if event.destination.name == "entity-ghost" and event.destination.ghost_name == constants.entity_receiver_inventory then
+            local tags = event.destination.tags or {}
+            ReceiverStation.write_settings(tags, receiver_settings)
+            event.destination.tags = tags
+        end
+    end
 end)
 
 script.on_event(defines.events.on_entity_cloned, function(event)

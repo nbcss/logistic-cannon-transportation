@@ -46,7 +46,6 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field enable_ammo_proxy boolean
 ---@field load_capsule_from_inventory boolean
 ---@field circuit_read_ammo boolean
----TBC: read ammo circuit setting?
 LauncherStation.default_settings = {
     name = nil,
     range_override = nil,
@@ -307,6 +306,7 @@ function LauncherStation.prototype:get_max_range(ignore_override)
     return self.max_range
 end
 
+---@return number
 function LauncherStation.prototype:get_current_range()
     if not self.energy_consumption then return 0 end
     return math.min(self:get_max_range(), self:get_stored_energy() / self.energy_consumption)
