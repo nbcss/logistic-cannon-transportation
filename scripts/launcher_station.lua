@@ -347,6 +347,7 @@ end
 function LauncherStation.prototype:rotate(player, reverse)
     self.turret_entity.rotate{by_player = player, reverse = reverse}
     self:update_ammo_proxy()
+    visualization_control.on_launcher_update(self)
 end
 
 function LauncherStation.prototype:update_ammo_proxy()

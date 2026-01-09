@@ -34,62 +34,64 @@ end
 ---@param player LuaPlayer
 ---@param launcher LauncherStation
 ---@param source_position MapPosition?
+---@param draw_ammo_proxy boolean?
 ---@return { [number]: LuaEntity | LuaRenderObject }
-local function launcher_visaulization(player, launcher, source_position)
+local function launcher_visaulization(player, launcher, source_position, draw_ammo_proxy)
     if not launcher:valid() then return {} end
+    local visaulization = {
+        launcher.inventory_entity.surface.create_entity {
+            name = "lct-highlight-box",
+            position = launcher:position(),
+            bounding_box = launcher.inventory_entity.selection_box,
+            box_type = "logistics",
+            render_player_index = player.index,
+        } or error()
+    }
+    if draw_ammo_proxy and launcher.ammo_proxy_entity then
+        table.insert(visaulization, launcher.inventory_entity.surface.create_entity {
+            name = "lct-highlight-box",
+            position = launcher.ammo_proxy_entity.position,
+            bounding_box = launcher.ammo_proxy_entity.selection_box,
+            box_type = "electricity",
+            render_player_index = player.index,
+        } or error())
+    end
     if source_position then
-        return {
-            launcher.inventory_entity.surface.create_entity {
-                name = "lct-highlight-box",
-                position = launcher:position(),
-                bounding_box = launcher.inventory_entity.selection_box,
-                box_type = "logistics",
-                render_player_index = player.index
-            } or error(),
-            rendering.draw_line {
-                surface = launcher.inventory_entity.surface,
-                from = source_position,
-                to = launcher:position(),
-                color = connection_color,
-                width = 5,
-                gap_length = 1,
-                dash_length = 1
-            }  or error(),
-        }
+        table.insert(visaulization, rendering.draw_line {
+            surface = launcher.inventory_entity.surface,
+            from = source_position,
+            to = launcher:position(),
+            color = connection_color,
+            width = 5,
+            gap_length = 1,
+            dash_length = 1
+        } or error())
     else
         local range = launcher:get_max_range()
-        return {
-            launcher.inventory_entity.surface.create_entity {
-                name = "lct-highlight-box",
-                position = launcher:position(),
-                bounding_box = launcher.inventory_entity.selection_box,
-                box_type = "logistics",
-                render_player_index = player.index
-            } or error(),
-            rendering.draw_circle {
-                color = range_color,
-                radius = range,
-                filled = true,
-                target = launcher.inventory_entity,
-                surface = launcher.inventory_entity.surface,
-                players = { player },
-                visible = true,
-                draw_on_ground = true,
-                render_mode = "game",
-            } or error(),
-            rendering.draw_circle {
-                color = range_color,
-                radius = range,
-                filled = true,
-                target = launcher.inventory_entity,
-                surface = launcher.inventory_entity.surface,
-                players = { player },
-                visible = true,
-                draw_on_ground = true,
-                render_mode = "chart",
-            } or error(),
-        }
+        table.insert(visaulization, rendering.draw_circle {
+            color = range_color,
+            radius = range,
+            filled = true,
+            target = launcher.inventory_entity,
+            surface = launcher.inventory_entity.surface,
+            players = { player },
+            visible = true,
+            draw_on_ground = true,
+            render_mode = "game",
+        } or error())
+        table.insert(visaulization, rendering.draw_circle {
+            color = range_color,
+            radius = range,
+            filled = true,
+            target = launcher.inventory_entity,
+            surface = launcher.inventory_entity.surface,
+            players = { player },
+            visible = true,
+            draw_on_ground = true,
+            render_mode = "chart",
+        } or error())
     end
+    return visaulization
 end
 
 ---@param player LuaPlayer
@@ -166,7 +168,7 @@ local function update_visualization(player, force_update)
     elseif mode == "launcher" then
         local launcher = LauncherStation.get(player.selected)
         if launcher then
-            entities[launcher:id()] = launcher_visaulization(player, launcher)
+            entities[launcher:id()] = launcher_visaulization(player, launcher, nil, true)
             for _, receiver in pairs(launcher.network.launcher_to_receivers[launcher:id()]) do
                 entities[receiver:id()] = receiver_visaulization(player, receiver, launcher:position())
             end
