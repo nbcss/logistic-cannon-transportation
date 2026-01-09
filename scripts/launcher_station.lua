@@ -150,7 +150,7 @@ function LauncherStation.create(entity, from_settings)
     instance.electric_interface.destructible = false
     instance.max_range = instance:get_max_range(true)
     instance.turret_entity.direction = instance.settings.direction
-    instance.turret_entity.get_or_create_control_behavior()--[[@as LuaTurretControlBehavior]].read_ammo =
+    instance.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         instance.settings.circuit_read_ammo
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)
         .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true),
@@ -189,6 +189,30 @@ end
 
 function LauncherStation.read_settings(tags)
     return tags and tags["cannon_launcher_settings"] or nil
+end
+
+function LauncherStation.on_teleported(entity)
+    if entity.name ~= constants.entity_launcher_inventory then return end
+    local launcher = LauncherStation.get(entity)
+    if not launcher or not launcher:valid() then return end
+    local position = entity.position
+    launcher.turret_entity.teleport(math2d.position.add(position, { 0, 0.001 }))
+    launcher.electric_interface.teleport(position)
+    if launcher.proxy_entity and launcher.proxy_entity.valid then
+        launcher.proxy_entity.teleport(position)
+    end
+    if launcher.target_entity and launcher.target_entity.valid then
+        launcher.target_entity.destroy()
+    end
+    if launcher.scheduled_delivery and launcher.scheduled_delivery:valid() then
+        launcher.scheduled_delivery:destroy()
+    end
+    if launcher.ammo_proxy_entity and launcher.ammo_proxy_entity.valid then
+        launcher.ammo_proxy_entity.destroy()
+        launcher:update_ammo_proxy()
+    end
+    launcher.scheduled_delivery = nil
+    launcher.network:update_launcher_connections(launcher)
 end
 
 ---Destroy a ReceiverStation following the destruction an associated entity.
@@ -287,7 +311,7 @@ end
 function LauncherStation.prototype:set_settings(launcher_settings)
     self.settings = util.table.deepcopy(launcher_settings)
     self.turret_entity.direction = self.settings.direction
-    self.turret_entity.get_or_create_control_behavior()--[[@as LuaTurretControlBehavior]].read_ammo =
+    self.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         self.settings.circuit_read_ammo
     self:update_ammo_proxy()
     self:set_network_signal(self.settings.network_signal)

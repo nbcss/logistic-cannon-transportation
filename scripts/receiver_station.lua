@@ -47,7 +47,7 @@ function ReceiverStation.create(entity, from_settings)
     local force = entity.force --[[@as LuaForce]]
 
     local receiver_settings = from_settings or util.table.deepcopy(ReceiverStation.default_settings)
-    
+
     local instance = setmetatable({
         inventory_entity = entity,
         station_id = entity.unit_number,
@@ -85,6 +85,17 @@ end
 
 function ReceiverStation.read_settings(tags)
     return tags and tags["cannon_receiver_settings"] or nil
+end
+
+function ReceiverStation.on_teleported(entity)
+    if entity.name ~= constants.entity_receiver_inventory then return end
+    local receiver = ReceiverStation.get(entity)
+    if not receiver or not receiver:valid() then return end
+    local position = entity.position
+    if receiver.proxy_entity and receiver.proxy_entity.valid then
+        receiver.proxy_entity.teleport(position)
+    end
+    receiver.network:update_receiver_connections(receiver)
 end
 
 ---Destroy a ReceiverStation following the destruction an associated entity.

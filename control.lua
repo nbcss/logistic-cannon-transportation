@@ -244,8 +244,8 @@ script.on_event(defines.events.on_entity_cloned, function(event)
 end)
 
 script.on_event(defines.events.script_raised_teleported, function(event)
-    -- TODO
-    game.print(event.entity)
+    LauncherStation.on_teleported(event.entity)
+    ReceiverStation.on_teleported(event.entity)
 end)
 
 ---@param event EventData.CustomInputEvent

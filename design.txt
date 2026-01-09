@@ -65,11 +65,13 @@ Addons [Planned]
 +Allow bots to take items from receiver
 
 TODO
-- handle station teleport/clone event [A]
+- handle station clone event [A]
+- capsule & technology texture [A]
+- Allow visualize ghost range [A]
+- Handle EI destroy event [A]
 - handle undo/redo stack [B]
 - Circuit enable/disable station [B]
 - Map setting to turn off projectile visualization [B]
-- Handle EI destroy event [B]
 - Option to disable receiver overflow protection [C]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]
 
