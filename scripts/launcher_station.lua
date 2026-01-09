@@ -61,6 +61,13 @@ local launcher_properties = prototypes.mod_data[constants.data_launcher_properti
     .data --[[@as table<string, LauncherProperties>]]
 local capsule_properties = prototypes.mod_data[constants.data_capsule_properties]
     .data --[[@as table<string, CannonCapsuleProperties?>]]
+local clone_blacklist = {
+    [constants.entity_launcher_turret] = true,
+    [constants.entity_launcher_energy_interface] = true,
+    [constants.entity_launcher_gui_proxy] = true,
+    [constants.entity_launcher_ammo_proxy] = true,
+    [constants.entity_target] = true,
+}
 
 ---@param force LuaForce
 ---@param ammo_name string
@@ -108,7 +115,7 @@ end
 function LauncherStation.create(entity, from_settings)
     assert(entity.name == constants.entity_launcher_inventory)
     local surface = entity.surface
-    local position = entity.position
+    local position = entity.position --TODO fix position
     local force = entity.force --[[@as LuaForce]]
 
     local inventory_entity = entity
@@ -183,15 +190,32 @@ function LauncherStation.get(entity)
         or storage.launcher_stations_turret_index[unit_number]
 end
 
+---@param tags Tags
+---@param launcher_settings LauncherStationSettings
 function LauncherStation.write_settings(tags, launcher_settings)
     tags["cannon_launcher_settings"] = launcher_settings
 end
 
+---@param tags Tags
 function LauncherStation.read_settings(tags)
     return tags and tags["cannon_launcher_settings"] or nil
 end
 
-function LauncherStation.on_teleported(entity)
+---@param source LuaEntity
+---@param destination LuaEntity
+function LauncherStation.on_entity_cloned(source, destination)
+    if clone_blacklist[destination.name] then destination.destroy() end
+    if destination.name ~= constants.entity_launcher_inventory then return end
+    local src_launcher = LauncherStation.get(source)
+    local des_launcher = LauncherStation.create(destination, src_launcher and src_launcher.settings)
+    if not src_launcher then return end
+    des_launcher.turret_entity.orientation = src_launcher.turret_entity.orientation
+    des_launcher:get_ammo_inventory()[1].set_stack(src_launcher:get_ammo_inventory()[1])
+    des_launcher:charge_energy(src_launcher:get_stored_energy())
+end
+
+---@param entity LuaEntity
+function LauncherStation.on_entity_teleported(entity)
     if entity.name ~= constants.entity_launcher_inventory then return end
     local launcher = LauncherStation.get(entity)
     if not launcher or not launcher:valid() then return end
@@ -288,14 +312,13 @@ function LauncherStation.prototype:update_state()
     local consumption = compute_energy_consumption(force, ammo_name, ammo_quality)
     -- resize energy capacity
     if self.max_range ~= effective_max_range or consumption ~= self.energy_consumption then
-        self.overflow_energy = self.overflow_energy + self.electric_interface.energy
+        local energy = self:get_stored_energy()
+        self.overflow_energy = 0
         self.electric_interface.energy = 0
         -- assume capacity modifer change corelate to consumption modifer
         local capacity_modifier = 1.0 + bonus_control.get_launcher_energy_capacity_modifier(force)
         self.electric_interface.electric_buffer_size = effective_max_range * (consumption or 0) * capacity_modifier
-        local transfer = math.min(self.overflow_energy, self.electric_interface.electric_buffer_size)
-        self.overflow_energy = self.overflow_energy - transfer
-        self.electric_interface.energy = transfer
+        self:charge_energy(energy)
     end
     -- update connections if range changed
     if self.max_range ~= effective_max_range then
@@ -380,6 +403,14 @@ end
 ---@return number
 function LauncherStation.prototype:get_energy_capacity()
     return self.electric_interface.electric_buffer_size
+end
+
+---@param energy number?
+function LauncherStation.prototype:charge_energy(energy)
+    local total_energy = self:get_stored_energy() + (energy or 0)
+    local stored = math.min(total_energy, self:get_energy_capacity())
+    self.overflow_energy = total_energy - stored
+    self.electric_interface.energy = stored
 end
 
 ---Consume given amount of energy; if no enough energy to consume, extra energy cost is ignored

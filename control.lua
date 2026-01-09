@@ -239,13 +239,12 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
 end)
 
 script.on_event(defines.events.on_entity_cloned, function(event)
-    -- TODO
-    game.print(event.destination)
+    LauncherStation.on_entity_cloned(event.source, event.destination)
+    ReceiverStation.on_entity_cloned(event.source, event.destination)
 end)
-
 script.on_event(defines.events.script_raised_teleported, function(event)
-    LauncherStation.on_teleported(event.entity)
-    ReceiverStation.on_teleported(event.entity)
+    LauncherStation.on_entity_teleported(event.entity)
+    ReceiverStation.on_entity_teleported(event.entity)
 end)
 
 ---@param event EventData.CustomInputEvent

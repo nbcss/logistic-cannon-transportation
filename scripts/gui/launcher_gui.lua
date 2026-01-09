@@ -454,12 +454,10 @@ function launcher_gui.refresh(player, entity)
         target = launcher:get_ammo_inventory()[1],
         options = ammo_slot_options,
     }
-    local energy_ratio = 0
     local energy = format.energy(launcher:get_stored_energy())
     local capacity = format.energy(launcher:get_energy_capacity())
-    if launcher:get_energy_capacity() > 0 then
-        energy_ratio = math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity())
-    end
+    local energy_ratio = launcher:get_stored_energy() > 0 and 
+        math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity()) or 0
     frame.station.ammo_and_energy.energy_bar.value = energy_ratio
     frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
     frame.station.auto_load_ammo.state = launcher.settings.load_capsule_from_inventory

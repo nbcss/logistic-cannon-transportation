@@ -32,6 +32,10 @@ ReceiverStation.default_settings = {
     overflow_protection = true,
 }
 
+local clone_blacklist = {
+    [constants.entity_receiver_gui_proxy] = true,
+}
+
 function ReceiverStation.on_init()
     ---@type table<uint64, ReceiverStation?> ReceiverStation's indexed by station_entity.unit_number.
     storage.receiver_stations = storage.receiver_stations or {}
@@ -79,15 +83,29 @@ function ReceiverStation.get(entity)
     return storage.receiver_stations[unit_number]
 end
 
+---@param tags Tags
+---@param receiver_settings ReceiverStationSettings
 function ReceiverStation.write_settings(tags, receiver_settings)
     tags["cannon_receiver_settings"] = receiver_settings
 end
 
+---@param tags Tags
 function ReceiverStation.read_settings(tags)
     return tags and tags["cannon_receiver_settings"] or nil
 end
 
-function ReceiverStation.on_teleported(entity)
+---@param source LuaEntity
+---@param destination LuaEntity
+function ReceiverStation.on_entity_cloned(source, destination)
+    if clone_blacklist[destination.name] then destination.destroy() end
+    if destination.name ~= constants.entity_receiver_inventory then return end
+    local src_receiver = ReceiverStation.get(source)
+    local des_receiver = ReceiverStation.create(destination, src_receiver and src_receiver.settings)
+    -- nothing to further clone
+end
+
+---@param entity LuaEntity
+function ReceiverStation.on_entity_teleported(entity)
     if entity.name ~= constants.entity_receiver_inventory then return end
     local receiver = ReceiverStation.get(entity)
     if not receiver or not receiver:valid() then return end
