@@ -170,6 +170,12 @@ function LauncherStation.create(entity, from_settings)
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_turret_index[instance.turret_id] = instance
     instance.network:add_launcher(instance)
+    -- redirect opened GUI
+    for _, player in ipairs(game.connected_players) do
+        if player.opened == instance.inventory_entity then
+            player.opened = instance:get_gui_proxy()
+        end
+    end
 
     return instance
 end

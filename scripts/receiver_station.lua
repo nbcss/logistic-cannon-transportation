@@ -64,6 +64,12 @@ function ReceiverStation.create(entity, from_settings)
 
     storage.receiver_stations[instance:id()] = instance
     instance.network:add_receiver(instance)
+    -- redirect opened GUI
+    for _, player in ipairs(game.connected_players) do
+        if player.opened == instance.inventory_entity then
+            player.opened = instance:get_gui_proxy()
+        end
+    end
 
     return instance
 end
