@@ -39,6 +39,10 @@ script.on_configuration_changed(function()
     end
 end)
 
+script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)
+script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
+script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
+
 local trigger_effect_functions = {
     [constants.capsule_launched_effect_id] = function(event)
         if event.source_position and event.source_entity and event.source_entity.valid then
@@ -54,7 +58,6 @@ local trigger_effect_functions = {
         end
     end,
 }
-
 script.on_event(defines.events.on_script_trigger_effect, function(event)
     local func = trigger_effect_functions[event.effect_id]
     if func then func(event) end
@@ -184,7 +187,27 @@ script.on_event(defines.events.on_entity_settings_pasted, function(event)
         end
     end
 end)
-
+script.on_event(defines.events.on_post_entity_died, function(event)
+    if not event.ghost then return end
+    -- Launcher
+    if event.ghost.ghost_name == constants.entity_launcher_inventory then
+        local launcher = LauncherStation.get(event.unit_number)
+        if launcher then
+            local tags = event.ghost.tags or {}
+            LauncherStation.write_settings(tags, launcher.settings)
+            event.ghost.tags = tags
+        end
+    end
+    -- Receiver
+    if event.ghost.ghost_name == constants.entity_receiver_inventory then
+        local receiver = ReceiverStation.get(event.unit_number)
+        if receiver then
+            local tags = event.ghost.tags or {}
+            ReceiverStation.write_settings(tags, receiver.settings)
+            event.ghost.tags = tags
+        end
+    end
+end)
 script.on_event(defines.events.on_player_setup_blueprint, function(event)
     local blueprint = event.stack or event.record
     if not blueprint then return end
@@ -267,10 +290,6 @@ script.on_event(defines.events.on_forces_merging, function(event)
         end
     end
 end)
-
-script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)
-script.on_event(defines.events.on_research_reversed, function(event) bonus_control.update_bonus(event.research.force) end)
-script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     if event.setting_type == "runtime-global" and event.setting == constants.entity_update_interval_setting then
