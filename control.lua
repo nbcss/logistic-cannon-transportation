@@ -40,13 +40,13 @@ script.on_configuration_changed(function()
 end)
 
 local trigger_effect_functions = {
-    [constants.capsule_launched_effect_id] = function (event)
+    [constants.capsule_launched_effect_id] = function(event)
         if event.source_position and event.source_entity and event.source_entity.valid then
             local launcher = LauncherStation.get(event.source_entity)
             if launcher then launcher:launch(event.source_position) end
         end
     end,
-    [constants.capsule_landed_effect_id] = function (event)
+    [constants.capsule_landed_effect_id] = function(event)
         if not event.cause_entity or not event.cause_entity.valid then return end
         if event.cause_entity.name == constants.entity_capsule_container then
             local delivery = ScheduledDelivery.get(event.cause_entity.unit_number)
@@ -273,7 +273,7 @@ script.on_event(defines.events.on_research_reversed, function(event) bonus_contr
 script.on_event(defines.events.on_force_reset, function(event) bonus_control.update_bonus(event.force) end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
-    if event.setting_type == "runtime-global" and event.setting == constants.update_interval_setting then
+    if event.setting_type == "runtime-global" and event.setting == constants.entity_update_interval_setting then
         CannonNetwork.resize_buckets()
     end
 end)
@@ -283,25 +283,28 @@ script.on_event(defines.events.on_tick, function(event)
     for network in CannonNetwork.all() do
         network:update(event.tick)
     end
+    local tick_index = event.tick % settings.global[constants.gui_update_interval_setting].value
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
         if player.selected and player.selected.name == constants.entity_launcher_inventory then
             local launcher = LauncherStation.get(player.selected)
             if launcher then launcher:update_diode_status() end
         end
-        if player.opened and player.opened.object_name == "LuaEntity" and player.opened.name == constants.entity_launcher_gui_proxy then
-            local entity = player.opened --[[@as LuaEntity]]
-            local launcher = LauncherStation.get(entity)
-            if launcher then
-                launcher:update_diode_status()
-                launcher_gui.refresh(player, entity)
+        if tick_index == 0 and player.opened and player.opened.object_name == "LuaEntity" then
+            if player.opened.name == constants.entity_launcher_gui_proxy then
+                local entity = player.opened --[[@as LuaEntity]]
+                local launcher = LauncherStation.get(entity)
+                if launcher then
+                    launcher:update_diode_status()
+                    launcher_gui.refresh(player, entity)
+                end
             end
-        end
-        if player.opened and player.opened.object_name == "LuaEntity" and player.opened.name == constants.entity_receiver_gui_proxy then
-            local entity = player.opened --[[@as LuaEntity]]
-            local receiver = ReceiverStation.get(entity)
-            if receiver then
-                receiver_gui.refresh(player, entity)
+            if player.opened.name == constants.entity_receiver_gui_proxy then
+                local entity = player.opened --[[@as LuaEntity]]
+                local receiver = ReceiverStation.get(entity)
+                if receiver then
+                    receiver_gui.refresh(player, entity)
+                end
             end
         end
     end
