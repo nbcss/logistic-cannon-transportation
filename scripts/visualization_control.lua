@@ -10,7 +10,8 @@ function Visualization.load_deps()
     ReceiverStation = require("scripts.receiver_station")
 end
 
-local range_color = { 0.01, 0.03, 0.01, 0 }
+local range_color = { 0.02, 0.06, 0.02, 0 }
+local range_edge_color = { 0.2, 0.6, 0.2, 0 }
 local connection_color = { 0.7, 0.7, 0, 1 }
 local items_to_view_stations = {
     [constants.item_launcher] = "launcher",
@@ -34,9 +35,9 @@ end
 ---@param player LuaPlayer
 ---@param launcher LauncherStation
 ---@param source_position MapPosition?
----@param draw_ammo_proxy boolean?
+---@param from_launcher boolean?
 ---@return { [number]: LuaEntity | LuaRenderObject }
-local function launcher_visaulization(player, launcher, source_position, draw_ammo_proxy)
+local function launcher_visaulization(player, launcher, source_position, from_launcher)
     if not launcher:valid() then return {} end
     local visaulization = {
         launcher.inventory_entity.surface.create_entity {
@@ -47,7 +48,7 @@ local function launcher_visaulization(player, launcher, source_position, draw_am
             render_player_index = player.index,
         } or error()
     }
-    if draw_ammo_proxy and launcher.ammo_proxy_entity and launcher.ammo_proxy_entity.valid then
+    if from_launcher and launcher.ammo_proxy_entity and launcher.ammo_proxy_entity.valid then
         table.insert(visaulization, launcher.inventory_entity.surface.create_entity {
             name = "lct-highlight-box",
             position = launcher.ammo_proxy_entity.position,
@@ -59,7 +60,7 @@ local function launcher_visaulization(player, launcher, source_position, draw_am
             sprite = "utility/empty_ammo_slot",
             x_scale = 0.5,
             y_scale = 0.5,
-            tint = {0.5, 0.5, 0.5, 0},
+            tint = { 0.5, 0.5, 0.5, 0 },
             surface = launcher.inventory_entity.surface,
             target = launcher.ammo_proxy_entity,
             players = { player.index },
@@ -78,11 +79,18 @@ local function launcher_visaulization(player, launcher, source_position, draw_am
             dash_length = 1
         } or error())
     else
+        local color = range_color
+        local filled = true
+        if not from_launcher and settings.get_player_settings(player)[constants.range_visualization_mode].value == "edge" then
+            filled = false
+            color = range_edge_color
+        end
         local range = launcher:get_max_range()
         table.insert(visaulization, rendering.draw_circle {
-            color = range_color,
+            color = color,
             radius = range,
-            filled = true,
+            filled = filled,
+            width = 16,
             target = launcher.inventory_entity,
             surface = launcher.inventory_entity.surface,
             players = { player },
@@ -91,9 +99,10 @@ local function launcher_visaulization(player, launcher, source_position, draw_am
             render_mode = "game",
         } or error())
         table.insert(visaulization, rendering.draw_circle {
-            color = range_color,
+            color = color,
             radius = range,
-            filled = true,
+            filled = filled,
+            width = 16,
             target = launcher.inventory_entity,
             surface = launcher.inventory_entity.surface,
             players = { player },

@@ -19,4 +19,12 @@ data:extend{
         maximum_value = 60,
         default_value = 2,
     },
+    {
+        type = "string-setting",
+        name = constants.range_visualization_mode,
+        order = "c",
+        setting_type = "runtime-per-user",
+        default_value = "edge",
+        allowed_values = { "filled", "edge" },
+    },
 }

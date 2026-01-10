@@ -13,6 +13,7 @@ constants.capsule_landed_effect_id = "lct-capsule-landed"
 -- settings
 constants.entity_update_interval_setting = "lct-entity-update-interval"
 constants.gui_update_interval_setting = "lct-gui-update-interval"
+constants.range_visualization_mode = "lct-range-visualization-mode"
 -- bonus effect
 constants.range_upgrade_bonus = "lct-launcher-range-bonus"
 constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"

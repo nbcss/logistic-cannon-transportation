@@ -418,8 +418,8 @@ data:extend {
         upgrade = true,
         order = "logistic-cannon-capsule-productivity-4",
         unit = {
-            count_formula = "2^(L-4)*500",
-            time = 30,
+            count_formula = "1.5^(L-4)*500",
+            time = 60,
             ingredients = {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
