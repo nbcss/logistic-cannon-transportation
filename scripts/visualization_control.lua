@@ -10,7 +10,7 @@ function Visualization.load_deps()
     ReceiverStation = require("scripts.receiver_station")
 end
 
-local range_color = { 0.02, 0.06, 0.02, 0 }
+local range_color = { 0.01, 0.03, 0.01, 0 }
 local connection_color = { 0.7, 0.7, 0, 1 }
 local items_to_view_stations = {
     [constants.item_launcher] = "launcher",
@@ -47,13 +47,24 @@ local function launcher_visaulization(player, launcher, source_position, draw_am
             render_player_index = player.index,
         } or error()
     }
-    if draw_ammo_proxy and launcher.ammo_proxy_entity then
+    if draw_ammo_proxy and launcher.ammo_proxy_entity and launcher.ammo_proxy_entity.valid then
         table.insert(visaulization, launcher.inventory_entity.surface.create_entity {
             name = "lct-highlight-box",
             position = launcher.ammo_proxy_entity.position,
             bounding_box = launcher.ammo_proxy_entity.selection_box,
-            box_type = "electricity",
+            box_type = "copy",
             render_player_index = player.index,
+        } or error())
+        table.insert(visaulization, rendering.draw_sprite {
+            sprite = "utility/empty_ammo_slot",
+            x_scale = 0.5,
+            y_scale = 0.5,
+            tint = {0.5, 0.5, 0.5, 0},
+            surface = launcher.inventory_entity.surface,
+            target = launcher.ammo_proxy_entity,
+            players = { player.index },
+            visible = true,
+            render_mode = "game",
         } or error())
     end
     if source_position then
