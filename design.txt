@@ -67,7 +67,7 @@ Addons [Planned]
 TODO
 - capsule & technology texture [A]
 - Allow visualize ghost range [A]
-- Handle EI destroy event [A]
+- Allow rotate ghost/cursor [A]
 - handle undo/redo stack [B]
 - Circuit enable/disable station [B]
 - Map setting to turn off projectile visualization [B]

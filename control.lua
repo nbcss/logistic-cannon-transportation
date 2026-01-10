@@ -39,30 +39,25 @@ script.on_configuration_changed(function()
     end
 end)
 
-local function on_cannon_launched(event)
-    if event.source_position and event.source_entity and event.source_entity.valid then
-        local launcher = LauncherStation.get(event.source_entity)
-        if launcher then
-            launcher:launch(event.source_position)
+local trigger_effect_functions = {
+    [constants.capsule_launched_effect_id] = function (event)
+        if event.source_position and event.source_entity and event.source_entity.valid then
+            local launcher = LauncherStation.get(event.source_entity)
+            if launcher then launcher:launch(event.source_position) end
         end
-    end
-end
-
-local function on_capsule_landed(event)
-    if event.cause_entity and event.cause_entity.valid and event.cause_entity.name == constants.entity_capsule_container then
-        local delivery = ScheduledDelivery.get(event.cause_entity.unit_number)
-        if delivery then
-            delivery:deliver()
+    end,
+    [constants.capsule_landed_effect_id] = function (event)
+        if not event.cause_entity or not event.cause_entity.valid then return end
+        if event.cause_entity.name == constants.entity_capsule_container then
+            local delivery = ScheduledDelivery.get(event.cause_entity.unit_number)
+            if delivery then delivery:deliver() end
         end
-    end
-end
+    end,
+}
 
 script.on_event(defines.events.on_script_trigger_effect, function(event)
-    if event.effect_id == "logistic-cannon-capsule-launched" then
-        on_cannon_launched(event)
-    elseif event.effect_id == "logistic-cannon-capsule-landed" then
-        on_capsule_landed(event)
-    end
+    local func = trigger_effect_functions[event.effect_id]
+    if func then func(event) end
 end)
 
 script.on_event(defines.events.on_object_destroyed, function(event)

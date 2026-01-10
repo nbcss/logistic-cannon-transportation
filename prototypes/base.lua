@@ -91,7 +91,7 @@ data.extend {
                 type = "instant",
                 target_effects = {
                     type = "script",
-                    effect_id = "logistic-cannon-capsule-landed"
+                    effect_id = constants.capsule_landed_effect_id
                 }
             }
         },

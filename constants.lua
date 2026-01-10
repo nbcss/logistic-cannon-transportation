@@ -8,6 +8,8 @@ constants.item_subgroup = "cannon-transport"
 constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
 constants.rotate_input_event = "lct-rotate-entity-action"
 constants.reverse_rotate_input_event = "lct-reverse-rotate-entity-action"
+constants.capsule_launched_effect_id = "lct-capsule-launched"
+constants.capsule_landed_effect_id = "lct-capsule-landed"
 -- settings
 constants.update_interval_setting = constants.name_prefix.."update-interval"
 -- bonus effect

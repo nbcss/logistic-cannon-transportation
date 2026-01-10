@@ -130,7 +130,8 @@ function CannonNetwork.prototype:update(tick)
     for receiver in self.receivers:bucket(bucket_id) do
         if not receiver:valid() then goto next_receiver end
         local empty_slots = receiver:get_inventory().count_empty_stacks(false, false)
-        if empty_slots <= 0 then goto next_receiver end
+        local protect = receiver.settings.overflow_protection
+        if protect and empty_slots <= 0 then goto next_receiver end
         -- generate receiver demand set
         local demands = {}
         for _, request in ipairs(receiver.settings.delivery_requests) do
@@ -184,7 +185,7 @@ function CannonNetwork.prototype:update(tick)
                         receiver:add_delivery(delivery)
                         demand.count = demand.count - delivery.amount
                         empty_slots = empty_slots - launcher:get_max_payload_size()
-                        if empty_slots <= 0 then goto next_receiver end
+                        if protect and empty_slots <= 0 then goto next_receiver end
                         if demand.count <= 0 then break end
                     end
                 end

@@ -68,7 +68,7 @@ local function ammo_type()
                 type = "instant",
                 target_effects = {
                     type = "script",
-                    effect_id = "logistic-cannon-capsule-launched",
+                    effect_id = constants.capsule_launched_effect_id,
                 }
             }
         },
