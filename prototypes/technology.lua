@@ -23,6 +23,22 @@ local function launcher_range_bonus_effect(modifier)
     }
 end
 
+local function energy_efficiency_icon(technology_icon)
+    return {
+        {
+            icon = technology_icon,
+            icon_size = 256,
+        },
+        {
+            icon = "__core__/graphics/icons/technology/constants/constant-battery.png",
+            icon_size = 128,
+            scale = 0.5,
+            shift = { 50, 50 },
+            floating = true
+        }
+    }
+end
+
 local function launcher_energy_efficiency_effect(consumption_modifier, capacity_modifier)
     return {
         {
@@ -101,7 +117,7 @@ data:extend {
     {
         type = "technology",
         name = "reinforced-cannon-capsule",
-        icon = "__base__/graphics/technology/artillery.png",
+        icons = util.technology_icon_constant_capacity("__logistic-cannon-transportation__/graphics/technology/capsule-reinforced.png"),
         icon_size = 256,
         effects = {
             { type = "unlock-recipe", recipe = constants.item_capsule_reinforced },
@@ -121,7 +137,7 @@ data:extend {
     {
         type = "technology",
         name = "propelled-cannon-capsule",
-        icon = "__base__/graphics/technology/artillery.png",
+        icons = util.technology_icon_constant_movement_speed("__logistic-cannon-transportation__/graphics/technology/capsule-propelled.png"),
         icon_size = 256,
         effects = {
             { type = "unlock-recipe", recipe = constants.item_capsule_propelled },
@@ -249,7 +265,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-1",
-        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.05, 0.1),
         prerequisites = { "logistic-cannon" },
@@ -267,7 +283,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-2",
-        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.1, 0.2),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-1", "chemical-science-pack" },
@@ -286,7 +302,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-3",
-        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.1, 0.2),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-2", "utility-science-pack" },
@@ -306,7 +322,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-4",
-        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.1, 0.2),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-3", "production-science-pack" },
@@ -327,7 +343,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-5",
-        icons = util.technology_icon_constant_capacity("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.15, 0.3),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-4", "space-science-pack" },
@@ -350,7 +366,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-capsule-productivity-upgrade-1",
-        icons = util.technology_icon_constant_productivity("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_recipe_productivity("__logistic-cannon-transportation__/graphics/technology/capsules.png"),
         icon_size = 64,
         effects = capsule_productivity_effect(0.1),
         prerequisites = { "logistic-cannon", "chemical-science-pack" },
@@ -369,7 +385,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-capsule-productivity-upgrade-2",
-        icons = util.technology_icon_constant_productivity("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_recipe_productivity("__logistic-cannon-transportation__/graphics/technology/capsules.png"),
         icon_size = 64,
         effects = capsule_productivity_effect(0.1),
         prerequisites = { "cannon-capsule-productivity-upgrade-1", "military-science-pack" },
@@ -389,7 +405,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-capsule-productivity-upgrade-3",
-        icons = util.technology_icon_constant_productivity("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_recipe_productivity("__logistic-cannon-transportation__/graphics/technology/capsules.png"),
         icon_size = 64,
         effects = capsule_productivity_effect(0.1),
         prerequisites = { "cannon-capsule-productivity-upgrade-2", "production-science-pack" },
@@ -410,7 +426,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-capsule-productivity-upgrade-4",
-        icons = util.technology_icon_constant_productivity("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_recipe_productivity("__logistic-cannon-transportation__/graphics/technology/capsules.png"),
         icon_size = 64,
         effects = capsule_productivity_effect(0.1),
         prerequisites = { "cannon-capsule-productivity-upgrade-3", "space-science-pack" },

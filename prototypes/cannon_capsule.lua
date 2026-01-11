@@ -81,7 +81,7 @@ data:extend {
         type = "ammo",
         name = constants.item_capsule_basic,
         ammo_category = constants.ammo_category,
-        icon = "__base__/graphics/icons/rocket-part.png",
+        icon = "__logistic-cannon-transportation__/graphics/icons/capsule-basic.png",
         subgroup = constants.item_subgroup,
         order = "c1[capsule]",
         stack_size = 20,
@@ -105,7 +105,7 @@ data:extend {
         type = "ammo",
         name = constants.item_capsule_reinforced,
         ammo_category = constants.ammo_category,
-        icon = "__base__/graphics/icons/rocket-part.png",
+        icon = "__logistic-cannon-transportation__/graphics/icons/capsule-reinforced.png",
         subgroup = constants.item_subgroup,
         order = "c2[capsule]",
         stack_size = 10,
@@ -129,7 +129,7 @@ data:extend {
         type = "ammo",
         name = constants.item_capsule_propelled,
         ammo_category = constants.ammo_category,
-        icon = "__base__/graphics/icons/rocket-part.png",
+        icon = "__logistic-cannon-transportation__/graphics/icons/capsule-propelled.png",
         subgroup = constants.item_subgroup,
         order = "c3[capsule]",
         stack_size = 10,
@@ -146,7 +146,7 @@ data:extend {
             { type = "item", name = "rocket-fuel",  amount = 1 },
         },
         results = {
-            { type = "item", name = constants.item_capsule_propelled, amount = 4 },
+            { type = "item", name = constants.item_capsule_propelled, amount = 3 },
         }
     },
 }

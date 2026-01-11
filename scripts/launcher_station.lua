@@ -447,7 +447,7 @@ function LauncherStation.prototype:update_ammo_proxy()
     end
     -- for reset inserter targets
     local last_pos = self.inventory_entity.position
-    self.inventory_entity.teleport({ 0, 0 }, nil, false)
+    self.inventory_entity.teleport(math2d.position.add(last_pos, {10, 10}), nil, false)
     self.inventory_entity.teleport(last_pos, nil, false)
     -- update ammo proxy position
     local position = compute_ammo_proxy_position(self.inventory_entity, self.turret_entity.direction)

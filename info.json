@@ -8,5 +8,10 @@
         "? quality",
         "custom-bonus-gui"
 	],
-    "description": ""
+    "description": "",
+    "package": {
+        "ignore": [
+            "**/*.xcf"
+        ]
+    }
 }

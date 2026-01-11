@@ -1,6 +1,7 @@
-local constants = require "constants"
+local constants = require("constants")
 local format = require("scripts.format")
 local inventory_slot = require("scripts.gui.inventory_slot")
+local signal_condition = require("scripts.gui.signal_condition")
 local LauncherStation = require("scripts.launcher_station")
 local launcher_gui = {}
 local name = "logistic-cannon-launcher-gui"
@@ -94,15 +95,15 @@ function launcher_gui.on_gui_opened(player, entity)
     }
     frame.station.ammo_and_energy.add {
         type = "progressbar",
-        name = "energy_bar",
-        style = "lct_energy_bar",
+        name = "energy",
+        style = "lct_caption_progressbar",
     }
     frame.station.add {
         type = "checkbox",
         name = "auto_load_ammo",
         style = "caption_checkbox",
         caption = { "logistic-cannon-transportation.launcher-auto-load-ammo" },
-        tooltip = { "logistic-cannon-transportation.launcher-auto-load-ammo-tooltip" },
+        tooltip = { "logistic-cannon-transportation.launcher-auto-load-ammo-tooltip" },       
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {
@@ -390,8 +391,43 @@ function launcher_gui.on_gui_opened(player, entity)
         type = "label",
         name = "title",
         style = "subheader_label",
-        caption = { "logistic-cannon-transportation.circuit-control" }
+        caption = { "logistic-cannon-transportation.circuit-control" },
     }
+    -- frame.circuit.header.add {
+    --     type = "flow",
+    --     name = "title",
+    --     direction = "vertical",
+    -- }
+    -- frame.circuit.header.title.add {
+    --     type = "label",
+    --     name = "title_caption",
+    --     style = "subheader_label",
+    --     caption = { "logistic-cannon-transportation.circuit-control" },
+    --     tags = {
+    --         [constants.gui_tag_event_handlers] = {
+    --             on_gui_hover = "launcher_gui.on_circuit_hover",
+    --             on_gui_leave = "launcher_gui.on_circuit_leave",
+    --         },
+    --     },
+    -- }
+    -- frame.circuit.header.title.title_caption.raise_hover_events = true
+    -- frame.circuit.header.title.add {
+    --     type = "frame",
+    --     name = "title_tooltip",
+    --     style = "tooltip_panel_background",
+    --     visible = false,
+    -- }
+    -- frame.circuit.header.title.title_tooltip.add {
+    --     type = "label",
+    --     caption = "Test",
+    -- }
+
+    -- -- Enable/disable TODO
+    -- signal_condition.create_enable_condition(frame.circuit)
+    -- frame.circuit.add {
+    --     type = "line",
+    --     style = "inside_shallow_frame_with_padding_line",
+    -- }
     -- Read ammo
     frame.circuit.add {
         type = "checkbox",
@@ -404,6 +440,10 @@ function launcher_gui.on_gui_opened(player, entity)
                 on_gui_checked_state_changed = "launcher_gui.on_read_ammo_state_changed",
             },
         },
+    }
+    frame.circuit.add {
+        type = "line",
+        style = "inside_shallow_frame_with_padding_line",
     }
     -- Read contents
     frame.circuit.add {
@@ -440,8 +480,8 @@ function launcher_gui.refresh(player, entity)
     local capacity = format.energy(launcher:get_energy_capacity())
     local energy_ratio = launcher:get_stored_energy() > 0 and 
         math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity()) or 0
-    frame.station.ammo_and_energy.energy_bar.value = energy_ratio
-    frame.station.ammo_and_energy.energy_bar.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
+    frame.station.ammo_and_energy.energy.value = energy_ratio
+    frame.station.ammo_and_energy.energy.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
     frame.station.auto_load_ammo.state = launcher.settings.load_capsule_from_inventory
     frame.station.side_load_ammo.state = launcher.settings.enable_ammo_proxy
     frame.station.range.info.value_label.caption = { "",
@@ -639,6 +679,26 @@ function launcher_gui.on_read_contents_state_changed(player, event)
     if not launcher or not launcher:valid() then return end
     local control = launcher.inventory_entity.get_or_create_control_behavior() --[[@as LuaContainerControlBehavior]]
     control.read_contents = event.element.state
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_hover
+function launcher_gui.on_circuit_hover(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    frame.circuit.header.title.title_tooltip.style.bottom_margin = -32
+    frame.circuit.header.title.title_tooltip.style.horizontally_stretchable = false
+    frame.circuit.header.title.title_tooltip.visible = true
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_leave
+function launcher_gui.on_circuit_leave(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    frame.circuit.header.title.title_tooltip.visible = false
 end
 
 return launcher_gui

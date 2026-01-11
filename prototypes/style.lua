@@ -50,6 +50,28 @@ styles["lct_subheader_frame"] = {
     horizontally_squashable = "on",
 }
 
+styles["lct_constant_condition_textbox"] = {
+    type = "textbox_style",
+    width = 40,
+    height = 40,
+
+    -- Format text inside
+    top_padding = 7,
+    bottom_padding = 7,
+    left_padding = 2,
+    right_padding = 2,
+    horizontal_align = "center",
+    vertical_align = "center",
+    font = "default-game",
+    font_color = {1, 1, 1},
+    disabled_font_color = {1, 1, 1},
+
+    -- Make it look like a slot button when not edited
+    default_background = util.table.deepcopy(styles["slot_button_in_shallow_frame"].default_graphical_set),
+    game_controller_hovered_background = util.table.deepcopy(styles["slot_button_in_shallow_frame"].hovered_graphical_set),
+    disabled_background = util.table.deepcopy(styles["slot_button_in_shallow_frame"].disabled_graphical_set),
+}
+
 styles["lct_configuration_deep_frame"] = {
     type = "frame_style",
     parent = "deep_frame_in_shallow_frame",
@@ -102,7 +124,7 @@ styles["lct_overlay_progressbar_top"] = {
     bar_background = {},
 }
 
-styles["lct_energy_bar"] = {
+styles["lct_caption_progressbar"] = {
     type = "progressbar_style",
     height = 24,
     bar_width = 24,

@@ -277,6 +277,10 @@ script.on_event({ constants.rotate_input_event, constants.reverse_rotate_input_e
     end
 end)
 
+script.on_event({ "test_event" }, function(event)
+    game.print("show")
+end)
+
 script.on_event(defines.events.on_forces_merging, function(event)
     for network in CannonNetwork.all() do
         if network.force == event.source then
@@ -371,6 +375,9 @@ script.on_event({
         defines.events.on_gui_confirmed,
         defines.events.on_gui_checked_state_changed,
         defines.events.on_gui_value_changed,
+        defines.events.on_gui_selection_state_changed,
+        defines.events.on_gui_hover,
+        defines.events.on_gui_leave,
     },
     ---@param event
     ---| EventData.on_gui_click
@@ -379,6 +386,9 @@ script.on_event({
     ---| EventData.on_gui_confirmed
     ---| EventData.on_gui_checked_state_changed
     ---| EventData.on_gui_value_changed
+    ---| EventData.on_gui_selection_state_changed
+    ---| EventData.on_gui_hover
+    ---| EventData.on_gui_leave
     function(event)
         local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
         if not handlers then return end

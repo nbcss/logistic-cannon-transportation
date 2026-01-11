@@ -12,6 +12,18 @@ data.extend {
         size = 14
     },
     {
+        type = "font",
+        name = "test",
+        from = "test",
+        size = 30
+    },
+    {
+        type = "custom-input",
+        name = "test_event",
+        key_sequence = "",
+        linked_game_control = "activate-tooltip",
+    },
+    {
         type = "custom-input",
         name = constants.rotate_input_event,
         key_sequence = "",
@@ -26,7 +38,7 @@ data.extend {
     {
         type = "ammo-category",
         name = constants.ammo_category,
-        icon = "__base__/graphics/icons/rocket-part.png",
+        icon = "__logistic-cannon-transportation__/graphics/icons/capsule-category.png",
         subgroup = "ammo-category",
     },
     {
@@ -50,21 +62,18 @@ data.extend {
     {
         type = "ammo-category",
         name = constants.range_upgrade_bonus,
-        icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
         hidden = true,
     },
     {
         type = "ammo-category",
         name = constants.energy_capacity_modifier,
-        icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
         hidden = true,
     },
     {
         type = "ammo-category",
         name = constants.energy_consumption_modifier,
-        icon = "__base__/graphics/icons/rocket-part.png",
         subgroup = "ammo-category",
         hidden = true,
     },
