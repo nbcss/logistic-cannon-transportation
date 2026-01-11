@@ -65,7 +65,6 @@ Addons [Planned]
 +Allow bots to take items from receiver
 
 TODO
-- capsule & technology texture [A]
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - handle undo/redo stack [B]

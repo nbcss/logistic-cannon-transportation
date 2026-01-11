@@ -7,16 +7,21 @@ capsule_properties[constants.item_capsule_basic] = {
     speed = 40, -- tile per second
     payload_size = 1, -- stack
     energy_consumption = 30000, -- J per tile
+    projectile_name = "capsule-basic",
 } --[[@as CannonCapsuleProperties]]
 capsule_properties[constants.item_capsule_reinforced] = {
     speed = 30, -- tile per second
     payload_size = 8, -- stack
     energy_consumption = 100000, -- J per tile
+    projectile_name = "capsule-reinforced",
+    smoke_color = {0.9, 0.375, 0.375, 0.375},
 } --[[@as CannonCapsuleProperties]]
 capsule_properties[constants.item_capsule_propelled] = {
     speed = 75, -- tile per second
     payload_size = 3, -- stack
     energy_consumption = 50000, -- J per tile
+    projectile_name = "capsule-propelled",
+    smoke_color = {0.2, 0.9, 0.9, 0.375},
 } --[[@as CannonCapsuleProperties]]
 
 ---@param capsule_item string

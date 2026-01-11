@@ -10,6 +10,7 @@ constants.rotate_input_event = "lct-rotate-entity-action"
 constants.reverse_rotate_input_event = "lct-reverse-rotate-entity-action"
 constants.capsule_launched_effect_id = "lct-capsule-launched"
 constants.capsule_landed_effect_id = "lct-capsule-landed"
+constants.capsule_projectile_format = "%s-projectile-%s"
 -- settings
 constants.entity_update_interval_setting = "lct-entity-update-interval"
 constants.gui_update_interval_setting = "lct-gui-update-interval"
@@ -22,9 +23,9 @@ constants.energy_consumption_modifier = "lct-launcher-energy-consumption-modifie
 constants.data_capsule_properties = constants.name_prefix .. "capsule-properties"
 constants.data_launcher_properties = constants.name_prefix .. "launcher-properties"
 -- capsule
-constants.item_capsule_basic = "logistic-cannon-capsule-basic"
-constants.item_capsule_reinforced = "logistic-cannon-capsule-reinforced"
-constants.item_capsule_propelled = "logistic-cannon-capsule-propelled"
+constants.item_capsule_basic = "lct-capsule-basic"
+constants.item_capsule_reinforced = "lct-capsule-reinforced"
+constants.item_capsule_propelled = "lct-capsule-propelled"
 -- launcher
 constants.item_launcher = constants.name_prefix.."launcher"
 constants.entity_launcher_inventory = constants.item_launcher

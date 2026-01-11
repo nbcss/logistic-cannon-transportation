@@ -12,18 +12,6 @@ data.extend {
         size = 14
     },
     {
-        type = "font",
-        name = "test",
-        from = "test",
-        size = 30
-    },
-    {
-        type = "custom-input",
-        name = "test_event",
-        key_sequence = "",
-        linked_game_control = "activate-tooltip",
-    },
-    {
         type = "custom-input",
         name = constants.rotate_input_event,
         key_sequence = "",
@@ -122,6 +110,8 @@ data.extend {
         ---@field speed number
         ---@field payload_size uint
         ---@field energy_consumption number
+        ---@field projectile_name string
+        ---@field smoke_color Color?
         data = {},
     },
     {

@@ -1,36 +1,44 @@
 local constants = require("constants")
 local vertical_acceleration_coefficient = 150
+local particle_path = "__logistic-cannon-transportation__/graphics/entity/projectile/%s.png"
+local shadow_path = "__logistic-cannon-transportation__/graphics/entity/projectile/capsule-shadow.png"
+local capsule_properties = data.raw["mod-data"][constants.data_capsule_properties]
+    .data --[[@as table<string, CannonCapsuleProperties?>]]
 
--- speed: tile per second
-for speed = 30, 100, 5 do
-    data:extend {
-        {
+for _, capsule_data in pairs(capsule_properties) do
+    local smoke_name = capsule_data.smoke_color and capsule_data.projectile_name .. "-smoke" or "smoke-fast"
+    if capsule_data.smoke_color then
+        data:extend {
+            util.merge { data.raw["trivial-smoke"]["smoke-fast"], {
+                name = smoke_name,
+                color = capsule_data.smoke_color,
+            } }
+        }
+    end
+    local base_speed = capsule_data.speed
+    for speed = base_speed, base_speed + 50, 5 do
+        data:extend { {
             type = "stream",
-            name = "logistic-cannon-capsule-projectile-" .. tostring(speed),
+            name = string.format(constants.capsule_projectile_format, capsule_data.projectile_name, speed),
             flags = { "not-on-map" },
             hidden = true,
             oriented_particle = true,
             particle = {
-                filename = "__base__/graphics/entity/steel-chest/steel-chest.png",
+                filename = string.format(particle_path, capsule_data.projectile_name),
                 width = 64,
-                height = 80,
-                frame_count = 1,
-                scale = 0.5,
+                height = 64,
+                scale = 0.75,
             },
             shadow = {
                 draw_as_shadow = true,
-                filename = "__base__/graphics/entity/grenade/grenade-shadow.png",
-                width = 50,
-                height = 40,
-                animation_speed = 0.25,
-                frame_count = 16,
-                line_length = 8,
-                shift = { 0.0625, 0.1875 },
-                scale = 0.5,
+                filename = shadow_path,
+                width = 64,
+                height = 64,
+                scale = 0.75,
             },
             smoke_sources = {
                 {
-                    name = "smoke-fast",
+                    name = smoke_name,
                     deviation = { 0.15, 0.15 },
                     frequency = 1,
                     position = { 0, 0 },
@@ -50,7 +58,7 @@ for speed = 30, 100, 5 do
             particle_start_alpha = 1,
             particle_start_scale = 1,
             particle_vertical_acceleration = speed / vertical_acceleration_coefficient / 60,
-            progress_to_create_smoke = 0.03,
-        }
-    }
+            progress_to_create_smoke = 1.2 / speed,
+        } }
+    end
 end

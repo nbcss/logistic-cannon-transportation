@@ -277,10 +277,6 @@ script.on_event({ constants.rotate_input_event, constants.reverse_rotate_input_e
     end
 end)
 
-script.on_event({ "test_event" }, function(event)
-    game.print("show")
-end)
-
 script.on_event(defines.events.on_forces_merging, function(event)
     for network in CannonNetwork.all() do
         if network.force == event.source then

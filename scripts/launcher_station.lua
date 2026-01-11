@@ -589,9 +589,9 @@ function LauncherStation.prototype:launch(source_position)
                     inventory_tool.transfer_to_slot(inventory, ammo_slot)
                 end
                 ammo_slot.drain_ammo(1)
-                local speed = self:get_projectile_speed()
+                local data = capsule_properties[self.ammo_name] or error()
                 self.turret_entity.surface.create_entity {
-                    name = "logistic-cannon-capsule-projectile-" .. tostring(speed),
+                    name = string.format(constants.capsule_projectile_format, data.projectile_name, data.speed),
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
@@ -600,7 +600,7 @@ function LauncherStation.prototype:launch(source_position)
                 }
                 self.turret_entity.surface.create_entity {
                     name = constants.entity_tracker,
-                    speed = speed / 60,
+                    speed = data.speed / 60,
                     position = source_position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,

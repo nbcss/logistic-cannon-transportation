@@ -11,17 +11,6 @@
             "__core__/fonts/NotoSansArabic-Regular.ttf",
             "__core__/fonts/NotoSansHebrew-Regular.ttf",
             "__core__/fonts/DejaVuSans.ttf"
-        ],
-        "test": [
-            "__logistic-cannon-transportation__/fonts/test.ttf",
-            "__core__/fonts/TitilliumWeb-Regular.ttf",
-            "__core__/fonts/Lilittium-Regular.ttf",
-            "__core__/fonts/NotoSans-Regular.ttf",
-            "__core__/fonts/NotoSansCJKtc-Regular.ttf",
-            "__core__/fonts/NotoSansThai-Regular.ttf",
-            "__core__/fonts/NotoSansArabic-Regular.ttf",
-            "__core__/fonts/NotoSansHebrew-Regular.ttf",
-            "__core__/fonts/DejaVuSans.ttf"
         ]
     }
 }
