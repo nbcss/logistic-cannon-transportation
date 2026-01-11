@@ -155,6 +155,29 @@ function ReceiverStation.all()
     end
 end
 
+function ReceiverStation.prototype:update_diode_status()
+    local status = "entity-status.working"
+    local diode = defines.entity_status_diode.green --[[@as defines.entity_status_diode]]
+    if self:is_disabled() then
+        status = "entity-status.disabled"
+        diode = defines.entity_status_diode.red
+    end
+    self.inventory_entity.custom_status = {
+        diode = diode,
+        label = { "", { status } }
+    }
+    if self.proxy_entity and self.proxy_entity.valid then
+        self.proxy_entity.custom_status = self.inventory_entity.custom_status
+    end
+end
+
+---@return boolean
+function ReceiverStation.prototype:is_disabled()
+    if self.inventory_entity.to_be_deconstructed() then return true end
+    if not self.settings.circuit_enable_enabled then return false end
+    return not signal_condition.evaluate(self.settings.circuit_enable_condition, self.inventory_entity, true, true)
+end
+
 ---@param network CannonNetwork
 function ReceiverStation.prototype:set_network(network)
     if network ~= self.network then
@@ -217,10 +240,6 @@ function ReceiverStation.prototype:get_gui_proxy()
     self.proxy_entity.destructible = false
     self.proxy_entity.proxy_target_entity = self.inventory_entity
     self.proxy_entity.proxy_target_inventory = defines.inventory.chest
-    self.proxy_entity.custom_status = {
-        diode = defines.entity_status_diode.green,
-        label = { "entity-status.working" },
-    }
     return self.proxy_entity
 end
 

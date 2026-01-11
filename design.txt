@@ -67,7 +67,6 @@ Addons [Planned]
 TODO
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
-- Add receiver disable state [A]
 - handle undo/redo stack [B]
 - Show connected circuit network ID [B]
 - Disable circuit options when not connect to circuit network [B]

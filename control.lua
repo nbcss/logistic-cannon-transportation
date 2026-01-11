@@ -299,6 +299,18 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     end
 end)
 
+---@param player LuaPlayer
+local function update_player_selected_diode_status(player)
+    if player.selected then
+        if player.selected.name == constants.entity_launcher_inventory then
+            local launcher = LauncherStation.get(player.selected)
+            if launcher then launcher:update_diode_status() end
+        elseif player.selected.name == constants.entity_receiver_inventory then
+            local receiver = ReceiverStation.get(player.selected)
+            if receiver then receiver:update_diode_status() end
+        end
+    end
+end
 script.on_event(defines.events.on_tick, function(event)
     -- update network schedules
     for network in CannonNetwork.all() do
@@ -307,10 +319,7 @@ script.on_event(defines.events.on_tick, function(event)
     local tick_index = event.tick % settings.global[constants.gui_update_interval_setting].value
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
-        if player.selected and player.selected.name == constants.entity_launcher_inventory then
-            local launcher = LauncherStation.get(player.selected)
-            if launcher then launcher:update_diode_status() end
-        end
+        update_player_selected_diode_status(player)
         if tick_index == 0 and player.opened and player.opened.object_name == "LuaEntity" then
             if player.opened.name == constants.entity_launcher_gui_proxy then
                 local entity = player.opened --[[@as LuaEntity]]
@@ -324,6 +333,7 @@ script.on_event(defines.events.on_tick, function(event)
                 local entity = player.opened --[[@as LuaEntity]]
                 local receiver = ReceiverStation.get(entity)
                 if receiver then
+                    receiver:update_diode_status()
                     receiver_gui.refresh(player, entity)
                 end
             end
@@ -337,11 +347,7 @@ script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 end)
 script.on_event(defines.events.on_selected_entity_changed, function(event)
     visualization_control.on_selected_entity_changed(event)
-    local player = game.players[event.player_index]
-    if player.selected and player.selected.name == constants.entity_launcher_inventory then
-        local launcher = LauncherStation.get(player.selected)
-        if launcher then launcher:update_diode_status() end
-    end
+    update_player_selected_diode_status(game.players[event.player_index])
 end)
 script.on_event(defines.events.on_player_left_game, function(event)
     visualization_control.on_player_left_game(event)

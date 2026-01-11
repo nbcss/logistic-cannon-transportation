@@ -128,7 +128,7 @@ function CannonNetwork.prototype:update(tick)
         self:update_launcher_storage(launcher)
     end
     for receiver in self.receivers:bucket(bucket_id) do
-        if not receiver:valid() then goto next_receiver end
+        if not receiver:valid() or receiver:is_disabled() then goto next_receiver end
         local empty_slots = receiver:get_inventory().count_empty_stacks(false, false)
         local protect = receiver.settings.overflow_protection
         if protect and empty_slots <= 0 then goto next_receiver end
