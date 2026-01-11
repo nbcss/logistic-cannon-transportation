@@ -54,7 +54,7 @@ local trigger_effect_functions = {
     end,
     [constants.capsule_landed_effect_id] = function(event)
         if not event.cause_entity or not event.cause_entity.valid then return end
-        if event.cause_entity.name == constants.entity_capsule_container then
+        if event.cause_entity.name == constants.entity_capsule_inventory then
             local delivery = ScheduledDelivery.get(event.cause_entity.unit_number)
             if delivery then delivery:deliver() end
         end

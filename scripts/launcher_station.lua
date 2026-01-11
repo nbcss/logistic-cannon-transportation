@@ -677,7 +677,25 @@ end
 function LauncherStation.prototype:is_disabled()
     if self.inventory_entity.to_be_deconstructed() then return true end
     if not self.settings.circuit_enable_enabled then return false end
-    return not signal_condition.evaluate(self.settings.circuit_enable_condition, self.inventory_entity)
+    return not signal_condition.evaluate(
+        self.settings.circuit_enable_condition, self.inventory_entity,
+        self:is_circuit_connected(defines.wire_connector_id.circuit_red, false),
+        self:is_circuit_connected(defines.wire_connector_id.circuit_green, false)
+    )
+end
+
+---@param wire defines.wire_connector_id?
+---@param include_ghost boolean
+---@return boolean
+function LauncherStation.prototype:is_circuit_connected(wire, include_ghost)
+    if not wire then
+        return
+            self:is_circuit_connected(defines.wire_connector_id.circuit_red, include_ghost) or
+            self:is_circuit_connected(defines.wire_connector_id.circuit_green, include_ghost)
+    end
+    local wire_connector = self.inventory_entity.get_wire_connector(wire, false)
+    local connection_count = wire_connector[include_ghost and "connection_count" or "real_connection_count"]--[[@as uint32]]
+    return connection_count > 1
 end
 
 ---@param state boolean

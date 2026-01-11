@@ -20,8 +20,8 @@ constants.range_upgrade_bonus = "lct-launcher-range-bonus"
 constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"
 constants.energy_consumption_modifier = "lct-launcher-energy-consumption-modifier"
 -- data
-constants.data_capsule_properties = constants.name_prefix .. "capsule-properties"
-constants.data_launcher_properties = constants.name_prefix .. "launcher-properties"
+constants.data_capsule_properties = "lct-capsule-properties"
+constants.data_launcher_properties = "lct-launcher-properties"
 -- capsule
 constants.item_capsule_basic = "lct-capsule-basic"
 constants.item_capsule_reinforced = "lct-capsule-reinforced"
@@ -38,9 +38,10 @@ constants.item_receiver = constants.name_prefix.."receiver"
 constants.entity_receiver_inventory = constants.item_receiver
 constants.entity_receiver_gui_proxy = constants.name_prefix.."receiver-gui-proxy"
 -- other entities
-constants.entity_target = constants.name_prefix.."target"
-constants.entity_tracker = "logistic-cannon-capsule-tracker"
-constants.entity_capsule_container = "cannon-capsule-storage"
+constants.entity_target = "lct-cannon-target"
+constants.entity_proxy_connector = "lct-proxy-connector"
+constants.entity_tracker = "lct-capsule-tracker"
+constants.entity_capsule_inventory = "lct-capsule-inventory"
 -- GUI
 constants.gui_launcher = constants.name_prefix .. "launcher-gui"
 constants.gui_receiver = constants.name_prefix .. "receiver-gui"

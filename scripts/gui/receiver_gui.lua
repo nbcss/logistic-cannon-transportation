@@ -1,6 +1,7 @@
 local constants = require("constants")
 local util = require("util")
 local format = require("scripts.format")
+local signal_condition = require("scripts.gui.signal_condition")
 local ReceiverStation = require("scripts.receiver_station")
 
 
@@ -153,6 +154,12 @@ function receiver_gui.on_gui_opened(player, entity)
         name = "title",
         style = "subheader_label",
         caption = { "logistic-cannon-transportation.circuit-control" }
+    }
+    -- Enable/disable
+    signal_condition.create_gui(frame.circuit)
+    frame.circuit.add {
+        type = "line",
+        style = "inside_shallow_frame_with_padding_line",
     }
     -- Read contents
     frame.circuit.add {
@@ -427,7 +434,8 @@ function receiver_gui.refresh(player, entity)
             end
         end
     end
-
+    -- circuit refresh
+    signal_condition.refresh(receiver, frame.circuit.enable_condition)
     frame.circuit.read_contents.state = receiver.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
 end

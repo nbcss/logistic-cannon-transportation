@@ -33,7 +33,7 @@ signal_condition.default_value = {
     constant = 0,
 } --[[@as ModCircuitCondition]]
 
-local evaluation_functions = {
+local compare_functions = {
     [">"] = function (first_value, second_value) return first_value > second_value end,
     ["<"] = function (first_value, second_value) return first_value < second_value end,
     ["="] = function (first_value, second_value) return first_value == second_value end,
@@ -44,18 +44,34 @@ local evaluation_functions = {
 
 ---@param condition ModCircuitCondition
 ---@param entity LuaEntity
+---@param red_connected boolean
+---@param green_connected boolean
 ---@return boolean
-function signal_condition.evaluate(condition, entity)
+function signal_condition.evaluate(condition, entity, red_connected, green_connected)
     if not condition.first_signal or (not condition.constant and not condition.second_signal) then return false end
 
-    local first_value = entity.get_signal(condition.first_signal,
-        defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
-    local second_value = condition.second_signal and entity.get_signal(condition.second_signal,
-        defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
-        or condition.constant
-    game.print(string.format("%s:%s", first_value, second_value))
+    ---@param signal SignalID
+    local function get_signal(signal)
+        if red_connected then
+            if green_connected then
+                return entity.get_signal(signal, defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+            else
+                return entity.get_signal(signal, defines.wire_connector_id.circuit_red)
+            end
+        else
+            if green_connected then
+                return entity.get_signal(signal, defines.wire_connector_id.circuit_green)
+            else
+                return 0
+            end
+        end
+    end
+
+    local first_value = get_signal(condition.first_signal)
+    local second_value = condition.second_signal and get_signal(condition.second_signal) or condition.constant
+    -- game.print(string.format("%s:%s", first_value, second_value))
     -- FIXME signal will double count between wires
-    return evaluation_functions[condition.comparator](first_value, second_value)
+    return compare_functions[condition.comparator](first_value, second_value)
 end
 
 ---@param parent LuaGuiElement
