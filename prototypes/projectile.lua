@@ -36,6 +36,16 @@ for _, capsule_data in pairs(capsule_properties) do
                 height = 64,
                 scale = 0.75,
             },
+            ground_light = {
+                color = { 0.8, 0.8, 0.3 },
+                intensity = 0.3,
+                size = 10
+            },
+            stream_light = {
+                color = { 0.8, 0.8, 0.3 },
+                intensity = 1,
+                size = 3
+            },
             smoke_sources = {
                 {
                     name = smoke_name,

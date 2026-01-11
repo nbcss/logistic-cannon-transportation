@@ -20,6 +20,7 @@ capsule_properties[constants.item_capsule_propelled] = {
     speed = 75, -- tile per second
     payload_size = 3, -- stack
     energy_consumption = 50000, -- J per tile
+    range_modifier = 1.5,
     projectile_name = "capsule-propelled",
     smoke_color = {0.2, 0.9, 0.9, 0.375},
 } --[[@as CannonCapsuleProperties]]
@@ -28,7 +29,7 @@ capsule_properties[constants.item_capsule_propelled] = {
 ---@return data.CustomTooltipField[]
 local function custom_tooltip_fields(capsule_item)
     local capsule = capsule_properties[capsule_item]
-    return {
+    local tooltip_fields = {
         {
             name = { "logistic-cannon-transportation.capsule-payload-size" },
             value = { "logistic-cannon-transportation.stack", tostring(capsule.payload_size) },
@@ -60,6 +61,14 @@ local function custom_tooltip_fields(capsule_item)
             order = 3,
         },
     }
+    if capsule.range_modifier then
+        table.insert(tooltip_fields, {
+            name = { "description.range-modifier" },
+            value = { "", string.format("%.0f%%", capsule.range_modifier * 100) },
+            order = 4,
+        })
+    end
+    return tooltip_fields
 end
 
 ---@return data.AmmoType
@@ -151,7 +160,7 @@ data:extend {
             { type = "item", name = "rocket-fuel",  amount = 1 },
         },
         results = {
-            { type = "item", name = constants.item_capsule_propelled, amount = 3 },
+            { type = "item", name = constants.item_capsule_propelled, amount = 2 },
         }
     },
 }

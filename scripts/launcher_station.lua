@@ -286,6 +286,19 @@ function LauncherStation.all()
     end
 end
 
+---@param launcher_name string
+---@param launcher_quality LuaQualityPrototype
+---@param force LuaForce
+---@param ammo_name string? Used ammo
+---@return uint32
+function LauncherStation.compute_max_range(launcher_name, launcher_quality, force, ammo_name)
+    local range = launcher_properties[launcher_name].range --[[@as number]]
+    local quality_modifier = launcher_quality.range_multiplier
+    local tech_modifier = 1.0 + bonus_control.get_launcher_range_bonus(force)
+    local capsule = ammo_name and capsule_properties[ammo_name]
+    return range * quality_modifier * tech_modifier * (capsule and capsule.range_modifier or 1.0)
+end
+
 function LauncherStation.prototype:update_state()
     if not self:valid() then return false end
     local ammo_slot = self:get_ammo_inventory()[1]
@@ -312,7 +325,7 @@ function LauncherStation.prototype:update_state()
         end
     end
     local force = self.inventory_entity.force --[[@as LuaForce]]
-    local max_range = self:get_max_range(true)
+    local max_range = self:get_max_range(true, ammo_name)
     local effective_max_range = self.settings.range_override and
         math.min(self.settings.range_override, max_range) or max_range
     local consumption = compute_energy_consumption(force, ammo_name, ammo_quality)
@@ -347,14 +360,15 @@ function LauncherStation.prototype:set_settings(launcher_settings)
 end
 
 ---@param ignore_override boolean?
+---@param ammo_name string?
 ---@return uint32
-function LauncherStation.prototype:get_max_range(ignore_override)
+function LauncherStation.prototype:get_max_range(ignore_override, ammo_name)
     if ignore_override then
-        local range = launcher_properties[self.inventory_entity.name].range --[[@as number]]
-        local quality_modifier = self.turret_entity.quality.range_multiplier
+        local launcher_name = self.inventory_entity.name
+        local launcher_quality = self.inventory_entity.quality
         local force = self.turret_entity.force --[[@as LuaForce]]
-        local range_modifier = 1.0 + bonus_control.get_launcher_range_bonus(force)
-        return range * quality_modifier * range_modifier
+        local ammo = ammo_name or self.ammo_name
+        return LauncherStation.compute_max_range(launcher_name, launcher_quality, force, ammo)
     end
     return self.max_range
 end
@@ -447,7 +461,7 @@ function LauncherStation.prototype:update_ammo_proxy()
     end
     -- for reset inserter targets
     local last_pos = self.inventory_entity.position
-    self.inventory_entity.teleport(math2d.position.add(last_pos, {10, 10}), nil, false)
+    self.inventory_entity.teleport(math2d.position.add(last_pos, { 10, 10 }), nil, false)
     self.inventory_entity.teleport(last_pos, nil, false)
     -- update ammo proxy position
     local position = compute_ammo_proxy_position(self.inventory_entity, self.turret_entity.direction)

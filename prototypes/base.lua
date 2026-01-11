@@ -110,6 +110,7 @@ data.extend {
         ---@field speed number
         ---@field payload_size uint
         ---@field energy_consumption number
+        ---@field range_modifier number?
         ---@field projectile_name string
         ---@field smoke_color Color?
         data = {},

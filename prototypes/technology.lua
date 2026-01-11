@@ -125,7 +125,7 @@ data:extend {
         prerequisites = { "logistic-cannon", "low-density-structure" },
         order = "reinforced-cannon-capsule",
         unit = {
-            count = 200,
+            count = 300,
             time = 30,
             ingredients = {
                 { "automation-science-pack", 1 },
@@ -142,15 +142,16 @@ data:extend {
         effects = {
             { type = "unlock-recipe", recipe = constants.item_capsule_propelled },
         },
-        prerequisites = { "reinforced-cannon-capsule", "rocket-fuel" },
+        prerequisites = { "reinforced-cannon-capsule", "rocket-fuel", "utility-science-pack" },
         order = "propelled-cannon-capsule",
         unit = {
-            count = 250,
+            count = 500,
             time = 30,
             ingredients = {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
+                { "utility-science-pack",    1 },
             }
         },
     },
