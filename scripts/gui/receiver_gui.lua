@@ -5,7 +5,6 @@ local ReceiverStation = require("scripts.receiver_station")
 
 
 local receiver_gui = {}
-local name = "logistic-cannon-receiver-gui"
 
 local item_bar_base_color = util.color "2e703b"
 local item_bar_top_color = util.color "3ccd5a"
@@ -13,8 +12,8 @@ local item_bar_top_color = util.color "3ccd5a"
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function receiver_gui.on_gui_opened(player, entity)
-    if player.gui.relative[name] then
-        player.gui.relative[name].destroy()
+    if player.gui.relative[constants.gui_receiver] then
+        player.gui.relative[constants.gui_receiver].destroy()
     end
     if entity.name ~= constants.entity_receiver_gui_proxy then
         return
@@ -22,7 +21,7 @@ function receiver_gui.on_gui_opened(player, entity)
     --frame
     local frame = player.gui.relative.add {
         type = "frame",
-        name = name,
+        name = constants.gui_receiver,
         direction = "vertical",
         style = "lct_config_frame",
         -- visible = false,
@@ -349,7 +348,7 @@ end
 function receiver_gui.refresh(player, entity)
     local receiver = ReceiverStation.get(entity)
     if not receiver or not receiver:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_receiver] ---@type LuaGuiElement
 
     frame.station.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
@@ -452,7 +451,7 @@ end
 function receiver_gui.on_confirm_display_name(player, event)
     local receiver = ReceiverStation.get(player.opened --[[@as LuaEntity]])
     if not receiver or not receiver:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_receiver] ---@type LuaGuiElement
     set_display_name(receiver, frame)
 end
 
@@ -461,7 +460,7 @@ end
 function receiver_gui.on_edit_display_name(player, event)
     local receiver = ReceiverStation.get(player.opened --[[@as LuaEntity]])
     if not receiver or not receiver:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_receiver] ---@type LuaGuiElement
     if frame.station.header.edit_name_field.visible then
         set_display_name(receiver, frame)
     else
@@ -485,7 +484,7 @@ end
 ---@param event EventData.on_gui_elem_changed
 function receiver_gui.on_request_elem_changed(player, event)
     local index = tonumber(event.element.tags.request_index) or error()
-    local frame = player.gui.relative[name] --[[@as LuaGuiElement]]
+    local frame = player.gui.relative[constants.gui_receiver] --[[@as LuaGuiElement]]
     local element = frame.station.requests.children[index] or error()
     local entity = player.opened --[[@as LuaEntity]]
     local receiver = ReceiverStation.get(entity) or error()
@@ -523,7 +522,7 @@ end
 ---@param event EventData.on_gui_click | EventData.on_gui_confirmed
 function receiver_gui.on_request_editor_toggled(player, event)
     local index = tonumber(event.element.tags.request_index) or error()
-    local frame = player.gui.relative[name] --[[@as LuaGuiElement]]
+    local frame = player.gui.relative[constants.gui_receiver] --[[@as LuaGuiElement]]
     local element = frame.station.requests.children[index] or error()
     local entity = player.opened --[[@as LuaEntity]]
     local receiver = ReceiverStation.get(entity) or error()
@@ -549,7 +548,7 @@ end
 ---@param event EventData.on_gui_text_changed | EventData.on_gui_value_changed
 function receiver_gui.on_request_editor_value_changed(player, event)
     local index = tonumber(event.element.tags.request_index) or error()
-    local frame = player.gui.relative[name] --[[@as LuaGuiElement]]
+    local frame = player.gui.relative[constants.gui_receiver] --[[@as LuaGuiElement]]
     local element = frame.station.requests.children[index] or error()
 
     local amount_slider = element.editor.input_slider

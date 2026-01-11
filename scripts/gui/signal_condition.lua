@@ -1,9 +1,65 @@
 local constants = require("constants")
+local LauncherStation ---@module "scripts.launcher_station"
+local ReceiverStation ---@module "scripts.receiver_station"
 
 local signal_condition = {}
+function signal_condition.load_deps()
+    LauncherStation = require("scripts.launcher_station")
+    ReceiverStation = require("scripts.receiver_station")
+end
+
+-- Definition of a enable/disable circuit condition.
+-- Can represent all states required by GUI.
+-- Can be converted to the built-in CircuitCondition.
+---@class (exact) ModCircuitCondition
+---@field comparator ModCircuitCondition.comparator
+---@field first_signal SignalID?
+---@field second_signal SignalID? Must not coexist with `constant`.
+---@field constant int? If exists, means user has selected "constant" for RHS, if not, means user has selected "signal" even when `second_signal` is nil.
+
+---@enum ModCircuitCondition.comparator
+signal_condition.comparators = {
+    [1] = ">",
+    [2] = "<",
+    [3] = "=",
+    [4] = "≥",
+    [5] = "≤",
+    [6] = "≠",
+}
+signal_condition.default_comparator_index = 2
+
+signal_condition.default_value = {
+    comparator = signal_condition.comparators[signal_condition.default_comparator_index],
+    constant = 0,
+} --[[@as ModCircuitCondition]]
+
+local evaluation_functions = {
+    [">"] = function (first_value, second_value) return first_value > second_value end,
+    ["<"] = function (first_value, second_value) return first_value < second_value end,
+    ["="] = function (first_value, second_value) return first_value == second_value end,
+    ["≥"] = function (first_value, second_value) return first_value >= second_value end,
+    ["≤"] = function (first_value, second_value) return first_value <= second_value end,
+    ["≠"] = function (first_value, second_value) return first_value ~= second_value end,
+}
+
+---@param condition ModCircuitCondition
+---@param entity LuaEntity
+---@return boolean
+function signal_condition.evaluate(condition, entity)
+    if not condition.first_signal or (not condition.constant and not condition.second_signal) then return false end
+
+    local first_value = entity.get_signal(condition.first_signal,
+        defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+    local second_value = condition.second_signal and entity.get_signal(condition.second_signal,
+        defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+        or condition.constant
+    game.print(string.format("%s:%s", first_value, second_value))
+    -- FIXME signal will double count between wires
+    return evaluation_functions[condition.comparator](first_value, second_value)
+end
 
 ---@param parent LuaGuiElement
-function signal_condition.create_enable_condition(parent)
+function signal_condition.create_gui(parent)
     local element = parent.add {
         type = "flow",
         name = "enable_condition",
@@ -19,7 +75,7 @@ function signal_condition.create_enable_condition(parent)
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_checked_state_changed = nil,
+                on_gui_checked_state_changed = "signal_condition.on_changed",
             },
         },
     }
@@ -36,7 +92,7 @@ function signal_condition.create_enable_condition(parent)
         state = true,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_checked_state_changed = nil,
+                on_gui_checked_state_changed = "signal_condition.on_changed",
             },
         },
     }
@@ -48,7 +104,7 @@ function signal_condition.create_enable_condition(parent)
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_checked_state_changed = nil,
+                on_gui_checked_state_changed = "signal_condition.on_changed",
             },
         },
     }
@@ -64,7 +120,7 @@ function signal_condition.create_enable_condition(parent)
         elem_type = "signal",
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_elem_changed = nil,
+                on_gui_elem_changed = "signal_condition.on_changed",
             },
         },
     }
@@ -72,11 +128,11 @@ function signal_condition.create_enable_condition(parent)
         type = "drop-down",
         name = "comparator",
         style = "circuit_condition_comparator_dropdown",
-        items = { ">", "<", "=", "≥", "≤", "≠" },
+        items = signal_condition.comparators,
         selected_index = 2,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_selection_state_changed = nil,
+                on_gui_selection_state_changed = "signal_condition.on_changed",
             },
         },
     }
@@ -92,7 +148,7 @@ function signal_condition.create_enable_condition(parent)
         visible = true,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_confirmed = nil,
+                on_gui_text_changed = "signal_condition.on_changed",
             },
         },
     }
@@ -104,14 +160,137 @@ function signal_condition.create_enable_condition(parent)
         visible = false,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_elem_changed = nil,
+                on_gui_elem_changed = "signal_condition.on_changed",
             },
         },
     }
 end
 
-function signal_condition.refresh(condition_element)
+---@param station LauncherStation | ReceiverStation
+---@param element LuaGuiElement
+function signal_condition.refresh(station, element)
+    local settings_enabled = station.settings.circuit_enable_enabled or false
+    local settings_condition = station.settings.circuit_enable_condition or signal_condition.default_value
 
+    element.checkbox.state = settings_enabled
+
+    -- Enable/disable input elements
+    element.condition_type.constant.enabled = settings_enabled
+    element.condition_type.signal.enabled = settings_enabled
+    element.condition_values.left_signal.enabled = settings_enabled
+    element.condition_values.comparator.enabled = settings_enabled
+    element.condition_values.right_constant.enabled = settings_enabled
+    element.condition_values.right_signal.enabled = settings_enabled
+
+    -- Condition type
+    if settings_condition.constant then
+        element.condition_type.constant.state = true
+        element.condition_type.signal.state = false
+        element.condition_values.right_constant.visible = true
+        element.condition_values.right_signal.visible = false
+    else
+        element.condition_type.constant.state = false
+        element.condition_type.signal.state = true
+        element.condition_values.right_constant.visible = false
+        element.condition_values.right_signal.visible = true
+    end
+
+    -- Signals
+    element.condition_values.left_signal.elem_value = settings_condition.first_signal
+    element.condition_values.right_signal.elem_value = settings_condition.second_signal
+
+    -- Comparator
+    for i, s in ipairs(signal_condition.comparators) do
+        if s == settings_condition.comparator then
+            element.condition_values.comparator.selected_index = i
+            break
+        end
+    end
+
+    -- Constant: set textbox content only when the numeric value differs,
+    -- to preserve intermeiary input like "-" and ""
+    if
+        settings_condition.constant ~=
+        (tonumber(element.condition_values.right_constant.text) or 0)
+    then
+        element.condition_values.right_constant.text = tostring(settings_condition.constant or 0)
+    end
+end
+
+---@param player LuaPlayer
+---@param event
+---| EventData.on_gui_checked_state_changed
+---| EventData.on_gui_elem_changed
+---| EventData.on_gui_text_changed
+---| EventData.on_gui_selection_state_changed
+function signal_condition.on_changed(player, event)
+    if not player.opened or player.opened.object_name ~= "LuaEntity" then return end
+    local entity = player.opened--[[@as LuaEntity]]
+    local station, frame = nil, nil
+    if entity.name == constants.entity_launcher_gui_proxy then
+        station = LauncherStation.get(entity)
+        frame = player.gui.relative[constants.gui_launcher] --[[@as LuaGuiElement?]]
+    elseif entity.name == constants.entity_receiver_gui_proxy then
+        station = ReceiverStation.get(entity)
+        frame = player.gui.relative[constants.gui_receiver] --[[@as LuaGuiElement?]]
+    end
+    if not station or not frame then return end
+    local element = frame.circuit.enable_condition
+
+    -- Read settings from GUI input
+    local settings_enabled = element.checkbox.state
+    local settings_condition = {
+        comparator = signal_condition.comparators[element.condition_values.comparator.selected_index] or signal_condition.default_comparator,
+        first_signal = element.condition_values.left_signal.elem_value--[[@as SignalID?]],
+    }
+
+    -- Read signal condition depending on type
+    -- Type is selected by radio buttons
+    if
+        element.condition_type.constant.state and
+        not (
+            element.condition_type.signal.state and -- if both are true
+            event.element == element.condition_type.signal -- see which's just been clicked
+        )
+    then
+        settings_condition.constant = tonumber(element.condition_values.right_constant.text) or 0
+    else
+        settings_condition.second_signal = element.condition_values.right_signal.elem_value--[[@as SignalID?]]
+    end
+
+    -- Reject meta signals
+    signal_condition.reject_meta_signals(settings_condition)
+
+    -- Save to entity
+    station.settings.circuit_enable_enabled = settings_enabled
+    station.settings.circuit_enable_condition = settings_condition
+
+    signal_condition.refresh(station, element)
+end
+
+---Remove meta signals that may not exist in a circuit condition.
+---@param condition ModCircuitCondition
+function signal_condition.reject_meta_signals(condition)
+    -- First signal: allow "every" and "any"
+    if
+        condition.first_signal and
+        condition.first_signal.type == "virtual" and
+        condition.first_signal.name == "signal-each"
+    then
+        condition.first_signal = nil
+    end
+    -- Second signal: allow none
+    if
+        condition.second_signal and
+        condition.second_signal.type == "virtual" and
+        (
+            condition.second_signal.name == "signal-each" or
+            condition.second_signal.name == "signal-everything" or
+            condition.second_signal.name == "signal-anything"
+        )
+    then
+        condition.second_signal = nil
+    end
 end
 
 return signal_condition

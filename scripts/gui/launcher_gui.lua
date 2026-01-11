@@ -4,7 +4,6 @@ local inventory_slot = require("scripts.gui.inventory_slot")
 local signal_condition = require("scripts.gui.signal_condition")
 local LauncherStation = require("scripts.launcher_station")
 local launcher_gui = {}
-local name = "logistic-cannon-launcher-gui"
 
 local ammo_slot_options = {
     empty_sprite = "utility/empty_ammo_slot",
@@ -18,8 +17,8 @@ end
 ---@param player LuaPlayer
 ---@param entity LuaEntity
 function launcher_gui.on_gui_opened(player, entity)
-    if player.gui.relative[name] then
-        player.gui.relative[name].destroy()
+    if player.gui.relative[constants.gui_launcher] then
+        player.gui.relative[constants.gui_launcher].destroy()
     end
     if entity.name ~= constants.entity_launcher_gui_proxy then
         return
@@ -27,7 +26,7 @@ function launcher_gui.on_gui_opened(player, entity)
     --frame
     local frame = player.gui.relative.add {
         type = "frame",
-        name = name,
+        name = constants.gui_launcher,
         direction = "vertical",
         style = "lct_config_frame",
         caption = "\xE2\x80\x8B", --ZWSP
@@ -422,12 +421,12 @@ function launcher_gui.on_gui_opened(player, entity)
     --     caption = "Test",
     -- }
 
-    -- -- Enable/disable TODO
-    -- signal_condition.create_enable_condition(frame.circuit)
-    -- frame.circuit.add {
-    --     type = "line",
-    --     style = "inside_shallow_frame_with_padding_line",
-    -- }
+    -- Enable/disable
+    signal_condition.create_gui(frame.circuit)
+    frame.circuit.add {
+        type = "line",
+        style = "inside_shallow_frame_with_padding_line",
+    }
     -- Read ammo
     frame.circuit.add {
         type = "checkbox",
@@ -468,7 +467,7 @@ function launcher_gui.refresh(player, entity)
     local launcher = LauncherStation.get(entity)
     if not launcher or not launcher:valid() then return end
 
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
     inventory_slot.refresh {
@@ -509,6 +508,7 @@ function launcher_gui.refresh(player, entity)
     frame.circuit.read_ammo.state = launcher.turret_entity.get_or_create_control_behavior().read_ammo --[[@as boolean]]
     frame.circuit.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
+    signal_condition.refresh(launcher, frame.circuit.enable_condition)
 end
 
 ---@param launcher LauncherStation
@@ -530,7 +530,7 @@ end
 function launcher_gui.on_confirm_display_name(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     set_display_name(launcher, frame)
 end
 
@@ -539,7 +539,7 @@ end
 function launcher_gui.on_edit_display_name(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     if frame.station.header.edit_name_field.visible then
         set_display_name(launcher, frame)
     else
@@ -573,7 +573,7 @@ end
 function launcher_gui.on_edit_range_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     local range = launcher:get_max_range(true)
     local override = launcher.settings.range_override
     if frame.station.range.override.visible then
@@ -607,7 +607,7 @@ end
 function launcher_gui.on_edit_payload_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     local payload_size = launcher:get_max_payload_size(true) or 1
     local override = launcher.settings.payload_size_override
     if frame.station.payload_size.override.visible then
@@ -686,7 +686,7 @@ end
 function launcher_gui.on_circuit_hover(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     frame.circuit.header.title.title_tooltip.style.bottom_margin = -32
     frame.circuit.header.title.title_tooltip.style.horizontally_stretchable = false
     frame.circuit.header.title.title_tooltip.visible = true
@@ -697,7 +697,7 @@ end
 function launcher_gui.on_circuit_leave(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[name] ---@type LuaGuiElement
+    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
     frame.circuit.header.title.title_tooltip.visible = false
 end
 

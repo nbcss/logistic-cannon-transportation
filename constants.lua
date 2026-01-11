@@ -5,7 +5,6 @@ constants.mod_name = "logistic-cannon-transportation"
 constants.name_prefix = "logistic-cannon-"
 constants.ammo_category = "logistic-cannon-capsule"
 constants.item_subgroup = "cannon-transport"
-constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
 constants.rotate_input_event = "lct-rotate-entity-action"
 constants.reverse_rotate_input_event = "lct-reverse-rotate-entity-action"
 constants.capsule_launched_effect_id = "lct-capsule-launched"
@@ -41,5 +40,9 @@ constants.entity_receiver_gui_proxy = constants.name_prefix.."receiver-gui-proxy
 constants.entity_target = constants.name_prefix.."target"
 constants.entity_tracker = "logistic-cannon-capsule-tracker"
 constants.entity_capsule_container = "cannon-capsule-storage"
+-- GUI
+constants.gui_launcher = constants.name_prefix .. "launcher-gui"
+constants.gui_receiver = constants.name_prefix .. "receiver-gui"
+constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
 
 return constants

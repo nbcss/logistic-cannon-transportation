@@ -1,6 +1,7 @@
 local constants = require("constants")
 local util = require("util")
 local visualization_control = require("scripts.visualization_control")
+local signal_condition = require("scripts.gui.signal_condition")
 local CannonNetwork ---@module "scripts.cannon_network"
 
 local ReceiverStation = {}
@@ -25,11 +26,15 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 ---@field network_signal SignalID? Signal for network.
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
 ---@field overflow_protection boolean
+---@field circuit_enable_enabled boolean
+---@field circuit_enable_condition ModCircuitCondition
 ReceiverStation.default_settings = {
     name = nil,
     network_signal = nil,
     delivery_requests = {},
     overflow_protection = true,
+    circuit_enable_enabled = false,
+    circuit_enable_condition = signal_condition.default_value,
 }
 
 local clone_blacklist = {

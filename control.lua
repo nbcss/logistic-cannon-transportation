@@ -9,10 +9,12 @@ local launcher_gui = require("scripts.gui.launcher_gui")
 local receiver_gui = require("scripts.gui.receiver_gui")
 local bonus_control = require("scripts.bonus_control")
 local visualization_control = require("scripts.visualization_control")
+local signal_condition = require("scripts.gui.signal_condition")
 
 LauncherStation.load_deps()
 ReceiverStation.load_deps()
 visualization_control.load_deps()
+signal_condition.load_deps()
 
 script.register_metatable("BucketSet.prototype", BucketSet.prototype)
 script.register_metatable("CannonNetwork.prototype", CannonNetwork.prototype)
@@ -371,6 +373,7 @@ script.on_event({
         defines.events.on_gui_confirmed,
         defines.events.on_gui_checked_state_changed,
         defines.events.on_gui_value_changed,
+        defines.events.on_gui_text_changed,
         defines.events.on_gui_selection_state_changed,
         defines.events.on_gui_hover,
         defines.events.on_gui_leave,
@@ -382,6 +385,7 @@ script.on_event({
     ---| EventData.on_gui_confirmed
     ---| EventData.on_gui_checked_state_changed
     ---| EventData.on_gui_value_changed
+    ---| EventData.on_gui_text_changed
     ---| EventData.on_gui_selection_state_changed
     ---| EventData.on_gui_hover
     ---| EventData.on_gui_leave
@@ -403,6 +407,8 @@ script.on_event({
                 receiver_gui[handler_func](game.get_player(event.player_index), event)
             elseif handler_module == "launcher_gui" then
                 launcher_gui[handler_func](game.get_player(event.player_index), event)
+            elseif handler_module == "signal_condition" then
+                signal_condition[handler_func](game.get_player(event.player_index), event)
             else
                 error("Invalid GUI event handler: " .. handler_name)
             end

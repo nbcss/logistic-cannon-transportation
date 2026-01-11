@@ -4,6 +4,7 @@ local math2d = require("math2d")
 local format = require("scripts.format")
 local bonus_control = require("scripts.bonus_control")
 local visualization_control = require("scripts.visualization_control")
+local signal_condition = require("scripts.gui.signal_condition")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
@@ -46,6 +47,8 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field enable_ammo_proxy boolean
 ---@field load_capsule_from_inventory boolean
 ---@field circuit_read_ammo boolean
+---@field circuit_enable_enabled boolean
+---@field circuit_enable_condition ModCircuitCondition
 LauncherStation.default_settings = {
     name = nil,
     range_override = nil,
@@ -55,6 +58,8 @@ LauncherStation.default_settings = {
     enable_ammo_proxy = true,
     load_capsule_from_inventory = true,
     circuit_read_ammo = true,
+    circuit_enable_enabled = false,
+    circuit_enable_condition = signal_condition.default_value,
 }
 
 local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
@@ -304,8 +309,9 @@ function LauncherStation.prototype:update_state()
     local ammo_slot = self:get_ammo_inventory()[1]
     local ammo_name = ""
     local ammo_quality = nil
+    local disabled = self:is_disabled()
     -- auto reload ammo for active launcher only
-    if not ammo_slot.valid_for_read and not self:is_disabled() and self.settings.load_capsule_from_inventory then
+    if not ammo_slot.valid_for_read and not disabled and self.settings.load_capsule_from_inventory then
         inventory_tool.transfer_to_slot(self:get_inventory(), ammo_slot)
     end
     if ammo_slot.valid_for_read then
@@ -318,7 +324,7 @@ function LauncherStation.prototype:update_state()
         self.payload_size = compute_payload_size(ammo_name, ammo_quality)
     end
     -- cancel ongoing delivery if ammo changed/disabled
-    if ammo_changed or self:is_disabled() then
+    if ammo_changed or disabled then
         if self.scheduled_delivery and self.scheduled_delivery:valid() then
             self.scheduled_delivery:destroy()
             self.scheduled_delivery = nil
@@ -569,12 +575,10 @@ end
 ---@param position MapPosition
 ---@return boolean
 function LauncherStation.prototype:is_ready(position)
-    if not self:valid() or self:is_disabled() then
+    if not self:valid() or self.ammo_name == "" or self.scheduled_delivery ~= nil then
         return false
     end
-    if self.ammo_name == "" or self.scheduled_delivery ~= nil then
-        return false
-    end
+    if self:is_disabled() then return false end
     local distance = math2d.position.distance(self:position(), position)
     return self:get_current_range() >= distance
 end
@@ -671,7 +675,9 @@ end
 
 ---@return boolean
 function LauncherStation.prototype:is_disabled()
-    return self.inventory_entity.to_be_deconstructed()
+    if self.inventory_entity.to_be_deconstructed() then return true end
+    if not self.settings.circuit_enable_enabled then return false end
+    return not signal_condition.evaluate(self.settings.circuit_enable_condition, self.inventory_entity)
 end
 
 ---@param state boolean
