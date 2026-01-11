@@ -20,7 +20,7 @@ capsule_properties[constants.item_capsule_propelled] = {
     speed = 75, -- tile per second
     payload_size = 3, -- stack
     energy_consumption = 50000, -- J per tile
-    range_modifier = 1.5,
+    range_modifier = 2.0,
     projectile_name = "capsule-propelled",
     smoke_color = {0.2, 0.9, 0.9, 0.375},
 } --[[@as CannonCapsuleProperties]]

@@ -11,6 +11,7 @@ constants.capsule_launched_effect_id = "lct-capsule-launched"
 constants.capsule_landed_effect_id = "lct-capsule-landed"
 constants.capsule_projectile_format = "%s-projectile-%s"
 -- settings
+constants.coloring_projectile_smoke = "lct-coloring-projectile-smoke"
 constants.entity_update_interval_setting = "lct-entity-update-interval"
 constants.gui_update_interval_setting = "lct-gui-update-interval"
 constants.range_visualization_mode = "lct-range-visualization-mode"
