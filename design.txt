@@ -68,12 +68,12 @@ TODO
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - handle undo/redo stack [B]
-- Show connected circuit network ID [B]
 - Improve enable/disable constant textfield [B]
 - Show number of occupied slots in Receiver GUI [B]
 - Map setting to turn off projectile visualization [B]
 - Option to disable receiver overflow protection [C]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]
+- Show connected circuit network signals in tooltip [C]
 
 Roadmap
 - Circuit set request

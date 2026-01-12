@@ -392,6 +392,19 @@ function launcher_gui.on_gui_opened(player, entity)
         style = "subheader_label",
         caption = { "logistic-cannon-transportation.circuit-control" },
     }
+    frame.circuit.header.add {
+        type = "label",
+        name = "red_network",
+        visible = false,
+    }
+    frame.circuit.header.add {
+        type = "label",
+        name = "green_network",
+        visible = false,
+    }
+    frame.circuit.header.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
     -- frame.circuit.header.add {
     --     type = "flow",
     --     name = "title",
@@ -505,6 +518,20 @@ function launcher_gui.refresh(player, entity)
         { "logistic-cannon-transportation.meter-per-second", tostring(projectile_speed) } or "-"
     frame.station.connected_receivers.value_label.caption = launcher.network:get_connection_count(launcher:id())
     frame.station.network.value_signal.elem_value = launcher.network.signal
+    local red_network = launcher:is_circuit_connected(false, defines.wire_connector_id.circuit_red) and
+        launcher.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_red).network_id or nil
+    local green_network = launcher:is_circuit_connected(false, defines.wire_connector_id.circuit_green) and
+        launcher.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_green).network_id or nil
+    frame.circuit.header.title.caption = { "",
+        (red_network or green_network) and { "logistic-cannon-transportation.circuit-control-connected" }
+        or { "logistic-cannon-transportation.circuit-control-unconnected" },
+    }
+    frame.circuit.header.red_network.visible = red_network ~= nil
+    frame.circuit.header.red_network.caption = red_network and
+        string.format("[color=red]%s[/color]", red_network) or ""
+    frame.circuit.header.green_network.visible = green_network ~= nil
+    frame.circuit.header.green_network.caption = green_network and
+        string.format("[color=green]%s[/color]", green_network) or ""
     local circuit_enabled = launcher:is_circuit_connected(true)
     frame.circuit.read_ammo.enabled = circuit_enabled
     frame.circuit.read_ammo.state = launcher.settings.circuit_read_ammo

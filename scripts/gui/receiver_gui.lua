@@ -155,6 +155,19 @@ function receiver_gui.on_gui_opened(player, entity)
         style = "subheader_label",
         caption = { "logistic-cannon-transportation.circuit-control" }
     }
+    frame.circuit.header.add {
+        type = "label",
+        name = "red_network",
+        visible = false,
+    }
+    frame.circuit.header.add {
+        type = "label",
+        name = "green_network",
+        visible = false,
+    }
+    frame.circuit.header.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
     -- Enable/disable
     signal_condition.create_gui(frame.circuit)
     frame.circuit.add {
@@ -435,6 +448,20 @@ function receiver_gui.refresh(player, entity)
         end
     end
     -- circuit refresh
+    local red_network = receiver:is_circuit_connected(false, defines.wire_connector_id.circuit_red) and
+        receiver.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_red).network_id or nil
+    local green_network = receiver:is_circuit_connected(false, defines.wire_connector_id.circuit_green) and
+        receiver.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_green).network_id or nil
+    frame.circuit.header.title.caption = { "",
+        (red_network or green_network) and { "logistic-cannon-transportation.circuit-control-connected" }
+        or { "logistic-cannon-transportation.circuit-control-unconnected" },
+    }
+    frame.circuit.header.red_network.visible = red_network ~= nil
+    frame.circuit.header.red_network.caption = red_network and
+        string.format("[color=red]%s[/color]", red_network) or ""
+    frame.circuit.header.green_network.visible = green_network ~= nil
+    frame.circuit.header.green_network.caption = green_network and
+        string.format("[color=green]%s[/color]", green_network) or ""
     local circuit_enabled = receiver:is_circuit_connected(true)
     signal_condition.refresh(circuit_enabled, receiver, frame.circuit.enable_condition)
     frame.circuit.read_contents.enabled = circuit_enabled

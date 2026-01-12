@@ -186,8 +186,8 @@ end
 ---@param station LauncherStation | ReceiverStation
 ---@param element LuaGuiElement
 function signal_condition.refresh(circuit_enabled, station, element)
-    local settings_enabled = station.settings.circuit_enable_enabled or false
-    local settings_condition = station.settings.circuit_enable_condition or signal_condition.default_value
+    local settings_enabled = station.settings.circuit_enable_enabled
+    local settings_condition = station.settings.circuit_enable_condition
 
     element.checkbox.enabled = circuit_enabled
     element.checkbox.state = settings_enabled
