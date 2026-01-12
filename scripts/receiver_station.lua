@@ -178,6 +178,21 @@ function ReceiverStation.prototype:is_disabled()
     return not signal_condition.evaluate(self.settings.circuit_enable_condition, self.inventory_entity, true, true)
 end
 
+---@param include_ghost boolean
+---@param wire defines.wire_connector_id?
+---@return boolean
+function ReceiverStation.prototype:is_circuit_connected(include_ghost, wire)
+    if not wire then
+        return
+            self:is_circuit_connected(include_ghost, defines.wire_connector_id.circuit_red) or
+            self:is_circuit_connected(include_ghost, defines.wire_connector_id.circuit_green)
+    end
+    local wire_connector = self.inventory_entity.get_wire_connector(wire, false)
+    if not wire_connector then return false end
+    local connection_count = wire_connector[include_ghost and "connection_count" or "real_connection_count"]--[[@as uint32]]
+    return connection_count > 0
+end
+
 ---@param network CannonNetwork
 function ReceiverStation.prototype:set_network(network)
     if network ~= self.network then

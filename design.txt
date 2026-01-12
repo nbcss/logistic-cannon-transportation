@@ -69,7 +69,7 @@ TODO
 - Allow rotate ghost/cursor [A]
 - handle undo/redo stack [B]
 - Show connected circuit network ID [B]
-- Disable circuit options when not connect to circuit network [B]
+- Improve enable/disable constant textfield [B]
 - Show number of occupied slots in Receiver GUI [B]
 - Map setting to turn off projectile visualization [B]
 - Option to disable receiver overflow protection [C]

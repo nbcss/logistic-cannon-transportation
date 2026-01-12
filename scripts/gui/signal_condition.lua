@@ -182,21 +182,23 @@ function signal_condition.create_gui(parent)
     }
 end
 
+---@param circuit_enabled boolean
 ---@param station LauncherStation | ReceiverStation
 ---@param element LuaGuiElement
-function signal_condition.refresh(station, element)
+function signal_condition.refresh(circuit_enabled, station, element)
     local settings_enabled = station.settings.circuit_enable_enabled or false
     local settings_condition = station.settings.circuit_enable_condition or signal_condition.default_value
 
+    element.checkbox.enabled = circuit_enabled
     element.checkbox.state = settings_enabled
 
     -- Enable/disable input elements
-    element.condition_type.constant.enabled = settings_enabled
-    element.condition_type.signal.enabled = settings_enabled
-    element.condition_values.left_signal.enabled = settings_enabled
-    element.condition_values.comparator.enabled = settings_enabled
-    element.condition_values.right_constant.enabled = settings_enabled
-    element.condition_values.right_signal.enabled = settings_enabled
+    element.condition_type.constant.enabled = circuit_enabled and settings_enabled
+    element.condition_type.signal.enabled = circuit_enabled and settings_enabled
+    element.condition_values.left_signal.enabled = circuit_enabled and settings_enabled
+    element.condition_values.comparator.enabled = circuit_enabled and settings_enabled
+    element.condition_values.right_constant.enabled = circuit_enabled and settings_enabled
+    element.condition_values.right_signal.enabled = circuit_enabled and settings_enabled
 
     -- Condition type
     if settings_condition.constant then
@@ -281,7 +283,7 @@ function signal_condition.on_changed(player, event)
     station.settings.circuit_enable_enabled = settings_enabled
     station.settings.circuit_enable_condition = settings_condition
 
-    signal_condition.refresh(station, element)
+    signal_condition.refresh(true, station, element)
 end
 
 ---Remove meta signals that may not exist in a circuit condition.

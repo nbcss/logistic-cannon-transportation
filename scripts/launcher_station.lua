@@ -679,21 +679,22 @@ function LauncherStation.prototype:is_disabled()
     if not self.settings.circuit_enable_enabled then return false end
     return not signal_condition.evaluate(
         self.settings.circuit_enable_condition, self.inventory_entity,
-        self:is_circuit_connected(defines.wire_connector_id.circuit_red, false),
-        self:is_circuit_connected(defines.wire_connector_id.circuit_green, false)
+        self:is_circuit_connected(false, defines.wire_connector_id.circuit_red),
+        self:is_circuit_connected(false, defines.wire_connector_id.circuit_green)
     )
 end
 
----@param wire defines.wire_connector_id?
 ---@param include_ghost boolean
+---@param wire defines.wire_connector_id?
 ---@return boolean
-function LauncherStation.prototype:is_circuit_connected(wire, include_ghost)
+function LauncherStation.prototype:is_circuit_connected(include_ghost, wire)
     if not wire then
         return
-            self:is_circuit_connected(defines.wire_connector_id.circuit_red, include_ghost) or
-            self:is_circuit_connected(defines.wire_connector_id.circuit_green, include_ghost)
+            self:is_circuit_connected(include_ghost, defines.wire_connector_id.circuit_red) or
+            self:is_circuit_connected(include_ghost, defines.wire_connector_id.circuit_green)
     end
     local wire_connector = self.inventory_entity.get_wire_connector(wire, false)
+    if not wire_connector then return false end
     local connection_count = wire_connector[include_ghost and "connection_count" or "real_connection_count"]--[[@as uint32]]
     return connection_count > 1
 end

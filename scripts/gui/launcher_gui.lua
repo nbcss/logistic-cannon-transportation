@@ -505,10 +505,13 @@ function launcher_gui.refresh(player, entity)
         { "logistic-cannon-transportation.meter-per-second", tostring(projectile_speed) } or "-"
     frame.station.connected_receivers.value_label.caption = launcher.network:get_connection_count(launcher:id())
     frame.station.network.value_signal.elem_value = launcher.network.signal
-    frame.circuit.read_ammo.state = launcher.turret_entity.get_or_create_control_behavior().read_ammo --[[@as boolean]]
+    local circuit_enabled = launcher:is_circuit_connected(true)
+    frame.circuit.read_ammo.enabled = circuit_enabled
+    frame.circuit.read_ammo.state = launcher.settings.circuit_read_ammo
+    frame.circuit.read_contents.enabled = circuit_enabled
     frame.circuit.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
-    signal_condition.refresh(launcher, frame.circuit.enable_condition)
+    signal_condition.refresh(circuit_enabled, launcher, frame.circuit.enable_condition)
 end
 
 ---@param launcher LauncherStation

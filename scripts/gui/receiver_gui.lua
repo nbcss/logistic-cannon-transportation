@@ -435,7 +435,9 @@ function receiver_gui.refresh(player, entity)
         end
     end
     -- circuit refresh
-    signal_condition.refresh(receiver, frame.circuit.enable_condition)
+    local circuit_enabled = receiver:is_circuit_connected(true)
+    signal_condition.refresh(circuit_enabled, receiver, frame.circuit.enable_condition)
+    frame.circuit.read_contents.enabled = circuit_enabled
     frame.circuit.read_contents.state = receiver.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
 end
