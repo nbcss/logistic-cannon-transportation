@@ -8,6 +8,7 @@ local health = 600
 local range = 80
 local inventory_size = 39
 local energy_consumption = 200 * 1000 -- in W
+
 local integration_patch = {
     sheets = {
         {
@@ -20,27 +21,63 @@ local integration_patch = {
         },
     }
 }
-local container_animation = {
-    layers = {
-        {
-            filename = "__base__/graphics/entity/logistic-chest/passive-provider-chest.png",
-            priority = "extra-high",
-            width = 66,
-            height = 74,
-            shift = util.by_pixel(0, -2),
-            scale = 1.5
-        },
-        {
-            filename = "__base__/graphics/entity/logistic-chest/logistic-chest-shadow.png",
-            priority = "extra-high",
-            width = 112,
-            height = 46,
-            shift = util.by_pixel(12, 4.5),
-            draw_as_shadow = true,
-            scale = 1.5
-        }
-    }
-}
+
+local base_animation = {
+    north = {
+        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-0.png",
+        priority = "high",
+        width = 384,
+        height = 384,
+        shift = util.by_pixel(0, -29),
+        scale = 0.5,
+    },
+    east = {
+        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-1.png",
+        priority = "high",
+        width = 384,
+        height = 384,
+        shift = util.by_pixel(0, -29),
+        scale = 0.5,
+    },
+    south = {
+        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-2.png",
+        priority = "high",
+        width = 384,
+        height = 384,
+        shift = util.by_pixel(0, -29),
+        scale = 0.5,
+    },
+    west = {
+        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-3.png",
+        priority = "high",
+        width = 384,
+        height = 384,
+        shift = util.by_pixel(0, -29),
+        scale = 0.5,
+    },
+}--[[@as data.Animation4Way]]
+
+local launcher_raising_animation = {
+    filename = "__logistic-cannon-transportation__/graphics/entity/launcher-raising.png",
+    priority = "very-low",
+    width = 384,
+    height = 384,
+    frame_count = 15,
+    direction_count = 8,
+    shift = util.by_pixel(0, -29),
+    scale = 0.5,
+}--[[@as data.RotatedAnimation]]
+
+local launcher_shooting_animation = {
+    filename = "__logistic-cannon-transportation__/graphics/entity/launcher-shooting.png",
+    priority = "very-low",
+    width = 384,
+    height = 384,
+    direction_count = 64,
+    line_length = 8,
+    shift = util.by_pixel(0, -29),
+    scale = 0.5,
+}--[[@as data.RotatedAnimation]]
 
 data.raw["mod-data"][constants.data_launcher_properties].data[constants.entity_launcher_inventory] = {
     range = range,
@@ -113,8 +150,6 @@ data:extend {
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
-        integration_patch_render_layer = "lower-object",
-        integration_patch = integration_patch,
     },
     {
         type = "proxy-container",
@@ -192,55 +227,51 @@ data:extend {
         draw_circuit_wires = false,
         prepare_range = 2,
         attack_target_mask = { constants.entity_target },
-        rotation_speed = 0.15 / 60,
+        rotation_speed = 0.3 / 60,
         preparing_speed = 0.08,
         preparing_sound = sounds.gun_turret_activate,
         folding_sound = sounds.gun_turret_deactivate,
         folding_speed = 0.08,
+        attacking_speed = 0.08,
+        ending_attack_speed = 0.08,
         inventory_size = 1,
         automated_ammo_count = 5,
         alert_when_attacking = false,
         turret_base_has_direction = true,
+        gun_animation_render_layer = "above-inserters",
+        can_retarget_while_starting_attack = true,
+        allow_turning_when_starting_attack = true,
         folded_animation = {
             layers = {
-                {
-                    filename = "__base__/graphics/entity/tank/tank-turret.png",
-                    priority = "low",
-                    line_length = 8,
-                    width = 179,
-                    height = 132,
-                    direction_count = 64,
-                    shift = util.by_pixel(2.25 - 2, -40.5 +4),
-                    animation_speed = 8,
-                    scale = 0.5
-                },
-                {
-                    filename = "__base__/graphics/entity/tank/tank-turret-mask.png",
-                    priority = "low",
-                    line_length = 8,
-                    width = 72,
-                    height = 66,
-                    apply_runtime_tint = true,
-                    direction_count = 64,
-                    shift = util.by_pixel(2 - 2, -41.5 +4),
-                    scale = 0.5
-                },
-                {
-                    filename = "__base__/graphics/entity/tank/tank-turret-shadow.png",
-                    priority = "low",
-                    line_length = 8,
-                    width = 193,
-                    height = 134,
-                    draw_as_shadow = true,
-                    direction_count = 64,
-                    shift = util.by_pixel(58.25 - 2, 0.5 +4),
-                    scale = 0.5
-                }
+                launcher_shooting_animation
+            }
+            -- layers = {
+            --     util.merge{launcher_raising_animation, {
+            --         frame_count = 1,
+            --         line_length = 1,
+            --     }}
+            -- }
+        },
+        starting_attack_animation = {
+            layers = {
+                launcher_raising_animation,
+            }
+        },
+        ending_attack_animation = {
+            layers = {
+                util.merge{launcher_raising_animation, {
+                    run_mode = "backward",
+                }}
+            }
+        },
+        prepared_animation = {
+            layers = {
+                launcher_shooting_animation
             }
         },
         graphics_set = {
             base_visualisation = {
-                animation = container_animation
+                animation = base_animation
             }
         },
         attack_parameters = {
@@ -256,18 +287,5 @@ data:extend {
             sound = sounds.tank_gunshot
         },
         call_for_help_radius = 0,
-        water_reflection = {
-            pictures = {
-                filename = "__base__/graphics/entity/gun-turret/gun-turret-reflection.png",
-                priority = "extra-high",
-                width = 20,
-                height = 32,
-                shift = util.by_pixel(0, 40),
-                variation_count = 1,
-                scale = 5
-            },
-            rotate = false,
-            orientation_to_variation = false
-        },
     },
 }
