@@ -9,19 +9,6 @@ local range = 80
 local inventory_size = 39
 local energy_consumption = 200 * 1000 -- in W
 
-local integration_patch = {
-    sheets = {
-        {
-            filename = "__base__/graphics/entity/logistic-chest/active-provider-chest.png",
-            priority = "extra-high",
-            width = 66,
-            height = 74,
-            shift = util.by_pixel(0, -2),
-            scale = 1.5
-        },
-    }
-}
-
 local base_animation = {
     north = {
         filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-0.png",
@@ -178,8 +165,24 @@ data:extend {
         max_health = health,
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
-        integration_patch_render_layer = "zero",
-        integration_patch = integration_patch,
+        stateless_visualisation = {
+            render_layer = "zero",
+            animation = {
+                sheets = {
+                    util.merge{base_animation.north, {
+                        variation_count = 1,
+                        frame_count = 1,
+                        repeat_count = 64,
+                        animation_speed = 0.35,
+                    }},
+                    util.merge{launcher_shooting_animation, {
+                        variation_count = 1,
+                        frame_count = 64,
+                        animation_speed = 0.35,
+                    }},
+                }
+            }
+        },
     },
     {
         type = "proxy-container",
