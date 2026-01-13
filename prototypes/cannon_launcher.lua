@@ -8,6 +8,12 @@ local health = 600
 local range = 80
 local inventory_size = 39
 local energy_consumption = 200 * 1000 -- in W
+local launcher_simulation = [[
+    game.simulation.camera_zoom = 2
+    game.simulation.camera_position = {0.5, -0.25}
+    local proxy = game.surfaces[1].create_entity{name = "]] .. constants.entity_launcher_turret .. [[", 
+        position = {0.5, 0.5}, force = "player", direction = defines.direction.east}
+]]
 
 local base_animation = {
     north = {
@@ -193,7 +199,7 @@ data:extend {
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
         integration_patch_render_layer = "object-under",
         integration_patch = base_animation,
-        factoriopedia_simulation = nil, -- TODO add simulation
+        factoriopedia_simulation = { init = launcher_simulation },
     },
     {
         type = "proxy-container",
