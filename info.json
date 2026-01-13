@@ -11,7 +11,8 @@
     "description": "",
     "package": {
         "ignore": [
-            "**/*.xcf"
+            "**/*.xcf",
+            "**/*.txt"
         ]
     }
 }

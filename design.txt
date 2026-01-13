@@ -68,7 +68,6 @@ TODO
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - handle undo/redo stack [B]
-- Improve enable/disable constant textfield [B]
 - Show number of occupied slots in Receiver GUI [B]
 - Player setting to turn off projectile visualization [B]
 - Option to disable receiver overflow protection [C]

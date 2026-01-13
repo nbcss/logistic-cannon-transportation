@@ -50,7 +50,7 @@ data:extend {
         type = "container",
         name = constants.entity_receiver_inventory,
         icon = icon,
-        flags = { "player-creation", "placeable-player" },
+        flags = { "player-creation", "placeable-player", "no-automated-item-insertion" },
         map_color = { 0.1, 0.8, 0.9 },
         minable = { mining_time = 1.0, result = constants.item_receiver },
         placeable_by = { item = constants.item_receiver, count = 1 },

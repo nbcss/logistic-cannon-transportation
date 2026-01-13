@@ -11,36 +11,84 @@ local energy_consumption = 200 * 1000 -- in W
 
 local base_animation = {
     north = {
-        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-0.png",
-        priority = "high",
-        width = 384,
-        height = 384,
-        shift = util.by_pixel(0, -29),
-        scale = 0.5,
+        layers = {
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-0.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+        },
     },
     east = {
-        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-1.png",
-        priority = "high",
-        width = 384,
-        height = 384,
-        shift = util.by_pixel(0, -29),
-        scale = 0.5,
+        layers = {
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-1.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+        },
     },
     south = {
-        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-2.png",
-        priority = "high",
-        width = 384,
-        height = 384,
-        shift = util.by_pixel(0, -29),
-        scale = 0.5,
+        layers = {
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-2.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+        },
     },
     west = {
-        filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-3.png",
-        priority = "high",
-        width = 384,
-        height = 384,
-        shift = util.by_pixel(0, -29),
-        scale = 0.5,
+        layers = {
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-3.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
+                priority = "high",
+                width = 384,
+                height = 384,
+                shift = util.by_pixel(0, -29),
+                scale = 0.5,
+            },
+        },
     },
 } --[[@as data.Animation4Way]]
 
@@ -121,7 +169,7 @@ data:extend {
         type = "container",
         name = constants.entity_launcher_inventory,
         icon = icon,
-        flags = { "player-creation", "placeable-player", "not-rotatable" },
+        flags = { "player-creation", "placeable-player", "no-automated-item-removal", "not-rotatable" },
         map_color = { 0.9, 0.1, 0.1 },
         minable = { mining_time = 1.0, result = constants.item_launcher },
         placeable_by = { item = constants.item_launcher, count = 1 },
@@ -131,8 +179,8 @@ data:extend {
         circuit_wire_max_distance = 9,
         circuit_connector = {
             points = {
-                wire = { red = util.by_pixel(37, 25), green = util.by_pixel(30, 28) },
-                shadow = { red = util.by_pixel(57, 45), green = util.by_pixel(50, 48) },
+                wire = { red = util.by_pixel(35, 9), green = util.by_pixel(30, 12) },
+                shadow = { red = util.by_pixel(55, 29), green = util.by_pixel(50, 32) },
             },
         },
         inventory_type = "with_filters_and_bar",
@@ -169,17 +217,23 @@ data:extend {
             render_layer = "zero",
             animation = {
                 sheets = {
-                    util.merge{base_animation.north, {
+                    util.merge { base_animation.north.layers[1], {
                         variation_count = 1,
                         frame_count = 1,
                         repeat_count = 64,
                         animation_speed = 0.35,
-                    }},
-                    util.merge{launcher_shooting_animation, {
+                    } },
+                    util.merge { base_animation.north.layers[2], {
+                        variation_count = 1,
+                        frame_count = 1,
+                        repeat_count = 64,
+                        animation_speed = 0.35,
+                    } },
+                    util.merge { launcher_shooting_animation, {
                         variation_count = 1,
                         frame_count = 64,
                         animation_speed = 0.35,
-                    }},
+                    } },
                 }
             }
         },
