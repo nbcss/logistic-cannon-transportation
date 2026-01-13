@@ -607,7 +607,8 @@ function LauncherStation.prototype:launch()
                 local data = capsule_properties[self.ammo_name] or error()
                 local direction = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
                 local base_position = self:position()
-                local position = {base_position.x + direction.x, base_position.y + direction.y - 1.8}
+                local position = {base_position.x + direction.x,
+                    base_position.y - 1.8 + direction.y * math2d.projection_constant}
                 self.turret_entity.surface.create_entity {
                     name = string.format(constants.capsule_projectile_format, data.projectile_name, data.speed),
                     position = position,

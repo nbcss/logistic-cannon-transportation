@@ -159,6 +159,7 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_launcher,
+        enabled = false,
         energy_required = 10,
         ingredients = {
             { type = "item", name = "radar",           amount = 1 },
@@ -297,7 +298,7 @@ data:extend {
         max_health = health,
         circuit_wire_max_distance = 1,
         draw_circuit_wires = false,
-        prepare_range = 1,
+        prepare_range = 2,
         attack_target_mask = { constants.entity_target },
         rotation_speed = 0.3 / 60,
         preparing_speed = 0.08,

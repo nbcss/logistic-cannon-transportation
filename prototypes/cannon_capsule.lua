@@ -105,6 +105,7 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_capsule_basic,
+        enabled = false,
         energy_required = 1,
         ingredients = {
             { type = "item", name = "steel-plate", amount = 1 },
@@ -129,6 +130,7 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_capsule_reinforced,
+        enabled = false,
         energy_required = 2,
         ingredients = {
             { type = "item", name = "low-density-structure", amount = 1 },
@@ -153,6 +155,7 @@ data:extend {
     {
         type = "recipe",
         name = constants.item_capsule_propelled,
+        enabled = false,
         energy_required = 2,
         ingredients = {
             { type = "item", name = "low-density-structure", amount = 1 },
