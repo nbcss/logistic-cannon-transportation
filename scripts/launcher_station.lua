@@ -47,7 +47,6 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field enable_ammo_proxy boolean
 ---@field load_capsule_from_inventory boolean
 ---@field circuit_read_ammo boolean
----@field circuit_enable_enabled boolean
 ---@field circuit_enable_condition ModCircuitCondition
 LauncherStation.default_settings = {
     name = nil,
@@ -58,7 +57,6 @@ LauncherStation.default_settings = {
     enable_ammo_proxy = true,
     load_capsule_from_inventory = true,
     circuit_read_ammo = true,
-    circuit_enable_enabled = false,
     circuit_enable_condition = signal_condition.default_value,
 }
 
@@ -676,7 +674,7 @@ end
 ---@return boolean
 function LauncherStation.prototype:is_disabled()
     if self.inventory_entity.to_be_deconstructed() then return true end
-    if not self.settings.circuit_enable_enabled then return false end
+    if not self.settings.circuit_enable_condition.enabled then return false end
     return not signal_condition.evaluate(
         self.settings.circuit_enable_condition, self.inventory_entity,
         self:is_circuit_connected(false, defines.wire_connector_id.circuit_red),

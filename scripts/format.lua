@@ -28,15 +28,15 @@ end
 function format.number(value)
     if value < 1e3 then
         return string.format("%.0f", value)
-    elseif value < 1e5 then
+    elseif value < 1e4 then
         return string.format("%.1fk", value / 1e3)
     elseif value < 1e6 then
         return string.format("%.0fk", value / 1e3)
-    elseif value < 1e8 then
+    elseif value < 1e7 then
         return string.format("%.1fM", value / 1e6)
     elseif value < 1e9 then
         return string.format("%.0fM", value / 1e6)
-    elseif value < 1e11 then
+    elseif value < 1e10 then
         return string.format("%.1fG", value / 1e9)
     elseif value < 1e12 then
         return string.format("%.0fG", value / 1e9)

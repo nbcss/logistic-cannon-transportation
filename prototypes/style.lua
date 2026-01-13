@@ -50,26 +50,15 @@ styles["lct_subheader_frame"] = {
     horizontally_squashable = "on",
 }
 
-styles["lct_constant_condition_textbox"] = {
-    type = "textbox_style",
-    width = 40,
-    height = 40,
-
-    -- Format text inside
-    top_padding = 7,
-    bottom_padding = 7,
-    left_padding = 2,
-    right_padding = 2,
+styles["lct_constant_condition_label"] = {
+    type = "label_style",
+    minimal_width = 32,
+    minimal_height = 32,
+    font = "default-game",
+    parent_hovered_font_color = {1, 1, 1},
     horizontal_align = "center",
     vertical_align = "center",
-    font = "default-game",
-    font_color = {1, 1, 1},
-    disabled_font_color = {1, 1, 1},
-
-    -- Make it look like a slot button when not edited
-    default_background = util.table.deepcopy(styles["slot_button_in_shallow_frame"].default_graphical_set),
-    game_controller_hovered_background = util.table.deepcopy(styles["slot_button_in_shallow_frame"].hovered_graphical_set),
-    disabled_background = util.table.deepcopy(styles["slot_button_in_shallow_frame"].disabled_graphical_set),
+    single_line = true,
 }
 
 styles["lct_configuration_deep_frame"] = {

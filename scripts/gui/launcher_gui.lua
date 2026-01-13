@@ -405,35 +405,6 @@ function launcher_gui.on_gui_opened(player, entity)
     frame.circuit.header.add {
         type = "empty-widget",
     }.style.horizontally_stretchable = true
-    -- frame.circuit.header.add {
-    --     type = "flow",
-    --     name = "title",
-    --     direction = "vertical",
-    -- }
-    -- frame.circuit.header.title.add {
-    --     type = "label",
-    --     name = "title_caption",
-    --     style = "subheader_label",
-    --     caption = { "logistic-cannon-transportation.circuit-control" },
-    --     tags = {
-    --         [constants.gui_tag_event_handlers] = {
-    --             on_gui_hover = "launcher_gui.on_circuit_hover",
-    --             on_gui_leave = "launcher_gui.on_circuit_leave",
-    --         },
-    --     },
-    -- }
-    -- frame.circuit.header.title.title_caption.raise_hover_events = true
-    -- frame.circuit.header.title.add {
-    --     type = "frame",
-    --     name = "title_tooltip",
-    --     style = "tooltip_panel_background",
-    --     visible = false,
-    -- }
-    -- frame.circuit.header.title.title_tooltip.add {
-    --     type = "label",
-    --     caption = "Test",
-    -- }
-
     -- Enable/disable
     signal_condition.create_gui(frame.circuit)
     frame.circuit.add {
@@ -470,7 +441,6 @@ function launcher_gui.on_gui_opened(player, entity)
             },
         },
     }
-
     launcher_gui.refresh(player, entity)
 end
 
@@ -490,7 +460,7 @@ function launcher_gui.refresh(player, entity)
     }
     local energy = format.energy(launcher:get_stored_energy())
     local capacity = format.energy(launcher:get_energy_capacity())
-    local energy_ratio = launcher:get_stored_energy() > 0 and 
+    local energy_ratio = launcher:get_stored_energy() > 0 and
         math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity()) or 0
     frame.station.ammo_and_energy.energy.value = energy_ratio
     frame.station.ammo_and_energy.energy.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
@@ -538,7 +508,7 @@ function launcher_gui.refresh(player, entity)
     frame.circuit.read_contents.enabled = circuit_enabled
     frame.circuit.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
-    signal_condition.refresh(circuit_enabled, launcher, frame.circuit.enable_condition)
+    signal_condition.refresh(circuit_enabled, launcher.settings.circuit_enable_condition, frame.circuit.enable_condition)
 end
 
 ---@param launcher LauncherStation
@@ -709,26 +679,6 @@ function launcher_gui.on_read_contents_state_changed(player, event)
     if not launcher or not launcher:valid() then return end
     local control = launcher.inventory_entity.get_or_create_control_behavior() --[[@as LuaContainerControlBehavior]]
     control.read_contents = event.element.state
-end
-
----@param player LuaPlayer
----@param event EventData.on_gui_hover
-function launcher_gui.on_circuit_hover(player, event)
-    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
-    frame.circuit.header.title.title_tooltip.style.bottom_margin = -32
-    frame.circuit.header.title.title_tooltip.style.horizontally_stretchable = false
-    frame.circuit.header.title.title_tooltip.visible = true
-end
-
----@param player LuaPlayer
----@param event EventData.on_gui_leave
-function launcher_gui.on_circuit_leave(player, event)
-    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
-    if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
-    frame.circuit.header.title.title_tooltip.visible = false
 end
 
 return launcher_gui

@@ -1,4 +1,5 @@
 local constants = require("constants")
+local format = require("scripts.format")
 local LauncherStation ---@module "scripts.launcher_station"
 local ReceiverStation ---@module "scripts.receiver_station"
 
@@ -12,6 +13,7 @@ end
 -- Can represent all states required by GUI.
 -- Can be converted to the built-in CircuitCondition.
 ---@class (exact) ModCircuitCondition
+---@field enabled boolean
 ---@field comparator ModCircuitCondition.comparator
 ---@field first_signal SignalID?
 ---@field second_signal SignalID? Must not coexist with `constant`.
@@ -29,6 +31,7 @@ signal_condition.comparators = {
 signal_condition.default_comparator_index = 2
 
 signal_condition.default_value = {
+    enabled = false,
     comparator = signal_condition.comparators[signal_condition.default_comparator_index],
     constant = 0,
 } --[[@as ModCircuitCondition]]
@@ -69,8 +72,7 @@ function signal_condition.evaluate(condition, entity, red_connected, green_conne
 
     local first_value = get_signal(condition.first_signal)
     local second_value = condition.second_signal and get_signal(condition.second_signal) or condition.constant
-    -- game.print(string.format("%s:%s", first_value, second_value))
-    -- FIXME signal will double count between wires
+
     return compare_functions[condition.comparator](first_value, second_value)
 end
 
@@ -81,7 +83,7 @@ function signal_condition.create_gui(parent)
         name = "enable_condition",
         direction = "vertical",
     }
-    element.style.vertical_spacing = 0
+    element.style.vertical_spacing = 2
     element.add {
         type = "checkbox",
         name = "checkbox",
@@ -131,7 +133,7 @@ function signal_condition.create_gui(parent)
     }
     element.condition_values.add {
         type = "choose-elem-button",
-        name = "left_signal",
+        name = "left",
         style = "slot_button_in_shallow_frame",
         elem_type = "signal",
         tags = {
@@ -145,7 +147,7 @@ function signal_condition.create_gui(parent)
         name = "comparator",
         style = "circuit_condition_comparator_dropdown",
         items = signal_condition.comparators,
-        selected_index = 2,
+        selected_index = signal_condition.default_comparator_index,
         tags = {
             [constants.gui_tag_event_handlers] = {
                 on_gui_selection_state_changed = "signal_condition.on_changed",
@@ -153,85 +155,109 @@ function signal_condition.create_gui(parent)
         },
     }
     element.condition_values.add {
+        type = "choose-elem-button",
+        name = "right",
+        style = "slot_button_in_shallow_frame",
+        elem_type = "signal",
+        tags = {
+            [constants.gui_tag_event_handlers] = {
+                on_gui_elem_changed = "signal_condition.on_changed",
+                on_gui_click = "signal_condition.on_right_button_clicked",
+            },
+        },
+    }
+    element.condition_values.right.add{
+        type = "label",
+        name = "constant_display",
+        style = "lct_constant_condition_label",
+    }
+    element.condition_values.add {
         type = "textfield",
-        name = "right_constant",
-        style = "lct_constant_condition_textbox",
-        text = "0",
+        name = "right_constant_text",
+        style = "slider_value_textfield",
         numeric = true,
         allow_decimal = false,
         allow_negative = true,
         lose_focus_on_confirm = true,
-        visible = true,
+        visible = false,
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_text_changed = "signal_condition.on_changed",
+                on_gui_confirmed = "signal_condition.on_constant_confirmed",
             },
         },
     }
     element.condition_values.add {
-        type = "choose-elem-button",
-        name = "right_signal",
-        style = "slot_button_in_shallow_frame",
-        elem_type = "signal",
+        type = "sprite-button",
+        name = "right_constant_confirm",
+        style = "item_and_count_select_confirm",
         visible = false,
+        sprite = "utility/confirm_slot",
+        tooltip = { "logistic-cannon-transportation.circuit-condition-confirm-constant" },
         tags = {
             [constants.gui_tag_event_handlers] = {
-                on_gui_elem_changed = "signal_condition.on_changed",
+                on_gui_click = "signal_condition.on_constant_confirmed",
             },
         },
     }
 end
 
----@param circuit_enabled boolean
----@param station LauncherStation | ReceiverStation
 ---@param element LuaGuiElement
-function signal_condition.refresh(circuit_enabled, station, element)
-    local settings_enabled = station.settings.circuit_enable_enabled
-    local settings_condition = station.settings.circuit_enable_condition
+---@return LuaGuiElement?
+function signal_condition.find_root_element(element)
+    while element and element.name ~= "enable_condition" do
+        element = element.parent
+    end
+    return element
+end
 
-    element.checkbox.enabled = circuit_enabled
-    element.checkbox.state = settings_enabled
+---@param circuit_connected boolean
+---@param circuit_condition ModCircuitCondition
+---@param element LuaGuiElement
+function signal_condition.refresh(circuit_connected, circuit_condition, element)
+
+    element.checkbox.enabled = circuit_connected
+    element.checkbox.state = circuit_condition.enabled
 
     -- Enable/disable input elements
-    element.condition_type.constant.enabled = circuit_enabled and settings_enabled
-    element.condition_type.signal.enabled = circuit_enabled and settings_enabled
-    element.condition_values.left_signal.enabled = circuit_enabled and settings_enabled
-    element.condition_values.comparator.enabled = circuit_enabled and settings_enabled
-    element.condition_values.right_constant.enabled = circuit_enabled and settings_enabled
-    element.condition_values.right_signal.enabled = circuit_enabled and settings_enabled
+    element.condition_type.constant.enabled = circuit_connected and circuit_condition.enabled
+    element.condition_type.signal.enabled = circuit_connected and circuit_condition.enabled
+    element.condition_values.left.enabled = circuit_connected and circuit_condition.enabled
+    element.condition_values.comparator.enabled = circuit_connected and circuit_condition.enabled
+    element.condition_values.right.enabled = circuit_connected and circuit_condition.enabled
 
-    -- Condition type
-    if settings_condition.constant then
-        element.condition_type.constant.state = true
-        element.condition_type.signal.state = false
-        element.condition_values.right_constant.visible = true
-        element.condition_values.right_signal.visible = false
-    else
-        element.condition_type.constant.state = false
-        element.condition_type.signal.state = true
-        element.condition_values.right_constant.visible = false
-        element.condition_values.right_signal.visible = true
+    -- Close editor of constant when irrelavant
+    if not (circuit_connected and circuit_condition.enabled and circuit_condition.constant) then
+        element.condition_values.right.visible = true
+        element.condition_values.right_constant_text.visible = false
+        element.condition_values.right_constant_confirm.visible = false
     end
 
-    -- Signals
-    element.condition_values.left_signal.elem_value = settings_condition.first_signal
-    element.condition_values.right_signal.elem_value = settings_condition.second_signal
+    -- Condition type
+    element.condition_type.constant.state = circuit_condition.constant ~= nil
+    element.condition_type.signal.state = circuit_condition.constant == nil
+
+    -- Left side
+    element.condition_values.left.elem_value = circuit_condition.first_signal
+
+    -- Right-side
+    element.condition_values.right.elem_value = circuit_condition.second_signal
+    element.condition_values.right.tags = util.merge{element.condition_values.right.tags, {
+        constant_value = circuit_condition.constant or 0
+    }}
+    if circuit_condition.constant then
+        element.condition_values.right.locked = true
+        element.condition_values.right.constant_display.caption = format.number(circuit_condition.constant or 0)
+    else
+        element.condition_values.right.locked = false
+        element.condition_values.right.constant_display.caption = ""
+    end
 
     -- Comparator
     for i, s in ipairs(signal_condition.comparators) do
-        if s == settings_condition.comparator then
+        if s == circuit_condition.comparator then
             element.condition_values.comparator.selected_index = i
             break
         end
-    end
-
-    -- Constant: set textbox content only when the numeric value differs,
-    -- to preserve intermeiary input like "-" and ""
-    if
-        settings_condition.constant ~=
-        (tonumber(element.condition_values.right_constant.text) or 0)
-    then
-        element.condition_values.right_constant.text = tostring(settings_condition.constant or 0)
     end
 end
 
@@ -239,51 +265,89 @@ end
 ---@param event
 ---| EventData.on_gui_checked_state_changed
 ---| EventData.on_gui_elem_changed
----| EventData.on_gui_text_changed
+---| EventData.on_gui_confirmed
 ---| EventData.on_gui_selection_state_changed
+---| EventData.on_gui_click
 function signal_condition.on_changed(player, event)
     if not player.opened or player.opened.object_name ~= "LuaEntity" then return end
     local entity = player.opened--[[@as LuaEntity]]
-    local station, frame = nil, nil
+    local station = nil
     if entity.name == constants.entity_launcher_gui_proxy then
         station = LauncherStation.get(entity)
-        frame = player.gui.relative[constants.gui_launcher] --[[@as LuaGuiElement?]]
     elseif entity.name == constants.entity_receiver_gui_proxy then
         station = ReceiverStation.get(entity)
-        frame = player.gui.relative[constants.gui_receiver] --[[@as LuaGuiElement?]]
     end
-    if not station or not frame then return end
-    local element = frame.circuit.enable_condition
+    local element = signal_condition.find_root_element(event.element)
+    if not station or not element then return end
 
     -- Read settings from GUI input
-    local settings_enabled = element.checkbox.state
     local settings_condition = {
+        enabled = element.checkbox.state,
         comparator = signal_condition.comparators[element.condition_values.comparator.selected_index] or signal_condition.default_comparator,
-        first_signal = element.condition_values.left_signal.elem_value--[[@as SignalID?]],
+        first_signal = element.condition_values.left.elem_value--[[@as SignalID?]],
     }
 
     -- Read signal condition depending on type
     -- Type is selected by radio buttons
     if
-        element.condition_type.constant.state and
-        not (
-            element.condition_type.signal.state and -- if both are true
-            event.element == element.condition_type.signal -- see which's just been clicked
-        )
+        event.element == element.condition_type.constant or
+        event.element ~= element.condition_type.signal and
+        element.condition_type.constant.state
     then
-        settings_condition.constant = tonumber(element.condition_values.right_constant.text) or 0
+        settings_condition.constant = element.condition_values.right.tags.constant_value or 0
     else
-        settings_condition.second_signal = element.condition_values.right_signal.elem_value--[[@as SignalID?]]
+        settings_condition.second_signal = element.condition_values.right.elem_value--[[@as SignalID?]]
     end
 
     -- Reject meta signals
     signal_condition.reject_meta_signals(settings_condition)
 
     -- Save to entity
-    station.settings.circuit_enable_enabled = settings_enabled
     station.settings.circuit_enable_condition = settings_condition
 
-    signal_condition.refresh(true, station, element)
+    signal_condition.refresh(true, settings_condition, element)
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_click
+function signal_condition.on_right_button_clicked(player, event)
+    local element = signal_condition.find_root_element(event.element)
+    if not element then return end
+
+    if element.condition_type.constant.state then
+        if event.button == defines.mouse_button_type.left then
+            -- Show constant editor and initialize textfield
+            element.condition_values.right.visible = false
+            element.condition_values.right_constant_text.visible = true
+            element.condition_values.right_constant_confirm.visible = true
+            element.condition_values.right_constant_text.text = tostring(element.condition_values.right.tags.constant_value or 0)
+            element.condition_values.right_constant_text.focus()
+            element.condition_values.right_constant_text.select_all()
+        elseif event.button == defines.mouse_button_type.right then
+            -- Clear constant
+            element.condition_values.right.tags = util.merge{element.condition_values.right.tags, {
+                constant_value = 0,
+            }}
+            signal_condition.on_changed(player, event)
+        end
+    end
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_confirmed | EventData.on_gui_click
+function signal_condition.on_constant_confirmed(player, event)
+    local element = signal_condition.find_root_element(event.element)
+    if not element then return end
+
+    -- Copy constant value to tag and close constant editor
+    element.condition_values.right.tags = util.merge{element.condition_values.right.tags, {
+        constant_value = tonumber(element.condition_values.right_constant_text.text) or 0,
+    }}
+    element.condition_values.right.visible = true
+    element.condition_values.right_constant_text.visible = false
+    element.condition_values.right_constant_confirm.visible = false
+
+    signal_condition.on_changed(player, event)
 end
 
 ---Remove meta signals that may not exist in a circuit condition.

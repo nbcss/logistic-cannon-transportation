@@ -26,14 +26,12 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 ---@field network_signal SignalID? Signal for network.
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
 ---@field overflow_protection boolean
----@field circuit_enable_enabled boolean
 ---@field circuit_enable_condition ModCircuitCondition
 ReceiverStation.default_settings = {
     name = nil,
     network_signal = nil,
     delivery_requests = {},
     overflow_protection = true,
-    circuit_enable_enabled = false,
     circuit_enable_condition = signal_condition.default_value,
 }
 
@@ -174,7 +172,7 @@ end
 ---@return boolean
 function ReceiverStation.prototype:is_disabled()
     if self.inventory_entity.to_be_deconstructed() then return true end
-    if not self.settings.circuit_enable_enabled then return false end
+    if not self.settings.circuit_enable_condition.enabled then return false end
     return not signal_condition.evaluate(self.settings.circuit_enable_condition, self.inventory_entity, true, true)
 end
 
