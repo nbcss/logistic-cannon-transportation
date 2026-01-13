@@ -675,11 +675,25 @@ end
 function LauncherStation.prototype:is_disabled()
     if self.inventory_entity.to_be_deconstructed() then return true end
     if not self.settings.circuit_enable_condition.enabled then return false end
-    return not signal_condition.evaluate(
-        self.settings.circuit_enable_condition, self.inventory_entity,
-        self:is_circuit_connected(false, defines.wire_connector_id.circuit_red),
-        self:is_circuit_connected(false, defines.wire_connector_id.circuit_green)
-    )
+
+    local red_connected = self:is_circuit_connected(false, defines.wire_connector_id.circuit_red)
+    local green_connected = self:is_circuit_connected(false, defines.wire_connector_id.circuit_green)
+
+    return not signal_condition.evaluate(self.settings.circuit_enable_condition, function(signal)
+        if red_connected then
+            if green_connected then
+                return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+            else
+                return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red)
+            end
+        else
+            if green_connected then
+                return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_green)
+            else
+                return 0
+            end
+        end
+    end)
 end
 
 ---@param include_ghost boolean

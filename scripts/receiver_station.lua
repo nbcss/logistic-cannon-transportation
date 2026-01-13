@@ -173,7 +173,10 @@ end
 function ReceiverStation.prototype:is_disabled()
     if self.inventory_entity.to_be_deconstructed() then return true end
     if not self.settings.circuit_enable_condition.enabled then return false end
-    return not signal_condition.evaluate(self.settings.circuit_enable_condition, self.inventory_entity, true, true)
+
+    return not signal_condition.evaluate(self.settings.circuit_enable_condition, function(signal)
+        return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+    end)
 end
 
 ---@param include_ghost boolean

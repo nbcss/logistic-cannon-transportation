@@ -46,29 +46,10 @@ local compare_functions = {
 }
 
 ---@param condition ModCircuitCondition
----@param entity LuaEntity
----@param red_connected boolean
----@param green_connected boolean
+---@param get_signal fun(signal: SignalID):uint32
 ---@return boolean
-function signal_condition.evaluate(condition, entity, red_connected, green_connected)
+function signal_condition.evaluate(condition, get_signal)
     if not condition.first_signal or (not condition.constant and not condition.second_signal) then return false end
-
-    ---@param signal SignalID
-    local function get_signal(signal)
-        if red_connected then
-            if green_connected then
-                return entity.get_signal(signal, defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
-            else
-                return entity.get_signal(signal, defines.wire_connector_id.circuit_red)
-            end
-        else
-            if green_connected then
-                return entity.get_signal(signal, defines.wire_connector_id.circuit_green)
-            else
-                return 0
-            end
-        end
-    end
 
     local first_value = get_signal(condition.first_signal)
     local second_value = condition.second_signal and get_signal(condition.second_signal) or condition.constant
@@ -306,6 +287,7 @@ function signal_condition.on_changed(player, event)
     station.settings.circuit_enable_condition = settings_condition
 
     signal_condition.refresh(true, settings_condition, element)
+    
 end
 
 ---@param player LuaPlayer
