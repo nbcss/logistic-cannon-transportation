@@ -125,7 +125,7 @@ function LauncherStation.create(entity, from_settings)
 
     local turret_entity = surface.create_entity {
         name = constants.entity_launcher_turret,
-        position = math2d.position.add(position, { 0, 0.001 }), -- to fix overlap sprite issue
+        position = position,
         force = force,
         quality = entity.quality,
     } or error()
@@ -581,8 +581,7 @@ function LauncherStation.prototype:is_ready(position)
     return self:get_current_range() >= distance
 end
 
----@param source_position MapPosition
-function LauncherStation.prototype:launch(source_position)
+function LauncherStation.prototype:launch()
     self:set_aiming(nil)
     local delivery = self.scheduled_delivery
     if not self:valid() or not delivery then return end
@@ -606,21 +605,24 @@ function LauncherStation.prototype:launch(source_position)
                 end
                 ammo_slot.drain_ammo(1)
                 local data = capsule_properties[self.ammo_name] or error()
+                local direction = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
+                local base_position = self:position()
+                local position = {base_position.x + direction.x, base_position.y + direction.y - 1.8}
                 self.turret_entity.surface.create_entity {
                     name = string.format(constants.capsule_projectile_format, data.projectile_name, data.speed),
-                    position = source_position,
+                    position = position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
-                    source = source_position,
+                    source = position,
                     target = delivery.position,
                 }
                 self.turret_entity.surface.create_entity {
                     name = constants.entity_tracker,
                     speed = data.speed / 60,
-                    position = source_position,
+                    position = position,
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
-                    source = source_position,
+                    source = position,
                     target = delivery.capsule_entity,
                     cause = delivery.capsule_entity,
                 }

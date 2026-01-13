@@ -55,7 +55,7 @@ local base_animation = {
         shift = util.by_pixel(0, -29),
         scale = 0.5,
     },
-}--[[@as data.Animation4Way]]
+} --[[@as data.Animation4Way]]
 
 local launcher_raising_animation = {
     filename = "__logistic-cannon-transportation__/graphics/entity/launcher-raising.png",
@@ -66,7 +66,7 @@ local launcher_raising_animation = {
     direction_count = 8,
     shift = util.by_pixel(0, -29),
     scale = 0.5,
-}--[[@as data.RotatedAnimation]]
+} --[[@as data.RotatedAnimation]]
 
 local launcher_shooting_animation = {
     filename = "__logistic-cannon-transportation__/graphics/entity/launcher-shooting.png",
@@ -77,7 +77,7 @@ local launcher_shooting_animation = {
     line_length = 8,
     shift = util.by_pixel(0, -29),
     scale = 0.5,
-}--[[@as data.RotatedAnimation]]
+} --[[@as data.RotatedAnimation]]
 
 data.raw["mod-data"][constants.data_launcher_properties].data[constants.entity_launcher_inventory] = {
     range = range,
@@ -142,6 +142,12 @@ data:extend {
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
         max_health = health,
         circuit_wire_max_distance = 9,
+        circuit_connector = {
+            points = {
+                wire = { red = util.by_pixel(37, 25), green = util.by_pixel(30, 28) },
+                shadow = { red = util.by_pixel(57, 45), green = util.by_pixel(50, 48) },
+            },
+        },
         inventory_type = "with_filters_and_bar",
         inventory_size = inventory_size,
         quality_affects_inventory_size = true,
@@ -150,6 +156,9 @@ data:extend {
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
+        integration_patch_render_layer = "object-under",
+        integration_patch = base_animation,
+        factoriopedia_simulation = nil, -- TODO add simulation
     },
     {
         type = "proxy-container",
@@ -159,7 +168,7 @@ data:extend {
         localised_name = { "entity-name." .. constants.entity_launcher_inventory },
         localised_description = { "entity-description." .. constants.entity_launcher_inventory },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
-        collision_mask = {layers = {}},
+        collision_mask = { layers = {} },
         quality_indicator_scale = 0,
         draw_inventory_content = false,
         is_military_target = false,
@@ -225,7 +234,7 @@ data:extend {
         max_health = health,
         circuit_wire_max_distance = 1,
         draw_circuit_wires = false,
-        prepare_range = 2,
+        prepare_range = 1,
         attack_target_mask = { constants.entity_target },
         rotation_speed = 0.3 / 60,
         preparing_speed = 0.08,
@@ -243,7 +252,7 @@ data:extend {
         allow_turning_when_starting_attack = true,
         folded_animation = {
             layers = {
-                launcher_shooting_animation
+                launcher_shooting_animation,
             }
             -- layers = {
             --     util.merge{launcher_raising_animation, {
@@ -252,18 +261,18 @@ data:extend {
             --     }}
             -- }
         },
-        starting_attack_animation = {
-            layers = {
-                launcher_raising_animation,
-            }
-        },
-        ending_attack_animation = {
-            layers = {
-                util.merge{launcher_raising_animation, {
-                    run_mode = "backward",
-                }}
-            }
-        },
+        -- starting_attack_animation = {
+        --     layers = {
+        --         launcher_raising_animation,
+        --     }
+        -- },
+        -- ending_attack_animation = {
+        --     layers = {
+        --         util.merge{launcher_raising_animation, {
+        --             run_mode = "backward",
+        --         }}
+        --     }
+        -- },
         prepared_animation = {
             layers = {
                 launcher_shooting_animation
@@ -271,6 +280,7 @@ data:extend {
         },
         graphics_set = {
             base_visualisation = {
+                render_layer = "object",
                 animation = base_animation
             }
         },
@@ -279,10 +289,9 @@ data:extend {
             ammo_category = constants.ammo_category,
             cooldown = 60,
             movement_slow_down_factor = 0,
-            projectile_creation_distance = 1.15,
-            projectile_center = { 0, -1 },
             health_penalty = 0,
             rotate_penalty = 0,
+            ammo_consumption_modifier = 0,
             range = 0,
             sound = sounds.tank_gunshot
         },

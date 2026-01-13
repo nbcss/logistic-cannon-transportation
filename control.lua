@@ -49,7 +49,7 @@ local trigger_effect_functions = {
     [constants.capsule_launched_effect_id] = function(event)
         if event.source_position and event.source_entity and event.source_entity.valid then
             local launcher = LauncherStation.get(event.source_entity)
-            if launcher then launcher:launch(event.source_position) end
+            if launcher then launcher:launch() end
         end
     end,
     [constants.capsule_landed_effect_id] = function(event)
