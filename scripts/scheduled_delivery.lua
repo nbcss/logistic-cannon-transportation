@@ -8,6 +8,7 @@ local ScheduledDelivery = {}
 ---@class ScheduledDelivery
 ---@field delivery_id uint64 Id of the delivery
 ---@field capsule_entity LuaEntity Temporary container containing items in the delivery.
+---@field capsule_size uint The number of payload slots in the capsule
 ---@field launcher LauncherStation
 ---@field receiver ReceiverStation
 ---@field ammo_name string Prototype name of ammo used.
@@ -47,6 +48,7 @@ function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     local instance = setmetatable({
         delivery_id = capsule_entity.unit_number,
         capsule_entity = capsule_entity,
+        capsule_size = capsule_size,
         launcher = launcher,
         receiver = receiver,
         ammo_name = launcher.ammo_name,

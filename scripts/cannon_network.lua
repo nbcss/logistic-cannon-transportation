@@ -149,6 +149,8 @@ function CannonNetwork.prototype:update(tick)
         end
         for _, delivery in pairs(receiver.scheduled_deliveries) do
             if delivery:valid() then
+                empty_slots = empty_slots - delivery.capsule_size
+                if protect and empty_slots <= 0 then goto next_receiver end
                 local key = format.encode_item(delivery.item, delivery.quality)
                 local demand = demands[key]
                 if demand then
@@ -180,13 +182,15 @@ function CannonNetwork.prototype:update(tick)
                     end
                 end
                 for _, launcher in ipairs(launchers) do
-                    local delivery = launcher:schedule_delivery(receiver, item, demand.count)
-                    if delivery then
-                        receiver:add_delivery(delivery)
-                        demand.count = demand.count - delivery.amount
-                        empty_slots = empty_slots - launcher:get_max_payload_size()
-                        if protect and empty_slots <= 0 then goto next_receiver end
-                        if demand.count <= 0 then break end
+                    if launcher:valid() and (not protect or launcher:get_max_payload_size() <= empty_slots) then
+                        local delivery = launcher:schedule_delivery(receiver, item, demand.count)
+                        if delivery then
+                            receiver:add_delivery(delivery)
+                            demand.count = demand.count - delivery.amount
+                            empty_slots = empty_slots - delivery.capsule_size
+                            if protect and empty_slots <= 0 then goto next_receiver end
+                            if demand.count <= 0 then break end
+                        end
                     end
                 end
             end
