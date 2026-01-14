@@ -2,8 +2,7 @@ local constants = {}
 
 -- base
 constants.mod_name = "logistic-cannon-transportation"
-constants.name_prefix = "logistic-cannon-"
-constants.ammo_category = "logistic-cannon-capsule"
+constants.ammo_category = "lct-capsule"
 constants.item_subgroup = "cannon-transport"
 constants.rotate_input_event = "lct-rotate-entity-action"
 constants.reverse_rotate_input_event = "lct-reverse-rotate-entity-action"
@@ -27,24 +26,24 @@ constants.item_capsule_basic = "lct-capsule-basic"
 constants.item_capsule_reinforced = "lct-capsule-reinforced"
 constants.item_capsule_propelled = "lct-capsule-propelled"
 -- launcher
-constants.item_launcher = constants.name_prefix.."launcher"
+constants.item_launcher = "lct-launcher"
 constants.entity_launcher_inventory = constants.item_launcher
-constants.entity_launcher_turret = constants.name_prefix.."launcher-turret"
-constants.entity_launcher_energy_interface = constants.name_prefix.."launcher-energy-interface"
-constants.entity_launcher_ammo_proxy = constants.name_prefix.."launcher-ammo-proxy"
-constants.entity_launcher_gui_proxy = constants.name_prefix.."launcher-gui-proxy"
+constants.entity_launcher_turret = "lct-launcher-turret"
+constants.entity_launcher_energy_interface = "lct-launcher-energy-interface"
+constants.entity_launcher_ammo_proxy = "lct-launcher-ammo-proxy"
+constants.entity_launcher_gui_proxy = "lct-launcher-gui-proxy"
 -- receiver
-constants.item_receiver = constants.name_prefix.."receiver"
+constants.item_receiver = "lct-receiver"
 constants.entity_receiver_inventory = constants.item_receiver
-constants.entity_receiver_gui_proxy = constants.name_prefix.."receiver-gui-proxy"
+constants.entity_receiver_gui_proxy = "lct-receiver-gui-proxy"
 -- other entities
 constants.entity_target = "lct-cannon-target"
 constants.entity_proxy_connector = "lct-proxy-connector"
 constants.entity_tracker = "lct-capsule-tracker"
 constants.entity_capsule_inventory = "lct-capsule-inventory"
 -- GUI
-constants.gui_launcher = constants.name_prefix .. "launcher-gui"
-constants.gui_receiver = constants.name_prefix .. "receiver-gui"
-constants.gui_tag_event_handlers = constants.name_prefix.."event-handlers"
+constants.gui_launcher = "lct-launcher-gui"
+constants.gui_receiver = "lct-receiver-gui"
+constants.gui_tag_event_handlers = "lct-event-handlers"
 
 return constants
