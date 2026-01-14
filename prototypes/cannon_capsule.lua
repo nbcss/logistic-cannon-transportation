@@ -1,28 +1,29 @@
 local constants = require("constants")
+local item_sounds = require("__base__.prototypes.item_sounds")
 local format = require("scripts.format")
 
 local capsule_properties = data.raw["mod-data"][constants.data_capsule_properties]
     .data --[[@as table<string, CannonCapsuleProperties>]]
 capsule_properties[constants.item_capsule_basic] = {
-    speed = 40, -- tile per second
-    payload_size = 1, -- stack
+    speed = 40,                 -- tile per second
+    payload_size = 1,           -- stack
     energy_consumption = 30000, -- J per tile
     projectile_name = "capsule-basic",
 } --[[@as CannonCapsuleProperties]]
 capsule_properties[constants.item_capsule_reinforced] = {
-    speed = 30, -- tile per second
-    payload_size = 8, -- stack
+    speed = 30,                  -- tile per second
+    payload_size = 8,            -- stack
     energy_consumption = 100000, -- J per tile
     projectile_name = "capsule-reinforced",
-    smoke_color = {0.9, 0.375, 0.375, 0.375},
+    smoke_color = { 0.9, 0.375, 0.375, 0.375 },
 } --[[@as CannonCapsuleProperties]]
 capsule_properties[constants.item_capsule_propelled] = {
-    speed = 75, -- tile per second
-    payload_size = 3, -- stack
+    speed = 75,                 -- tile per second
+    payload_size = 3,           -- stack
     energy_consumption = 50000, -- J per tile
     range_modifier = 2.0,
     projectile_name = "capsule-propelled",
-    smoke_color = {0.2, 0.9, 0.9, 0.375},
+    smoke_color = { 0.2, 0.9, 0.9, 0.375 },
 } --[[@as CannonCapsuleProperties]]
 
 ---@param capsule_item string
@@ -98,7 +99,10 @@ data:extend {
         icon = "__logistic-cannon-transportation__/graphics/icons/capsule-basic.png",
         subgroup = constants.item_subgroup,
         order = "c1[capsule]",
-        stack_size = 20,
+        stack_size = 25,
+        inventory_move_sound = item_sounds.ammo_large_inventory_move,
+        pick_sound = item_sounds.ammo_large_inventory_pickup,
+        drop_sound = item_sounds.ammo_large_inventory_move,
         custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_basic),
         ammo_type = ammo_type(),
     },
@@ -123,7 +127,10 @@ data:extend {
         icon = "__logistic-cannon-transportation__/graphics/icons/capsule-reinforced.png",
         subgroup = constants.item_subgroup,
         order = "c2[capsule]",
-        stack_size = 10,
+        stack_size = 5,
+        inventory_move_sound = item_sounds.ammo_large_inventory_move,
+        pick_sound = item_sounds.ammo_large_inventory_pickup,
+        drop_sound = item_sounds.ammo_large_inventory_move,
         custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_reinforced),
         ammo_type = ammo_type(),
     },
@@ -134,7 +141,7 @@ data:extend {
         energy_required = 2,
         ingredients = {
             { type = "item", name = "low-density-structure", amount = 1 },
-            { type = "item", name = "explosives",  amount = 4 },
+            { type = "item", name = "explosives",            amount = 4 },
         },
         results = {
             { type = "item", name = constants.item_capsule_reinforced, amount = 2 },
@@ -149,6 +156,9 @@ data:extend {
         subgroup = constants.item_subgroup,
         order = "c3[capsule]",
         stack_size = 10,
+        inventory_move_sound = item_sounds.ammo_large_inventory_move,
+        pick_sound = item_sounds.ammo_large_inventory_pickup,
+        drop_sound = item_sounds.ammo_large_inventory_move,
         custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_propelled),
         ammo_type = ammo_type(),
     },
@@ -159,8 +169,8 @@ data:extend {
         energy_required = 2,
         ingredients = {
             { type = "item", name = "low-density-structure", amount = 1 },
-            { type = "item", name = "explosives",  amount = 1 },
-            { type = "item", name = "rocket-fuel",  amount = 1 },
+            { type = "item", name = "explosives",            amount = 1 },
+            { type = "item", name = "rocket-fuel",           amount = 1 },
         },
         results = {
             { type = "item", name = constants.item_capsule_propelled, amount = 2 },
