@@ -249,7 +249,7 @@ data:extend {
         upgrade = true,
         order = "logistic-cannon-range-5",
         unit = {
-            count_formula = "2^(L-5)*1000",
+            count_formula = "1.5^(L-5)*1000",
             time = 60,
             ingredients = {
                 { "automation-science-pack", 1 },
