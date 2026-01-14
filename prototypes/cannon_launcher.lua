@@ -4,14 +4,14 @@ local util = require("util")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local sounds = require("__base__/prototypes/entity/sounds")
 local icon = "__base__/graphics/icons/tank-cannon.png"
-local health = 600
+local health = 800
 local range = 80
 local inventory_size = 39
-local energy_consumption = 200 * 1000 -- in W
+local energy_consumption = 300 * 1000 -- in W
 local launcher_simulation = [[
     game.simulation.camera_zoom = 2
-    game.simulation.camera_position = {0.5, -0.25}
-    local proxy = game.surfaces[1].create_entity{name = "]] .. constants.entity_launcher_turret .. [[", 
+    game.simulation.camera_position = {0.5, 0.25}
+    local proxy = game.surfaces[1].create_entity{name = "]] .. constants.entity_launcher_turret .. [[",
         position = {0.5, 0.5}, force = "player", direction = defines.direction.east}
 ]]
 
@@ -97,6 +97,17 @@ local base_animation = {
         },
     },
 } --[[@as data.Animation4Way]]
+
+local launcher_rotating_animation = {
+    filename = "__logistic-cannon-transportation__/graphics/entity/launcher-rotating.png",
+    priority = "very-low",
+    width = 384,
+    height = 384,
+    direction_count = 64,
+    line_length = 8,
+    shift = util.by_pixel(0, -29),
+    scale = 0.5,
+} --[[@as data.RotatedAnimation]]
 
 local launcher_raising_animation = {
     filename = "__logistic-cannon-transportation__/graphics/entity/launcher-raising.png",
@@ -236,7 +247,7 @@ data:extend {
                         repeat_count = 64,
                         animation_speed = 0.35,
                     } },
-                    util.merge { launcher_shooting_animation, {
+                    util.merge { launcher_rotating_animation, {
                         variation_count = 1,
                         frame_count = 64,
                         animation_speed = 0.35,
@@ -305,8 +316,8 @@ data:extend {
         preparing_sound = sounds.gun_turret_activate,
         folding_sound = sounds.gun_turret_deactivate,
         folding_speed = 0.08,
-        attacking_speed = 0.08,
-        ending_attack_speed = 0.08,
+        --attacking_speed = 0.08,
+        --ending_attack_speed = 0.08,
         inventory_size = 1,
         automated_ammo_count = 5,
         alert_when_attacking = false,
@@ -316,7 +327,7 @@ data:extend {
         allow_turning_when_starting_attack = true,
         folded_animation = {
             layers = {
-                launcher_shooting_animation,
+                launcher_rotating_animation,
             }
             -- layers = {
             --     util.merge{launcher_raising_animation, {
@@ -357,7 +368,15 @@ data:extend {
             rotate_penalty = 0,
             ammo_consumption_modifier = 0,
             range = 0,
-            sound = sounds.tank_gunshot
+            sound = {
+                filename = "__logistic-cannon-transportation__/sounds/launcher_shoot.ogg",
+                category = "weapon",
+                volume = 0.5,
+                aggregation = {
+                    max_count = 1,
+                    remove = false
+                },
+            }
         },
         call_for_help_radius = 0,
     },

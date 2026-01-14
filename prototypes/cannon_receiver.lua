@@ -2,7 +2,7 @@ local constants = require("constants")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local icon = "__base__/graphics/icons/requester-chest.png"
-local health = 400
+local health = 500
 local inventory_size = 59
 
 local container_animation = {

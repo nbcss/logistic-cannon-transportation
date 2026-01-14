@@ -36,7 +36,7 @@ Propelled
 
 [Launcher]
 - Storage size: 39
-- Consumption: 200kW
+- Consumption: 300kW
 - Range: 80
 
 Technology bonus
