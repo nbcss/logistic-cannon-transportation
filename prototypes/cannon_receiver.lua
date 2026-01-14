@@ -10,9 +10,9 @@ local container_animation = {
         {
             filename = "__logistic-cannon-transportation__/graphics/entity/receiver-base.png",
             priority = "extra-high",
-            width = 192,
-            height = 230,
-            shift = util.by_pixel(0, -9.5),
+            width = 384,
+            height = 384,
+            shift = util.by_pixel(0, -8),
             scale = 0.5
         },
     }

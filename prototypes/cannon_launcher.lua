@@ -327,7 +327,7 @@ data:extend {
         allow_turning_when_starting_attack = true,
         folded_animation = {
             layers = {
-                launcher_rotating_animation,
+                launcher_shooting_animation,
             }
             -- layers = {
             --     util.merge{launcher_raising_animation, {
