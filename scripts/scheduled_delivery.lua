@@ -41,7 +41,7 @@ end
 function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     local capsule_entity = receiver.inventory_entity.surface.create_entity {
         name = constants.entity_capsule_inventory,
-        position = receiver:position(),
+        position = receiver:landing_position(),
         force = launcher.network.force
     } or error()
 

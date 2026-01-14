@@ -615,7 +615,7 @@ function LauncherStation.prototype:launch()
                     direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
                     source = position,
-                    target = delivery.position,
+                    target = delivery.capsule_entity,
                 }
                 self.turret_entity.surface.create_entity {
                     name = constants.entity_tracker,

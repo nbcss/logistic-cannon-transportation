@@ -27,9 +27,9 @@ data:extend {
         subgroup = constants.item_subgroup,
         order = "b[receiver]",
         place_result = constants.entity_receiver_inventory,
-        inventory_move_sound = item_sounds.mechanical_large_inventory_move,
-        pick_sound = item_sounds.mechanical_large_inventory_pickup,
-        drop_sound = item_sounds.mechanical_large_inventory_move,
+        inventory_move_sound = item_sounds.turret_inventory_move,
+        pick_sound = item_sounds.turret_inventory_pickup,
+        drop_sound = item_sounds.turret_inventory_move,
         stack_size = 5,
     },
     {
@@ -53,7 +53,7 @@ data:extend {
         icon = icon,
         flags = { "player-creation", "placeable-player", "no-automated-item-insertion" },
         map_color = { 0.1, 0.8, 0.9 },
-        minable = { mining_time = 1.0, result = constants.item_receiver },
+        minable = { mining_time = 0.5, result = constants.item_receiver },
         placeable_by = { item = constants.item_receiver, count = 1 },
         collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } },
         selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
@@ -67,8 +67,8 @@ data:extend {
         circuit_wire_max_distance = 9,
         circuit_connector = {
             points = {
-                wire = { red = util.by_pixel(37, 25), green = util.by_pixel(30, 28) },
-                shadow = { red = util.by_pixel(57, 45), green = util.by_pixel(50, 48) },
+                wire = { red = util.by_pixel(35, 18), green = util.by_pixel(28, 19) },
+                shadow = { red = util.by_pixel(55, 38), green = util.by_pixel(48, 39) },
             },
         },
         mined_sound = sounds.deconstruct_large(0.8),

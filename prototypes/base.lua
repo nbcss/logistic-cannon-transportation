@@ -42,9 +42,11 @@ data.extend {
     {
         type = "simple-entity-with-owner",
         name = constants.entity_target,
-        is_military_target = true,
-        flags = { "not-on-map", "placeable-off-grid", "not-selectable-in-game" },
+        flags = { "not-on-map", "placeable-off-grid" },
         trigger_target_mask = { constants.entity_target },
+        selectable_in_game = false,
+        is_military_target = true,
+        selection_priority = 1,
         hidden = true,
     },
     {
@@ -52,6 +54,7 @@ data.extend {
         name = constants.entity_proxy_connector,
         flags = { "not-on-map", "placeable-off-grid", "hide-alt-info", "no-automated-item-removal", "no-automated-item-insertion" },
         circuit_wire_max_distance = 1,
+        selection_priority = 1,
         draw_circuit_wires = false,
         draw_inventory_content = false,
         selectable_in_game = false,
@@ -109,6 +112,7 @@ data.extend {
         inventory_size = 100,
         time_to_live = 60 * 60 * 60, -- 1 hour
         flags = { "not-on-map", "hide-alt-info", "placeable-off-grid", "no-automated-item-removal", "no-automated-item-insertion" },
+        selection_priority = 1,
         selectable_in_game = false,
         destroy_on_empty = false,
         hidden = true,

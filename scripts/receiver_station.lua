@@ -243,6 +243,12 @@ function ReceiverStation.prototype:position()
     return self.inventory_entity.position
 end
 
+---@return MapPosition
+function ReceiverStation.prototype:landing_position()
+    local position = self.inventory_entity.position
+    return { position.x, position.y - 1}
+end
+
 ---@return LuaEntity
 function ReceiverStation.prototype:get_gui_proxy()
     if self.proxy_entity and self.proxy_entity.valid then
