@@ -67,6 +67,7 @@ Addons [Planned]
 TODO
 - Complete technology icon [S]
 - Complete entity graphics (shadow) [S]
+- Complete item graphics [S]
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - Handle undo/redo stack [B]

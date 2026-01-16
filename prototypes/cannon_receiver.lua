@@ -12,11 +12,20 @@ local container_animation = {
             priority = "extra-high",
             width = 384,
             height = 384,
-            shift = util.by_pixel(0, -8),
+            shift = util.by_pixel(0, -7),
             scale = 0.5
         },
+        {
+            filename = "__logistic-cannon-transportation__/graphics/entity/receiver-base-shadow.png",
+            draw_as_shadow = true,
+            priority = "extra-high",
+            width = 384,
+            height = 384,
+            shift = util.by_pixel(0, -7),
+            scale = 0.5,
+        },
     }
-}
+} --[[@as data.Animation]]
 
 data:extend {
     {
@@ -95,6 +104,16 @@ data:extend {
         max_health = health,
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
-        picture = container_animation,
+        stateless_visualisation = {
+            render_layer = "zero",
+            animation = {
+                layers = {
+                    util.merge { container_animation.layers[2], {
+                        draw_as_shadow = false,
+                    }},
+                    container_animation.layers[1],
+                }
+            }
+        },
     },
 }
