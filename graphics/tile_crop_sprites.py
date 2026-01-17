@@ -41,14 +41,16 @@ def main():
     rows_total = (n + cols - 1) // cols
     rows_per_output = args.rows_per_output or rows_total
     n_outputs = (rows_total + rows_per_output - 1) // rows_per_output
+    images_per_output = cols * rows_per_output
 
     out_file_suffixes = [f"-{i:0{len(str(n_outputs-1))}d}" for i in range(n_outputs)] if args.rows_per_output else None
     
     for out_idx in range(n_outputs):
         out_img = Image.new('RGBA', (cols * crop_size[0], rows_per_output * crop_size[1]), (0, 0, 0, 0))
-        for idx, img in enumerate(images):
+        for idx in range(images_per_output):
             row = idx // cols
             col = idx % cols
+            img = images[out_idx * images_per_output + idx]
             out_img.paste(img.crop(union), (col * crop_size[0], row * crop_size[1]))
 
         out_file_name = f"{args.output}{out_file_suffixes[out_idx] if out_file_suffixes else ""}.png"
@@ -61,9 +63,9 @@ def main():
             "filenames": '{' + ', '.join([f"\"{a}.png\"" for a in out_file_suffixes]) + '}' if out_file_suffixes else None,
             "width": crop_size[0],
             "height": crop_size[1],
-            "line_length": cols if rows_total > 1 else None,
-            "lines_per_file": rows_total if out_file_suffixes else None,
-            "shift": f"util.by_pixel({-(union[0] + union[2] - size[0]) / 2}, {-(union[1] + union[3] - size[1]) / 2})",
+            "line_length": cols if rows_total > 1 or cols > 1 else None,
+            "lines_per_file": rows_per_output if out_file_suffixes else None,
+            "shift": f"util.by_pixel({(union[0] + union[2] - size[0]) / 2}, {(union[1] + union[3] - size[1]) / 2})",
         }
         out_lua.write("local util = require(\"util\")\nreturn {\n")
         for k, v in sprite_data.items():

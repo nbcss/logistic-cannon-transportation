@@ -22,12 +22,14 @@ local base_animation_direction = function(frame_index)
         util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-base", {
             frame_index = frame_index,
             priority = "high",
+            multiply_shift = 0.5,
             scale = 0.5,
         }),
         util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-base-shadow", {
             frame_index = frame_index,
             draw_as_shadow = true,
             priority = "high",
+            multiply_shift = 0.5,
             scale = 0.5,
         }),
     }
@@ -41,40 +43,38 @@ local base_animation = {
 } --[[@as data.Animation4Way]]
 
 local launcher_animation = function(frame_count, run_mode)
-    return {
-        {
-            width = 274,
-            height = 240,
-            frame_count = frame_count or 4,
-            direction_count = 64,
-            shift = util.by_pixel(-33.0, 98.0),
-            run_mode = run_mode,
-            stripes =
+    local launcher = util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising", {
+        frame_count = frame_count and math.abs(frame_count) or 4,
+        run_mode = run_mode,
+        direction_count = 64,
+        priority = "high",
+        multiply_shift = 0.5,
+        scale = 0.5,
+        stripes = {
             {
-                {
-                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
-                    width_in_frames = frame_count or 4,
-                    height_in_frames = 16
-                },
-                {
-                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
-                    width_in_frames = frame_count or 4,
-                    height_in_frames = 16
-                },
-                {
-                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
-                    width_in_frames = frame_count or 4,
-                    height_in_frames = 16
-                },
-                {
-                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
-                    width_in_frames = frame_count or 4,
-                    height_in_frames = 16
-                },
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
             },
-            scale = 0.5
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-1.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-2.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-3.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
         },
-    }
+    })
+    if frame_count and frame_count < 0 then launcher.x = launcher.width * (4 + frame_count) end
+    return { launcher, }
 end
 
 local launcher_rotating_animation = {
@@ -310,30 +310,31 @@ data:extend {
         prepare_range = 2,
         attack_target_mask = { constants.entity_target },
         rotation_speed = 0.3 / 60,
-        preparing_speed = 0.08,
+        preparing_speed = 0.12,
         preparing_sound = sounds.gun_turret_activate,
+        folding_speed = 0.12,
         folding_sound = sounds.gun_turret_deactivate,
-        folding_speed = 0.08,
-        -- attacking_speed = 0.08,
-        -- ending_attack_speed = 0.08,
+        attacking_speed = 0.08,
         inventory_size = 1,
         automated_ammo_count = 5,
         alert_when_attacking = false,
         turret_base_has_direction = false,
         gun_animation_render_layer = "above-inserters",
-        can_retarget_while_starting_attack = true,
-        allow_turning_when_starting_attack = true,
+        graphics_set = {},
         folded_animation = {
             layers = launcher_animation(1),
         },
-        prepaing_animation = {
-            layers = launcher_animation(),
-        },
         folding_animation = {
-            layers = launcher_animation(nil, "backward")
+            layers = launcher_animation(nil, "backward"),
         },
         prepared_animation = {
-            layers = launcher_animation(1),
+            layers = launcher_animation(-1),
+        },
+        preparing_animation = {
+            layers = launcher_animation(),
+        },
+        attacking_animation = {
+            layers = launcher_animation(-1),
         },
         attack_parameters = {
             type = "projectile",

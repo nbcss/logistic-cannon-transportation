@@ -10,11 +10,13 @@ local container_animation = {
     layers = {
         util.sprite_load("__logistic-cannon-transportation__/graphics/entity/receiver/receiver-base", {
             priority = "extra-high",
+            multiply_shift = 0.5,
             scale = 0.5,
         }),
         util.sprite_load("__logistic-cannon-transportation__/graphics/entity/receiver/receiver-base-shadow", {
             draw_as_shadow = true,
             priority = "extra-high",
+            multiply_shift = 0.5,
             scale = 0.5,
         }),
     }
