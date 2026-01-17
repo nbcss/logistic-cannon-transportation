@@ -65,9 +65,11 @@ Addons [Planned]
 +Allow bots to take items from receiver
 
 TODO
-- Complete technology icon [S]
-- Complete entity graphics (shadow) [S]
-- Complete item graphics [S]
+- Fix graphics:
+    it looks like the shadows on the technology and thumbnail renders have full opacity, 
+    while they should be 50% (on everything that isn't draw_as_shadow since that 
+    already makes it 50% transparent) Tech icons usually also have much more vertical sun angle
+- Replace launcher rotating animation in GUI
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - Handle undo/redo stack [B]
