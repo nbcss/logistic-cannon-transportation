@@ -160,13 +160,19 @@ function ReceiverStation.prototype:update_diode_status()
         status = "entity-status.disabled"
         diode = defines.entity_status_diode.red
     end
+    local connected = self.network:get_connection_count(self:id())
+    if self.proxy_entity and self.proxy_entity.valid then
+        self.proxy_entity.custom_status = {
+            diode = diode,
+            label = { "", { status } }
+        }
+    end
     self.inventory_entity.custom_status = {
         diode = diode,
-        label = { "", { status } }
+        label = { "", { status },
+            "\n", { "logistic-cannon-transportation.connected-launchers-info", connected },
+        }
     }
-    if self.proxy_entity and self.proxy_entity.valid then
-        self.proxy_entity.custom_status = self.inventory_entity.custom_status
-    end
 end
 
 ---@return boolean
@@ -175,7 +181,8 @@ function ReceiverStation.prototype:is_disabled()
     if not self.settings.circuit_enable_condition.enabled then return false end
 
     return not signal_condition.evaluate(self.settings.circuit_enable_condition, function(signal)
-        return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+        return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red,
+            defines.wire_connector_id.circuit_green)
     end)
 end
 
@@ -190,7 +197,8 @@ function ReceiverStation.prototype:is_circuit_connected(include_ghost, wire)
     end
     local wire_connector = self.inventory_entity.get_wire_connector(wire, false)
     if not wire_connector then return false end
-    local connection_count = wire_connector[include_ghost and "connection_count" or "real_connection_count"]--[[@as uint32]]
+    local connection_count = wire_connector
+        [include_ghost and "connection_count" or "real_connection_count"] --[[@as uint32]]
     return connection_count > 0
 end
 
@@ -246,7 +254,7 @@ end
 ---@return MapPosition
 function ReceiverStation.prototype:landing_position()
     local position = self.inventory_entity.position
-    return { position.x, position.y - 1}
+    return { position.x, position.y - 1 }
 end
 
 ---@return LuaEntity

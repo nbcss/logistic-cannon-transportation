@@ -528,6 +528,7 @@ function LauncherStation.prototype:update_diode_status()
     if range ~= "0" then
         range = tostring(string.format("%.0f", self:get_current_range())) .. "/" .. range
     end
+    local connected = self.network:get_connection_count(self:id())
     local formatted_energy = format.energy(energy)
     local formatted_capacity = format.energy(capacity)
     if self.proxy_entity and self.proxy_entity.valid then
@@ -541,6 +542,7 @@ function LauncherStation.prototype:update_diode_status()
         label = { "", { status },
             "\n", { "logistic-cannon-transportation.energy-info", formatted_energy, formatted_capacity },
             "\n", { "logistic-cannon-transportation.range-info", range },
+            "\n", { "logistic-cannon-transportation.connected-receivers-info", connected },
         }
     }
 end

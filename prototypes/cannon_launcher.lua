@@ -157,8 +157,8 @@ data:extend {
             { type = "item", name = "radar",           amount = 1 },
             { type = "item", name = "steel-plate",     amount = 20 },
             { type = "item", name = "concrete",        amount = 10 },
-            { type = "item", name = "iron-gear-wheel", amount = 10 },
-            { type = "item", name = "engine-unit",     amount = 5 },
+            { type = "item", name = "iron-gear-wheel", amount = 20 },
+            { type = "item", name = "engine-unit",     amount = 10 },
         },
         results = {
             { type = "item", name = constants.item_launcher, amount = 1 },
@@ -226,6 +226,7 @@ data:extend {
                         line_length = 1,
                         frame_count = 1,
                         repeat_count = 64,
+                        animation_speed = 0.35,
                     } },
                     util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-folded-shadow", {
                         draw_as_shadow = false,
@@ -233,20 +234,21 @@ data:extend {
                         frame_count = 64,
                         multiply_shift = 0.5,
                         scale = 0.5,
-                        frame_sequence = {17},
+                        animation_speed = 0.35,
                     }),
                     util.merge { base_animation.north.layers[1], {
                         variation_count = 1,
                         line_length = 1,
                         frame_count = 1,
                         repeat_count = 64,
+                        animation_speed = 0.35,
                     } },
                     util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-folded", {
                         variation_count = 1,
                         frame_count = 64,
                         multiply_shift = 0.5,
                         scale = 0.5,
-                        frame_sequence = {17},
+                        animation_speed = 0.35,
                     }),
                 }
             }

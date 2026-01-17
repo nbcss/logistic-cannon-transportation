@@ -44,7 +44,7 @@ data:extend {
         ingredients = {
             { type = "item", name = "steel-plate",        amount = 20 },
             { type = "item", name = "concrete",           amount = 10 },
-            { type = "item", name = "electronic-circuit", amount = 10 },
+            { type = "item", name = "electronic-circuit", amount = 20 },
             { type = "item", name = "iron-stick",         amount = 2 },
         },
         results = {
