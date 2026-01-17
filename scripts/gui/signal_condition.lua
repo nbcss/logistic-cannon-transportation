@@ -86,8 +86,8 @@ function signal_condition.create_gui(parent)
     element.condition_type.add {
         type = "radiobutton",
         name = "constant",
-        caption = { "logistic-cannon-transportation.circuit_constant" },
-        tooltip = { "logistic-cannon-transportation.circuit_constant_description" },
+        caption = { "logistic-cannon-transportation.circuit-constant" },
+        tooltip = { "logistic-cannon-transportation.circuit-constant-description" },
         state = true,
         tags = {
             [constants.gui_tag_event_handlers] = {
@@ -98,8 +98,8 @@ function signal_condition.create_gui(parent)
     element.condition_type.add {
         type = "radiobutton",
         name = "signal",
-        caption = { "logistic-cannon-transportation.circuit_signal" },
-        tooltip = { "logistic-cannon-transportation.circuit_signal_description" },
+        caption = { "logistic-cannon-transportation.circuit-signal" },
+        tooltip = { "logistic-cannon-transportation.circuit-signal-description" },
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {

@@ -180,6 +180,7 @@ function receiver_gui.on_gui_opened(player, entity)
         name = "read_contents",
         style = "caption_checkbox",
         caption = { "gui-control-behavior-modes.read-contents" },
+        tooltip = { "logistic-cannon-transportation.read-contents-description" },
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {
