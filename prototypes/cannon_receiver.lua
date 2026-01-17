@@ -2,7 +2,7 @@ local constants = require("constants")
 local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
-local icon = "__base__/graphics/icons/requester-chest.png"
+local icon = "__logistic-cannon-transportation__/graphics/icons/receiver.png"
 local health = 500
 local inventory_size = 59
 
@@ -76,6 +76,9 @@ data:extend {
                 shadow = { red = util.by_pixel(55, 38), green = util.by_pixel(48, 39) },
             },
         },
+        corpse = "medium-remnants",
+        dying_explosion = "medium-explosion",
+        surface_conditions = { { property = "gravity", min = 1 } },
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },

@@ -3,7 +3,7 @@ local format = require("scripts.format")
 local util = require("util")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local sounds = require("__base__/prototypes/entity/sounds")
-local icon = "__base__/graphics/icons/tank-cannon.png"
+local icon = "__logistic-cannon-transportation__/graphics/icons/launcher.png"
 local health = 800
 local range = 80
 local inventory_size = 39
@@ -73,42 +73,44 @@ local launcher_animation = function(frame_count, run_mode)
             },
         },
     })
-    if frame_count and frame_count < 0 then launcher.x = launcher.width * (4 + frame_count) end
-    return { launcher, }
+    local shadow = util.sprite_load(
+    "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-shadow", {
+        frame_count = frame_count and math.abs(frame_count) or 4,
+        draw_as_shadow = true,
+        run_mode = run_mode,
+        direction_count = 64,
+        priority = "high",
+        multiply_shift = 0.5,
+        scale = 0.5,
+        stripes = {
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-shadow-0.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-shadow-1.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-shadow-2.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
+            {
+                filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-shadow-3.png",
+                width_in_frames = frame_count and math.abs(frame_count) or 4,
+                height_in_frames = 16
+            },
+        },
+    })
+    if frame_count and frame_count < 0 then
+        launcher.x = launcher.width * (4 + frame_count)
+        shadow.x = shadow.width * (4 + frame_count)
+    end
+    return { launcher, shadow }
 end
-
-local launcher_rotating_animation = {
-    filename = "__logistic-cannon-transportation__/graphics/entity/launcher-rotating.png",
-    priority = "very-low",
-    width = 384,
-    height = 384,
-    direction_count = 64,
-    line_length = 8,
-    shift = util.by_pixel(0, -29),
-    scale = 0.5,
-} --[[@as data.RotatedAnimation]]
-
-local launcher_raising_animation = {
-    filename = "__logistic-cannon-transportation__/graphics/entity/launcher-raising.png",
-    priority = "very-low",
-    width = 384,
-    height = 384,
-    frame_count = 15,
-    direction_count = 8,
-    shift = util.by_pixel(0, -29),
-    scale = 0.5,
-} --[[@as data.RotatedAnimation]]
-
-local launcher_shooting_animation = {
-    filename = "__logistic-cannon-transportation__/graphics/entity/launcher-shooting.png",
-    priority = "very-low",
-    width = 384,
-    height = 384,
-    direction_count = 64,
-    line_length = 8,
-    shift = util.by_pixel(0, -29),
-    scale = 0.5,
-} --[[@as data.RotatedAnimation]]
 
 data.raw["mod-data"][constants.data_launcher_properties].data[constants.entity_launcher_inventory] = {
     range = range,
@@ -166,7 +168,7 @@ data:extend {
         type = "container",
         name = constants.entity_launcher_inventory,
         icon = icon,
-        flags = { "player-creation", "placeable-player", "no-automated-item-removal", "not-rotatable" },
+        flags = { "player-creation", "placeable-player", "not-rotatable" },
         map_color = { 0.9, 0.1, 0.1 },
         minable = { mining_time = 0.5, result = constants.item_launcher },
         placeable_by = { item = constants.item_launcher, count = 1 },
@@ -181,6 +183,9 @@ data:extend {
                 shadow = { red = util.by_pixel(55, 29), green = util.by_pixel(50, 32) },
             },
         },
+        corpse = "medium-remnants",
+        dying_explosion = "medium-explosion",
+        surface_conditions = { { property = "gravity", min = 1 } },
         inventory_type = "with_filters_and_bar",
         inventory_size = inventory_size,
         quality_affects_inventory_size = true,
@@ -211,31 +216,41 @@ data:extend {
         max_health = health,
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
-        -- stateless_visualisation = {
-        --     render_layer = "zero",
-        --     animation = {
-        --         sheets = {
-        --             util.merge { base_animation.north.layers[2], {
-        --                 draw_as_shadow = false,
-        --                 variation_count = 1,
-        --                 frame_count = 1,
-        --                 repeat_count = 64,
-        --                 animation_speed = 0.35,
-        --             } },
-        --             util.merge { base_animation.north.layers[1], {
-        --                 variation_count = 1,
-        --                 frame_count = 1,
-        --                 repeat_count = 64,
-        --                 animation_speed = 0.35,
-        --             } },
-        --             util.merge { launcher_rotating_animation, {
-        --                 variation_count = 1,
-        --                 frame_count = 64,
-        --                 animation_speed = 0.35,
-        --             } },
-        --         }
-        --     }
-        -- },
+        stateless_visualisation = {
+            render_layer = "zero",
+            animation = {
+                sheets = {
+                    util.merge { base_animation.north.layers[2], {
+                        draw_as_shadow = false,
+                        variation_count = 1,
+                        line_length = 1,
+                        frame_count = 1,
+                        repeat_count = 64,
+                    } },
+                    util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-folded-shadow", {
+                        draw_as_shadow = false,
+                        variation_count = 1,
+                        frame_count = 64,
+                        multiply_shift = 0.5,
+                        scale = 0.5,
+                        frame_sequence = {17},
+                    }),
+                    util.merge { base_animation.north.layers[1], {
+                        variation_count = 1,
+                        line_length = 1,
+                        frame_count = 1,
+                        repeat_count = 64,
+                    } },
+                    util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-folded", {
+                        variation_count = 1,
+                        frame_count = 64,
+                        multiply_shift = 0.5,
+                        scale = 0.5,
+                        frame_sequence = {17},
+                    }),
+                }
+            }
+        },
     },
     {
         type = "proxy-container",

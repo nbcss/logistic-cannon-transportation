@@ -23,7 +23,7 @@ function bonus_control.update_bonus(force)
             icons = {
                 {
                     type = "item",
-                    name = "logistic-cannon-launcher"
+                    name = constants.item_launcher,
                 }
             },
             texts = texts

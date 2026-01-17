@@ -33,6 +33,15 @@ $(shell echo entity/launcher/launcher-raising-shadow-{0..3}.png) &: $(addprefix 
 	$(PYTHON) tile_crop_sprites.py --columns 4 --rows-per-output 16 --output $(call remove_suffix,$(@:.png=)) $+
 
 
+launcher-head: entity/launcher/launcher-folded.png entity/launcher/launcher-folded-shadow.png
+
+entity/launcher/launcher-folded.png: $(shell echo render/launcher-head-{000..063}.png)
+	$(PYTHON) tile_crop_sprites.py --columns 8 --output $(@:.png=) $+
+
+entity/launcher/launcher-folded-shadow.png: $(shell echo render/launcher-head-shadow-{000..063}.png)
+	$(PYTHON) tile_crop_sprites.py --columns 8 --output $(@:.png=) $+
+
+
 receiver-base: entity/receiver/receiver-base.png entity/receiver/receiver-base-shadow.png
 
 entity/receiver/receiver-base.png: render/receiver-base.png

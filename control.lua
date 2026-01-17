@@ -362,12 +362,14 @@ script.on_event(defines.events.on_gui_opened, function(event)
             local receiver = ReceiverStation.get(event.entity)
             if receiver and receiver:valid() then
                 game.players[event.player_index].opened = receiver:get_gui_proxy()
+                receiver:update_diode_status()
             end
         end
         if event.entity.name == constants.entity_launcher_inventory then
             local launcher = LauncherStation.get(event.entity)
             if launcher and launcher:valid() then
                 game.players[event.player_index].opened = launcher:get_gui_proxy()
+                launcher:update_diode_status()
             end
         end
     end

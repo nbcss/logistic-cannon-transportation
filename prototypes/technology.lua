@@ -1,4 +1,6 @@
 local constants = require("constants")
+local launcher_icon = "__logistic-cannon-transportation__/graphics/icons/launcher.png"
+local launcher_bonus_icon = "__logistic-cannon-transportation__/graphics/technology/launcher-bonus.png"
 
 local function launcher_range_bonus_effect(modifier)
     return {
@@ -7,7 +9,7 @@ local function launcher_range_bonus_effect(modifier)
             ammo_category = constants.range_upgrade_bonus,
             icons = {
                 {
-                    icon = "__base__/graphics/icons/tank-cannon.png",
+                    icon = launcher_icon,
                     icon_size = 64,
                 },
                 {
@@ -46,7 +48,7 @@ local function launcher_energy_efficiency_effect(consumption_modifier, capacity_
             ammo_category = constants.energy_consumption_modifier,
             icons = {
                 {
-                    icon = "__base__/graphics/icons/tank-cannon.png",
+                    icon = launcher_icon,
                     icon_size = 64,
                 },
                 {
@@ -64,7 +66,7 @@ local function launcher_energy_efficiency_effect(consumption_modifier, capacity_
             ammo_category = constants.energy_capacity_modifier,
             icons = {
                 {
-                    icon = "__base__/graphics/icons/tank-cannon.png",
+                    icon = launcher_icon,
                     icon_size = 64,
                 },
                 {
@@ -96,7 +98,7 @@ data:extend {
     {
         type = "technology",
         name = "logistic-cannon",
-        icon = "__base__/graphics/technology/artillery.png",
+        icon = "__logistic-cannon-transportation__/graphics/technology/logistic-cannon.png",
         icon_size = 256,
         effects = {
             { type = "unlock-recipe", recipe = constants.item_launcher },
@@ -159,7 +161,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-range-upgrade-1",
-        icons = util.technology_icon_constant_range("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_range(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_range_bonus_effect(0.1),
         prerequisites = { "logistic-cannon", "chemical-science-pack" },
@@ -178,7 +180,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-range-upgrade-2",
-        icons = util.technology_icon_constant_range("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_range(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_range_bonus_effect(0.1),
         prerequisites = { "cannon-launcher-range-upgrade-1", "military-science-pack" },
@@ -198,7 +200,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-range-upgrade-3",
-        icons = util.technology_icon_constant_range("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_range(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_range_bonus_effect(0.1),
         prerequisites = { "cannon-launcher-range-upgrade-2", "utility-science-pack" },
@@ -219,7 +221,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-range-upgrade-4",
-        icons = util.technology_icon_constant_range("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_range(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_range_bonus_effect(0.1),
         prerequisites = { "cannon-launcher-range-upgrade-3", "production-science-pack" },
@@ -241,9 +243,9 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-range-upgrade-5",
-        icons = util.technology_icon_constant_range("__base__/graphics/technology/artillery.png"),
+        icons = util.technology_icon_constant_range(launcher_bonus_icon),
         icon_size = 64,
-        effects = launcher_range_bonus_effect(0.2),
+        effects = launcher_range_bonus_effect(0.1),
         prerequisites = { "cannon-launcher-range-upgrade-4", "space-science-pack" },
         max_level = "infinite",
         upgrade = true,
@@ -266,7 +268,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-1",
-        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.05, 0.1),
         prerequisites = { "logistic-cannon" },
@@ -284,7 +286,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-2",
-        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.1, 0.2),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-1", "chemical-science-pack" },
@@ -303,7 +305,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-3",
-        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.1, 0.2),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-2", "utility-science-pack" },
@@ -323,7 +325,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-4",
-        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.1, 0.2),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-3", "production-science-pack" },
@@ -344,7 +346,7 @@ data:extend {
     {
         type = "technology",
         name = "cannon-launcher-energy-efficiency-upgrade-5",
-        icons = energy_efficiency_icon("__base__/graphics/technology/artillery.png"),
+        icons = energy_efficiency_icon(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_energy_efficiency_effect(-0.15, 0.3),
         prerequisites = { "cannon-launcher-energy-efficiency-upgrade-4", "space-science-pack" },

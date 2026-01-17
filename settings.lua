@@ -15,7 +15,7 @@ data:extend{
         setting_type = "runtime-global",
         minimum_value = 1,
         maximum_value = 300,
-        default_value = 30,
+        default_value = 37,
     },
     {
         type = "int-setting",
