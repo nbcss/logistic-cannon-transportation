@@ -19,6 +19,7 @@ end
 ---@class LauncherStation
 ---@field inventory_entity LuaEntity The inventory container.
 ---@field turret_entity LuaEntity The cannon launcher turret.
+---@field base_entity LuaEntity The base of the launcher.
 ---@field electric_interface LuaEntity The power interface.
 ---@field proxy_entity LuaEntity? The proxy container for gui.
 ---@field target_entity LuaEntity? The target entity for shoot.
@@ -66,6 +67,7 @@ local capsule_properties = prototypes.mod_data[constants.data_capsule_properties
     .data --[[@as table<string, CannonCapsuleProperties?>]]
 local clone_blacklist = {
     [constants.entity_launcher_turret] = true,
+    [constants.entity_launcher_base] = true,
     [constants.entity_launcher_energy_interface] = true,
     [constants.entity_launcher_gui_proxy] = true,
     [constants.entity_launcher_ammo_proxy] = true,
@@ -130,6 +132,12 @@ function LauncherStation.create(entity, from_settings)
         quality = entity.quality,
     } or error()
 
+    local base_entity = surface.create_entity {
+        name = constants.entity_launcher_base,
+        position = position,
+        force = force,
+    } or error()
+
     local electric_interface = surface.create_entity {
         name = constants.entity_launcher_energy_interface,
         position = position,
@@ -142,6 +150,7 @@ function LauncherStation.create(entity, from_settings)
     local instance = setmetatable({
         inventory_entity = inventory_entity,
         turret_entity = turret_entity,
+        base_entity = base_entity,
         electric_interface = electric_interface,
         station_id = inventory_entity.unit_number,
         turret_id = turret_entity.unit_number,
@@ -157,9 +166,10 @@ function LauncherStation.create(entity, from_settings)
     script.register_on_object_destroyed(instance.turret_entity)
 
     instance.turret_entity.destructible = false
+    instance.base_entity.destructible = false
     instance.electric_interface.destructible = false
     instance.max_range = instance:get_max_range(true)
-    instance.turret_entity.direction = instance.settings.direction
+    instance.base_entity.direction = instance.settings.direction
     instance.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         instance.settings.circuit_read_ammo
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)
@@ -229,7 +239,8 @@ function LauncherStation.on_entity_teleported(entity)
     local launcher = LauncherStation.get(entity)
     if not launcher or not launcher:valid() then return end
     local position = entity.position
-    launcher.turret_entity.teleport(math2d.position.add(position, { 0, 0.001 }))
+    launcher.turret_entity.teleport(position)
+    launcher.base_entity.teleport(position)
     launcher.electric_interface.teleport(position)
     if launcher.proxy_entity and launcher.proxy_entity.valid then
         launcher.proxy_entity.teleport(position)
@@ -261,6 +272,9 @@ function LauncherStation.on_object_destroyed(unit_number)
     end
     if instance.turret_entity.valid then
         instance.turret_entity.destroy()
+    end
+    if instance.base_entity.valid then
+        instance.base_entity.destroy()
     end
     if instance.electric_interface.valid then
         instance.electric_interface.destroy()
@@ -356,7 +370,7 @@ end
 ---@param launcher_settings LauncherStationSettings
 function LauncherStation.prototype:set_settings(launcher_settings)
     self.settings = util.table.deepcopy(launcher_settings)
-    self.turret_entity.direction = self.settings.direction
+    self.base_entity.direction = self.settings.direction
     self.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         self.settings.circuit_read_ammo
     self:update_ammo_proxy()
@@ -448,8 +462,8 @@ end
 ---@param player LuaPlayer
 ---@param reverse boolean
 function LauncherStation.prototype:rotate(player, reverse)
-    if self.turret_entity.rotate { by_player = player, reverse = reverse } then
-        self.settings.direction = self.turret_entity.direction
+    if self.base_entity.rotate { by_player = player, reverse = reverse } then
+        self.settings.direction = self.base_entity.direction
         self:update_ammo_proxy()
         visualization_control.on_launcher_update(self)
     end
@@ -468,7 +482,7 @@ function LauncherStation.prototype:update_ammo_proxy()
     self.inventory_entity.teleport(math2d.position.add(last_pos, { 10, 10 }), nil, false)
     self.inventory_entity.teleport(last_pos, nil, false)
     -- update ammo proxy position
-    local position = compute_ammo_proxy_position(self.inventory_entity, self.turret_entity.direction)
+    local position = compute_ammo_proxy_position(self.inventory_entity, self.base_entity.direction)
     if self.ammo_proxy_entity and self.ammo_proxy_entity.valid then
         self.ammo_proxy_entity.teleport(position)
     else
@@ -612,7 +626,6 @@ function LauncherStation.prototype:launch()
                 self.turret_entity.surface.create_entity {
                     name = string.format(constants.capsule_projectile_format, data.projectile_name, data.speed),
                     position = position,
-                    direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
                     source = position,
                     target = delivery.capsule_entity,
@@ -621,7 +634,6 @@ function LauncherStation.prototype:launch()
                     name = constants.entity_tracker,
                     speed = data.speed / 60,
                     position = position,
-                    direction = self.turret_entity.direction,
                     force = self.turret_entity.force,
                     source = position,
                     target = delivery.capsule_entity,
@@ -666,7 +678,8 @@ end
 
 ---@return boolean
 function LauncherStation.prototype:valid()
-    return self.inventory_entity.valid and self.turret_entity.valid and self.electric_interface.valid
+    return self.inventory_entity.valid and self.turret_entity.valid and 
+        self.electric_interface.valid and self.base_entity.valid
 end
 
 ---@return MapPosition

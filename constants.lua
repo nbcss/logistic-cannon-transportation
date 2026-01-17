@@ -29,6 +29,7 @@ constants.item_capsule_propelled = "lct-capsule-propelled"
 constants.item_launcher = "lct-launcher"
 constants.entity_launcher_inventory = constants.item_launcher
 constants.entity_launcher_turret = "lct-launcher-turret"
+constants.entity_launcher_base = "lct-launcher-base"
 constants.entity_launcher_energy_interface = "lct-launcher-energy-interface"
 constants.entity_launcher_ammo_proxy = "lct-launcher-ammo-proxy"
 constants.entity_launcher_gui_proxy = "lct-launcher-gui-proxy"
