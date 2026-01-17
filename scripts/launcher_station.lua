@@ -170,6 +170,7 @@ function LauncherStation.create(entity, from_settings)
     instance.electric_interface.destructible = false
     instance.max_range = instance:get_max_range(true)
     instance.base_entity.direction = instance.settings.direction
+    instance.turret_entity.direction = instance.settings.direction
     instance.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         instance.settings.circuit_read_ammo
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)

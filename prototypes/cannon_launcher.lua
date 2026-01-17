@@ -11,7 +11,9 @@ local energy_consumption = 300 * 1000 -- in W
 local launcher_simulation = [[
     game.simulation.camera_zoom = 2
     game.simulation.camera_position = {0.5, 0.25}
-    local proxy = game.surfaces[1].create_entity{name = "]] .. constants.entity_launcher_turret .. [[",
+    game.surfaces[1].create_entity{name = "]] .. constants.entity_launcher_base .. [[",
+        position = {0.5, 0.5}, force = "player", direction = defines.direction.east}
+    game.surfaces[1].create_entity{name = "]] .. constants.entity_launcher_turret .. [[",
         position = {0.5, 0.5}, force = "player", direction = defines.direction.east}
 ]]
 
@@ -264,7 +266,8 @@ data:extend {
         selectable_in_game = false,
         hidden = true,
         selection_priority = 1,
-        picture = nil, --TODO
+        render_layer = "object",
+        picture = base_animation,
     },
     {
         type = "electric-energy-interface",
@@ -331,12 +334,6 @@ data:extend {
         },
         prepared_animation = {
             layers = launcher_animation(1),
-        },
-        graphics_set = {
-            base_visualisation = {
-                render_layer = "object",
-                animation = base_animation
-            }
         },
         attack_parameters = {
             type = "projectile",
