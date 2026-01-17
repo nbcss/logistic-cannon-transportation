@@ -13,7 +13,11 @@
         "ignore": [
             "**/*.xcf",
             "**/*.txt",
-            "**/*.py"
+            "**/*.py",
+            "**/Makefile",
+            "**/*.blend",
+            "**/*.blend1",
+            "graphics/render/**"
         ]
     }
 }
