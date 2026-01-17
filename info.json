@@ -17,7 +17,8 @@
             "**/Makefile",
             "**/*.blend",
             "**/*.blend1",
-            "graphics/render/**"
+            "graphics/render/**",
+            "README.md"
         ]
     }
 }
