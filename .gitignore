@@ -1,3 +1,6 @@
 /.vscode/
 /.VSCodeCounter/
 /*.zip
+.venv/
+*.blend1
+render/
