@@ -15,88 +15,65 @@ local launcher_simulation = [[
         position = {0.5, 0.5}, force = "player", direction = defines.direction.east}
 ]]
 
+local base_animation_direction = function(frame_index)
+    return {
+        util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-base", {
+            frame_index = frame_index,
+            priority = "high",
+            scale = 0.5,
+        }),
+        util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-base-shadow", {
+            frame_index = frame_index,
+            draw_as_shadow = true,
+            priority = "high",
+            scale = 0.5,
+        }),
+    }
+end
+
 local base_animation = {
-    north = {
-        layers = {
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-0.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-        },
-    },
-    east = {
-        layers = {
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-1.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-        },
-    },
-    south = {
-        layers = {
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-2.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-        },
-    },
-    west = {
-        layers = {
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-base-3.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-            {
-                filename = "__logistic-cannon-transportation__/graphics/entity/launcher-connector.png",
-                priority = "high",
-                width = 384,
-                height = 384,
-                shift = util.by_pixel(0, -29),
-                scale = 0.5,
-            },
-        },
-    },
+    north = { layers = base_animation_direction(0), },
+    east = { layers = base_animation_direction(1), },
+    south = { layers = base_animation_direction(2), },
+    west = { layers = base_animation_direction(3), },
 } --[[@as data.Animation4Way]]
+
+local launcher_animation = function(frame_count, run_mode)
+    return {
+        {
+            width = 274,
+            height = 240,
+            frame_count = frame_count or 4,
+            direction_count = 64,
+            shift = util.by_pixel(-33.0, 98.0),
+            run_mode = run_mode,
+            stripes =
+            {
+                {
+                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
+                    width_in_frames = frame_count or 4,
+                    height_in_frames = 16
+                },
+                {
+                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
+                    width_in_frames = frame_count or 4,
+                    height_in_frames = 16
+                },
+                {
+                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
+                    width_in_frames = frame_count or 4,
+                    height_in_frames = 16
+                },
+                {
+                    filename = "__logistic-cannon-transportation__/graphics/entity/launcher/launcher-raising-0.png",
+                    width_in_frames = frame_count or 4,
+                    height_in_frames = 16
+                },
+            },
+            scale = 0.5
+        },
+    }
+end
 
 local launcher_rotating_animation = {
     filename = "__logistic-cannon-transportation__/graphics/entity/launcher-rotating.png",
@@ -232,30 +209,31 @@ data:extend {
         max_health = health,
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
-        stateless_visualisation = {
-            render_layer = "zero",
-            animation = {
-                sheets = {
-                    util.merge { base_animation.north.layers[1], {
-                        variation_count = 1,
-                        frame_count = 1,
-                        repeat_count = 64,
-                        animation_speed = 0.35,
-                    } },
-                    util.merge { base_animation.north.layers[2], {
-                        variation_count = 1,
-                        frame_count = 1,
-                        repeat_count = 64,
-                        animation_speed = 0.35,
-                    } },
-                    util.merge { launcher_rotating_animation, {
-                        variation_count = 1,
-                        frame_count = 64,
-                        animation_speed = 0.35,
-                    } },
-                }
-            }
-        },
+        -- stateless_visualisation = {
+        --     render_layer = "zero",
+        --     animation = {
+        --         sheets = {
+        --             util.merge { base_animation.north.layers[2], {
+        --                 draw_as_shadow = false,
+        --                 variation_count = 1,
+        --                 frame_count = 1,
+        --                 repeat_count = 64,
+        --                 animation_speed = 0.35,
+        --             } },
+        --             util.merge { base_animation.north.layers[1], {
+        --                 variation_count = 1,
+        --                 frame_count = 1,
+        --                 repeat_count = 64,
+        --                 animation_speed = 0.35,
+        --             } },
+        --             util.merge { launcher_rotating_animation, {
+        --                 variation_count = 1,
+        --                 frame_count = 64,
+        --                 animation_speed = 0.35,
+        --             } },
+        --         }
+        --     }
+        -- },
     },
     {
         type = "proxy-container",
@@ -333,8 +311,8 @@ data:extend {
         preparing_sound = sounds.gun_turret_activate,
         folding_sound = sounds.gun_turret_deactivate,
         folding_speed = 0.08,
-        --attacking_speed = 0.08,
-        --ending_attack_speed = 0.08,
+        -- attacking_speed = 0.08,
+        -- ending_attack_speed = 0.08,
         inventory_size = 1,
         automated_ammo_count = 5,
         alert_when_attacking = false,
@@ -343,32 +321,16 @@ data:extend {
         can_retarget_while_starting_attack = true,
         allow_turning_when_starting_attack = true,
         folded_animation = {
-            layers = {
-                launcher_shooting_animation,
-            }
-            -- layers = {
-            --     util.merge{launcher_raising_animation, {
-            --         frame_count = 1,
-            --         line_length = 1,
-            --     }}
-            -- }
+            layers = launcher_animation(1),
         },
-        -- starting_attack_animation = {
-        --     layers = {
-        --         launcher_raising_animation,
-        --     }
-        -- },
-        -- ending_attack_animation = {
-        --     layers = {
-        --         util.merge{launcher_raising_animation, {
-        --             run_mode = "backward",
-        --         }}
-        --     }
-        -- },
+        prepaing_animation = {
+            layers = launcher_animation(),
+        },
+        folding_animation = {
+            layers = launcher_animation(nil, "backward")
+        },
         prepared_animation = {
-            layers = {
-                launcher_shooting_animation
-            }
+            layers = launcher_animation(1),
         },
         graphics_set = {
             base_visualisation = {

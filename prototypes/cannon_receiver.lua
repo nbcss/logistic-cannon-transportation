@@ -1,4 +1,5 @@
 local constants = require("constants")
+local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local icon = "__base__/graphics/icons/requester-chest.png"
@@ -7,23 +8,15 @@ local inventory_size = 59
 
 local container_animation = {
     layers = {
-        {
-            filename = "__logistic-cannon-transportation__/graphics/entity/receiver-base.png",
+        util.sprite_load("__logistic-cannon-transportation__/graphics/entity/receiver/receiver-base", {
             priority = "extra-high",
-            width = 384,
-            height = 384,
-            shift = util.by_pixel(0, -7),
-            scale = 0.5
-        },
-        {
-            filename = "__logistic-cannon-transportation__/graphics/entity/receiver-base-shadow.png",
+            scale = 0.5,
+        }),
+        util.sprite_load("__logistic-cannon-transportation__/graphics/entity/receiver/receiver-base-shadow", {
             draw_as_shadow = true,
             priority = "extra-high",
-            width = 384,
-            height = 384,
-            shift = util.by_pixel(0, -7),
             scale = 0.5,
-        },
+        }),
     }
 } --[[@as data.Animation]]
 

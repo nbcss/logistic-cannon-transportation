@@ -76,7 +76,6 @@ end
 local function ammo_type()
     return {
         target_type = "direction",
-        consumption_modifier = 0,
         action = {
             type = "direct",
             action_delivery = {
