@@ -12,7 +12,7 @@
     "package": {
         "ignore": [
             "**/*.xcf",
-            "**/*.txt",
+            "design.txt",
             "**/*.py",
             "**/Makefile",
             "**/*.blend",
