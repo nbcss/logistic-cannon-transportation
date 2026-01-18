@@ -26,6 +26,13 @@ capsule_properties[constants.item_capsule_propelled] = {
     smoke_color = { 0.2, 0.9, 0.9, 0.375 },
 } --[[@as CannonCapsuleProperties]]
 
+if settings.startup[constants.capsule_consumption_mode].value == "no-consumption" then
+    for _, capsule_data in pairs(capsule_properties) do
+        capsule_data.energy_consumption = capsule_data.energy_consumption *
+            constants.capsule_no_consumption_energy_modifier
+    end
+end
+
 ---@param capsule_item string
 ---@return data.CustomTooltipField[]
 local function custom_tooltip_fields(capsule_item)
@@ -176,3 +183,15 @@ data:extend {
         }
     },
 }
+
+if settings.startup[constants.capsule_consumption_mode].value == "no-consumption" then
+    for ammo, _ in pairs(capsule_properties) do
+        data.raw["ammo"][ammo].stack_size = 1
+        local capsule_recipe = data.raw["recipe"][ammo]
+        local modifier = math.ceil(40 / capsule_recipe.results[1].amount)
+        capsule_recipe.results[1].amount = 1
+        for _, ingredient in ipairs(capsule_recipe.ingredients) do
+            ingredient.amount = ingredient.amount * modifier
+        end
+    end
+end

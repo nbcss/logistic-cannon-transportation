@@ -1,8 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 18. 01. 2026
+  Features:
+    - Added capsule no consumption mode, can be enabled in settings.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 18. 01. 2026
   Changes:
-    - Updated thumbnail image
+    - Updated thumbnail image.
     - Added tooltip for some circuit options.
   Bugfixes:
     - Fixed game cannot start without space-age.
@@ -11,4 +16,13 @@ Date: 18. 01. 2026
 Version: 0.1.0
 Date: 17. 01. 2026
   Features:
-    - Init release
+    - Launchers are automatically connected to receivers in range, allow multi-connection.
+    - Receivers are able to request multiple types of items and set individual request amount.
+    - Automatically scheduled cannon delivery.
+    - Provide intuitive GUI to easily monitor launcher/receiver status and set request.
+    - Support network signal, launcher/receiver with different network will not connect.
+    - Allow to use circuit signal to disable the launcher/receiver and read contents.
+    - Provide range and connection visualization.
+    - Support directly load ammo into launcher's ammo slot without circuit connection.
+    - Support launcher payload/range override to use smaller value.
+    - Support blueprint & copy-paste setting.

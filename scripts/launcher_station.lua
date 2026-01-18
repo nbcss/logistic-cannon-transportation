@@ -620,7 +620,9 @@ function LauncherStation.prototype:launch()
                 if ammo_slot.count <= 1 and self.settings.load_capsule_from_inventory then
                     inventory_tool.transfer_to_slot(inventory, ammo_slot)
                 end
-                ammo_slot.drain_ammo(1)
+                if settings.startup[constants.capsule_consumption_mode].value ~= "no-consumption" then
+                    ammo_slot.drain_ammo(1)
+                end
                 local data = capsule_properties[self.ammo_name] or error()
                 local direction = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
                 local base_position = self:position()

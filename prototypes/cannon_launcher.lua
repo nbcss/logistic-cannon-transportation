@@ -17,6 +17,10 @@ local launcher_simulation = [[
         position = {0.5, 0.5}, force = "player", direction = defines.direction.east}
 ]]
 
+if settings.startup[constants.capsule_consumption_mode].value == "no-consumption" then
+    energy_consumption = energy_consumption * constants.capsule_no_consumption_energy_modifier
+end
+
 local base_animation_direction = function(frame_index)
     return {
         util.sprite_load("__logistic-cannon-transportation__/graphics/entity/launcher/launcher-base", {

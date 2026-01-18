@@ -9,6 +9,14 @@ data:extend{
         default_value = true,
     },
     {
+        type = "string-setting",
+        name = constants.capsule_consumption_mode,
+        order = "ab",
+        setting_type = "startup",
+        default_value = "standard",
+        allowed_values = { "standard", "no-consumption" },
+    },
+    {
         type = "int-setting",
         name = constants.entity_update_interval_setting,
         order = "ba",
