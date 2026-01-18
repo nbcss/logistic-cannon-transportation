@@ -41,7 +41,7 @@ Propelled
 
 Technology bonus
 - Capsule Productivity [infinite]: +10% Capsule Productivity per level
-- Range [infinite]: +10% range per level, +20% for infinite technology
+- Range [infinite]: +10% range per level
 - Energy consumption [finite]: -10% consumption & +20% energy capacity per level, 5 level max
 - Manual targeting: Allow player to manually select location & payload items to perform one-time delivery [Planned]
 - Passenger transportation: Allow cannon launcher to transport player [Planned]
@@ -70,6 +70,7 @@ TODO
     while they should be 50% (on everything that isn't draw_as_shadow since that 
     already makes it 50% transparent) Tech icons usually also have much more vertical sun angle
 - Replace launcher rotating animation in GUI
+- Introduce "no consumption" mode
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - Handle undo/redo stack [B]

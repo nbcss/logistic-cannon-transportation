@@ -185,7 +185,6 @@ data:extend {
         },
         corpse = "medium-remnants",
         dying_explosion = "medium-explosion",
-        surface_conditions = { { property = "gravity", min = 1 } },
         inventory_type = "with_filters_and_bar",
         inventory_size = inventory_size,
         quality_affects_inventory_size = true,

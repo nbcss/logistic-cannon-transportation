@@ -78,7 +78,6 @@ data:extend {
         },
         corpse = "medium-remnants",
         dying_explosion = "medium-explosion",
-        surface_conditions = { { property = "gravity", min = 1 } },
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },

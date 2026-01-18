@@ -1,0 +1,14 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 18. 01. 2026
+  Changes:
+    - Updated thumbnail image
+    - Added tooltip for some circuit options.
+  Bugfixes:
+    - Fixed game cannot start without space-age.
+    - Fixed launcher circuit connector position was incorrect.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 17. 01. 2026
+  Features:
+    - Init release
