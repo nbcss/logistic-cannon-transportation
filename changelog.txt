@@ -3,6 +3,7 @@ Version: 0.1.2
 Date: 18. 01. 2026
   Features:
     - Added capsule no consumption mode, can be enabled in settings.
+    - Added reserved slots bar to receiver GUI.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 18. 01. 2026

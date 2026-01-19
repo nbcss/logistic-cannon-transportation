@@ -102,7 +102,7 @@ function launcher_gui.on_gui_opened(player, entity)
         name = "auto_load_ammo",
         style = "caption_checkbox",
         caption = { "logistic-cannon-transportation.launcher-auto-load-ammo" },
-        tooltip = { "logistic-cannon-transportation.launcher-auto-load-ammo-tooltip" },       
+        tooltip = { "logistic-cannon-transportation.launcher-auto-load-ammo-tooltip" },
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {

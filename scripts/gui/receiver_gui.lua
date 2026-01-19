@@ -77,6 +77,12 @@ function receiver_gui.on_gui_opened(player, entity)
     frame.station.header.add {
         type = "empty-widget",
     }.style.horizontally_stretchable = true
+    -- base status
+    frame.station.add {
+        type = "progressbar",
+        name = "reserved_slots",
+        style = "lct_caption_progressbar",
+    }.style.bottom_margin = 4
     -- connected receivers
     frame.station.add {
         type = "flow",
@@ -379,9 +385,12 @@ function receiver_gui.refresh(player, entity)
     local n_requests = #receiver.settings.delivery_requests
     ---@type table<string, {demand: integer, stored: integer, incoming: integer}>
     local item_counts = {}
+    local reserved = 0
     for _, request in ipairs(receiver.settings.delivery_requests) do
         local key = format.encode_item(request.name, request.quality)
         item_counts[key] = { demand = request.amount, stored = 0, incoming = 0 }
+        local stack_size = prototypes.item[request.name].stack_size
+        reserved = reserved + math.ceil(request.amount / stack_size)
     end
     for _, item in ipairs(receiver:get_inventory().get_contents()) do
         local key = format.encode_item(item.name, item.quality)
@@ -448,6 +457,11 @@ function receiver_gui.refresh(player, entity)
             end
         end
     end
+    -- reserved slots refresh
+    local capacity = #receiver:get_inventory()
+    frame.station.reserved_slots.value = math.min(1.0, reserved / capacity)
+    frame.station.reserved_slots.caption = { "", { "logistic-cannon-transportation.receiver-reserved-slots", reserved, capacity } }
+    frame.station.reserved_slots.style.color = reserved > capacity and {1, 0, 0} or {0, 1, 0}
     -- circuit refresh
     local red_network = receiver:is_circuit_connected(false, defines.wire_connector_id.circuit_red) and
         receiver.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_red).network_id or nil
