@@ -82,6 +82,11 @@ function receiver_gui.on_gui_opened(player, entity)
         type = "progressbar",
         name = "reserved_slots",
         style = "lct_caption_progressbar",
+    }.style.bottom_margin = -3
+    frame.station.add {
+        type = "progressbar",
+        name = "occupied_slots",
+        style = "lct_caption_progressbar",
     }.style.bottom_margin = 4
     -- connected receivers
     frame.station.add {
@@ -457,11 +462,14 @@ function receiver_gui.refresh(player, entity)
             end
         end
     end
-    -- reserved slots refresh
+    -- progressbar refresh
     local capacity = #receiver:get_inventory()
+    local occupied = capacity - receiver:get_inventory().count_empty_stacks(false, false)
     frame.station.reserved_slots.value = math.min(1.0, reserved / capacity)
     frame.station.reserved_slots.caption = { "", { "logistic-cannon-transportation.receiver-reserved-slots", reserved, capacity } }
-    frame.station.reserved_slots.style.color = reserved > capacity and {1, 0, 0} or {0, 1, 0}
+    frame.station.reserved_slots.style.color = reserved > capacity and {1, 0, 0} or {0, 0.9, 0.9}
+    frame.station.occupied_slots.value = math.min(1.0, occupied / capacity)
+    frame.station.occupied_slots.caption = { "", { "logistic-cannon-transportation.receiver-occupied-slots", occupied, capacity } }
     -- circuit refresh
     local red_network = receiver:is_circuit_connected(false, defines.wire_connector_id.circuit_red) and
         receiver.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_red).network_id or nil
