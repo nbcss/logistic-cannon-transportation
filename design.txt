@@ -7,7 +7,6 @@ TODO
 - Allow visualize ghost range [A]
 - Allow rotate ghost/cursor [A]
 - Handle undo/redo stack [B]
-- Show number of occupied slots in Receiver GUI [B]
 - Player setting to turn off projectile visualization [B]
 - Option to disable receiver overflow protection [C]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]

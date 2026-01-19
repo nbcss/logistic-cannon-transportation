@@ -82,7 +82,7 @@ function receiver_gui.on_gui_opened(player, entity)
         type = "progressbar",
         name = "reserved_slots",
         style = "lct_caption_progressbar",
-    }.style.bottom_margin = -3
+    }.style.bottom_margin = -2
     frame.station.add {
         type = "progressbar",
         name = "occupied_slots",
