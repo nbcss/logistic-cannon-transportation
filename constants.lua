@@ -13,6 +13,8 @@ constants.capsule_projectile_format = "%s-projectile-%s"
 constants.coloring_projectile_smoke = "lct-coloring-projectile-smoke"
 constants.entity_update_interval_setting = "lct-entity-update-interval"
 constants.gui_update_interval_setting = "lct-gui-update-interval"
+constants.default_launcher_auto_load = "lct-default-launcher-auto-load-setting"
+constants.default_launcher_side_load = "lct-default-launcher-side-load-setting"
 constants.range_visualization_mode = "lct-range-visualization-mode"
 constants.capsule_consumption_mode = "lct-capsule-consumption-mode"
 -- bonus effect

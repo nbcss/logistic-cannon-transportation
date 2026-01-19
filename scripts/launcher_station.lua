@@ -49,17 +49,19 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field load_capsule_from_inventory boolean
 ---@field circuit_read_ammo boolean
 ---@field circuit_enable_condition ModCircuitCondition
-LauncherStation.default_settings = {
-    name = nil,
-    range_override = nil,
-    payload_size_override = nil,
-    network_signal = nil,
-    direction = defines.direction.north,
-    enable_ammo_proxy = true,
-    load_capsule_from_inventory = true,
-    circuit_read_ammo = true,
-    circuit_enable_condition = signal_condition.default_value,
-}
+LauncherStation.default_settings = function()
+    return {
+        name = nil,
+        range_override = nil,
+        payload_size_override = nil,
+        network_signal = nil,
+        direction = defines.direction.north,
+        enable_ammo_proxy = settings.global[constants.default_launcher_side_load].value,
+        load_capsule_from_inventory = settings.global[constants.default_launcher_auto_load].value,
+        circuit_read_ammo = true,
+        circuit_enable_condition = signal_condition.default_value,
+    }
+end
 
 local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
     .data --[[@as table<string, LauncherProperties>]]
@@ -145,7 +147,7 @@ function LauncherStation.create(entity, from_settings)
         quality = entity.quality,
     } or error()
 
-    local launcher_settings = from_settings or util.table.deepcopy(LauncherStation.default_settings)
+    local launcher_settings = from_settings or LauncherStation.default_settings()
 
     local instance = setmetatable({
         inventory_entity = inventory_entity,
@@ -541,7 +543,7 @@ function LauncherStation.prototype:update_diode_status()
         diode = diode,
         label = { "", { status },
             "\n", { "logistic-cannon-transportation.energy-info", formatted_energy, formatted_capacity },
-            "\n", { "logistic-cannon-transportation.range-info", range },
+            "\n", { "logistic-cannon-transportation.range-info",     range },
             "\n", { "logistic-cannon-transportation.connected-receivers-info", connected },
         }
     }
@@ -626,8 +628,8 @@ function LauncherStation.prototype:launch()
                 local data = capsule_properties[self.ammo_name] or error()
                 local direction = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
                 local base_position = self:position()
-                local position = {base_position.x + direction.x,
-                    base_position.y - 1.8 + direction.y * math2d.projection_constant}
+                local position = { base_position.x + direction.x,
+                    base_position.y - 1.8 + direction.y * math2d.projection_constant }
                 self.turret_entity.surface.create_entity {
                     name = string.format(constants.capsule_projectile_format, data.projectile_name, data.speed),
                     position = position,
@@ -683,7 +685,7 @@ end
 
 ---@return boolean
 function LauncherStation.prototype:valid()
-    return self.inventory_entity.valid and self.turret_entity.valid and 
+    return self.inventory_entity.valid and self.turret_entity.valid and
         self.electric_interface.valid and self.base_entity.valid
 end
 
@@ -703,7 +705,8 @@ function LauncherStation.prototype:is_disabled()
     return not signal_condition.evaluate(self.settings.circuit_enable_condition, function(signal)
         if red_connected then
             if green_connected then
-                return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green)
+                return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red,
+                    defines.wire_connector_id.circuit_green)
             else
                 return self.inventory_entity.get_signal(signal, defines.wire_connector_id.circuit_red)
             end
@@ -728,7 +731,8 @@ function LauncherStation.prototype:is_circuit_connected(include_ghost, wire)
     end
     local wire_connector = self.inventory_entity.get_wire_connector(wire, false)
     if not wire_connector then return false end
-    local connection_count = wire_connector[include_ghost and "connection_count" or "real_connection_count"]--[[@as uint32]]
+    local connection_count = wire_connector
+    [include_ghost and "connection_count" or "real_connection_count"] --[[@as uint32]]
     return connection_count > 1
 end
 

@@ -3,6 +3,9 @@ Version: 0.1.3
 Date: 20. 01. 2026
   Features:
     - Added occupied slots bar to receiver GUI.
+    - Added settings to change default option of launcher auto/side load ammo.
+  Changes:
+    - Launcher will not enable auto load ammo from inventory by default now.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.2
 Date: 19. 01. 2026

@@ -35,6 +35,20 @@ data:extend{
         default_value = 2,
     },
     {
+        type = "bool-setting",
+        name = constants.default_launcher_auto_load,
+        order = "bc",
+        setting_type = "runtime-global",
+        default_value = false,
+    },
+    {
+        type = "bool-setting",
+        name = constants.default_launcher_side_load,
+        order = "bd",
+        setting_type = "runtime-global",
+        default_value = true,
+    },
+    {
         type = "string-setting",
         name = constants.range_visualization_mode,
         order = "ca",
