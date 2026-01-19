@@ -190,6 +190,7 @@ if settings.startup[constants.capsule_consumption_mode].value == "no-consumption
         local capsule_recipe = data.raw["recipe"][ammo]
         local modifier = math.ceil(40 / capsule_recipe.results[1].amount)
         capsule_recipe.results[1].amount = 1
+        capsule_recipe.energy_required = capsule_recipe.energy_required * 4
         for _, ingredient in ipairs(capsule_recipe.ingredients) do
             ingredient.amount = ingredient.amount * modifier
         end
