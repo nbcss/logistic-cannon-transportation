@@ -215,6 +215,7 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
     if not blueprint then return end
     local updated = false
     local entities = blueprint.get_blueprint_entities() --[[@as BlueprintEntity[]]
+    if not entities then return end
     for index, entity in ipairs(entities) do
         -- Launcher
         if entity.name == constants.entity_launcher_inventory then
