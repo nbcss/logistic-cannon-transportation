@@ -8,7 +8,6 @@ TODO
 - Allow rotate ghost/cursor [A]
 - Handle undo/redo stack [B]
 - Player setting to turn off projectile visualization [B]
-- Option to disable receiver overflow protection [C]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]
 - Show signal value on enable/disable button [C]
 - Show connected circuit network signals in tooltip [C]
