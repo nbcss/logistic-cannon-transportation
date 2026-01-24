@@ -118,6 +118,7 @@ styles["lct_caption_progressbar"] = {
     height = 24,
     bar_width = 24,
     font_color = { 0.9, 0.9, 0.9 },
+    font = "default-semibold",
     filled_font_color = { 0, 0, 0 },
     horizontally_stretchable = "on",
     horizontally_squashable = "on",

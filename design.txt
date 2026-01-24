@@ -5,6 +5,7 @@ TODO
     already makes it 50% transparent) Tech icons usually also have much more vertical sun angle
 - Replace launcher rotating animation in GUI
 - Allow visualize ghost range [A]
+- Allow edit ghost settings in UI [A]
 - Allow rotate ghost/cursor [A]
 - Handle undo/redo stack [B]
 - Player setting to turn off projectile visualization [B]
