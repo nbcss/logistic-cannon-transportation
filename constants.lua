@@ -11,12 +11,13 @@ constants.capsule_landed_effect_id = "lct-capsule-landed"
 constants.capsule_projectile_format = "%s-projectile-%s"
 -- settings
 constants.coloring_projectile_smoke = "lct-coloring-projectile-smoke"
+constants.capsule_consumption_mode = "lct-capsule-consumption-mode"
+constants.se_allow_in_space = "lct-se-allow-in-space"
 constants.entity_update_interval_setting = "lct-entity-update-interval"
 constants.gui_update_interval_setting = "lct-gui-update-interval"
 constants.default_launcher_auto_load = "lct-default-launcher-auto-load-setting"
 constants.default_launcher_side_load = "lct-default-launcher-side-load-setting"
 constants.range_visualization_mode = "lct-range-visualization-mode"
-constants.capsule_consumption_mode = "lct-capsule-consumption-mode"
 -- bonus effect
 constants.range_upgrade_bonus = "lct-launcher-range-bonus"
 constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"
@@ -49,7 +50,7 @@ constants.entity_capsule_inventory = "lct-capsule-inventory"
 constants.gui_launcher = "lct-launcher-gui"
 constants.gui_receiver = "lct-receiver-gui"
 constants.gui_tag_event_handlers = "lct-event-handlers"
--- Values
+-- values
 constants.capsule_no_consumption_energy_modifier = 2.5
 
 return constants

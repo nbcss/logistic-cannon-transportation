@@ -42,8 +42,3 @@ for category, prototypes in pairs(tooltip_postprocessing) do
         end
     end
 end
-
-if feature_flags["space_travel"] then
-    data.raw["container"][constants.entity_launcher_inventory].surface_conditions = { { property = "gravity", min = 1 } }
-    data.raw["container"][constants.entity_receiver_inventory].surface_conditions = { { property = "gravity", min = 1 } }
-end

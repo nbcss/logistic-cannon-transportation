@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.4
-Date: 24. 01. 2026
+Date: 27. 01. 2026
+  Features:
+    - Added a setting to allow placement of launcher/receiver in SE's space surface.
   Changes:
     - Change the font of all progress bar UI to semibold.
   Graphics:

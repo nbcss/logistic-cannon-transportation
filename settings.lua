@@ -17,6 +17,13 @@ data:extend{
         allowed_values = { "standard", "no-consumption" },
     },
     {
+        type = "bool-setting",
+        name = constants.se_allow_in_space,
+        order = "ac",
+        setting_type = "startup",
+        default_value = false,
+    },
+    {
         type = "int-setting",
         name = constants.entity_update_interval_setting,
         order = "ba",
