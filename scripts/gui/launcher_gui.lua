@@ -451,8 +451,9 @@ end
 function launcher_gui.refresh(player, entity)
     local launcher = LauncherStation.get(entity)
     if not launcher or not launcher:valid() then return end
-
     local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
+    if not frame then return end
+    
     frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
     inventory_slot.refresh {

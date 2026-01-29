@@ -230,7 +230,7 @@ function LauncherStation.on_entity_cloned(source, destination)
     if destination.name ~= constants.entity_launcher_inventory then return end
     local src_launcher = LauncherStation.get(source)
     local des_launcher = LauncherStation.create(destination, src_launcher and src_launcher.settings)
-    if not src_launcher then return end
+    if not src_launcher or not src_launcher:valid() then return end
     des_launcher.turret_entity.orientation = src_launcher.turret_entity.orientation
     des_launcher:get_ammo_inventory()[1].set_stack(src_launcher:get_ammo_inventory()[1])
     des_launcher:charge_energy(src_launcher:get_stored_energy())

@@ -381,6 +381,7 @@ function receiver_gui.refresh(player, entity)
     local receiver = ReceiverStation.get(entity)
     if not receiver or not receiver:valid() then return end
     local frame = player.gui.relative[constants.gui_receiver] ---@type LuaGuiElement
+    if not frame then return end
 
     frame.station.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
