@@ -99,8 +99,9 @@ function ReceiverStation.write_settings(tags, receiver_settings)
 end
 
 ---@param tags Tags
+---@return ReceiverStationSettings?
 function ReceiverStation.read_settings(tags)
-    return tags and tags["cannon_receiver_settings"] or nil
+    return tags and tags["cannon_receiver_settings"] --[[@as ReceiverStationSettings?]] or nil
 end
 
 ---@param source LuaEntity

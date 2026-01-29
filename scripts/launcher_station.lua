@@ -219,8 +219,9 @@ function LauncherStation.write_settings(tags, launcher_settings)
 end
 
 ---@param tags Tags
+---@return LauncherStationSettings?
 function LauncherStation.read_settings(tags)
-    return tags and tags["cannon_launcher_settings"] or nil
+    return tags and tags["cannon_launcher_settings"] --[[@as LauncherStationSettings?]] or nil
 end
 
 ---@param source LuaEntity
