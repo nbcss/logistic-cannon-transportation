@@ -374,7 +374,7 @@ end
 ---@param launcher_settings LauncherStationSettings
 function LauncherStation.prototype:set_settings(launcher_settings)
     self.settings = util.table.deepcopy(launcher_settings)
-    self.base_entity.direction = self.settings.direction
+    self.settings.direction = self.base_entity.direction -- Don't use direction settings
     self.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         self.settings.circuit_read_ammo
     self:update_ammo_proxy()

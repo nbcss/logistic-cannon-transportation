@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.5
-Date: 29. 01. 2026
+Date: 30. 01. 2026
+  Changes:
+    - Copy-paste launcher setting will not copy ammo-slot side now.
   Bugfixes:
     - Fixed a rare issue which may cause GUI to crash.
 ---------------------------------------------------------------------------------------------------
