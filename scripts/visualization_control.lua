@@ -81,7 +81,7 @@ local function launcher_visaulization(player, launcher, source_position, from_la
     else
         local color = range_color
         local filled = true
-        if not from_launcher and settings.get_player_settings(player)[constants.range_visualization_mode].value == "edge" then
+        if not from_launcher and settings.get_player_settings(player)[constants.setting_range_visualization_mode].value == "edge" then
             filled = false
             color = range_edge_color
         end

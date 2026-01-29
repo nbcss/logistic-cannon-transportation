@@ -7,7 +7,7 @@ local capsule_properties = data.raw["mod-data"][constants.data_capsule_propertie
 
 for _, capsule_data in pairs(capsule_properties) do
     local smoke_name = "smoke-fast"
-    if settings.startup[constants.coloring_projectile_smoke].value == true and capsule_data.smoke_color then
+    if settings.startup[constants.setting_coloring_projectile_smoke].value == true and capsule_data.smoke_color then
         smoke_name = capsule_data.projectile_name .. "-smoke"
         data:extend {
             util.merge { data.raw["trivial-smoke"]["smoke-fast"], {

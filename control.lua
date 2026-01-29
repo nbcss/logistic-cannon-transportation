@@ -295,7 +295,7 @@ script.on_event(defines.events.on_forces_merging, function(event)
 end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
-    if event.setting_type == "runtime-global" and event.setting == constants.entity_update_interval_setting then
+    if event.setting_type == "runtime-global" and event.setting == constants.setting_entity_update_interval then
         CannonNetwork.resize_buckets()
     end
 end)
@@ -317,7 +317,7 @@ script.on_event(defines.events.on_tick, function(event)
     for network in CannonNetwork.all() do
         network:update(event.tick)
     end
-    local tick_index = event.tick % settings.global[constants.gui_update_interval_setting].value
+    local tick_index = event.tick % settings.global[constants.setting_gui_update_interval].value
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
         update_player_selected_diode_status(player)
@@ -327,7 +327,7 @@ script.on_event(defines.events.on_tick, function(event)
                 local launcher = LauncherStation.get(entity)
                 if launcher then
                     launcher:update_diode_status()
-                    launcher_gui.refresh(player, entity)
+                    launcher_gui.refresh(player, launcher)
                 end
             end
             if player.opened.name == constants.entity_receiver_gui_proxy then
@@ -335,7 +335,7 @@ script.on_event(defines.events.on_tick, function(event)
                 local receiver = ReceiverStation.get(entity)
                 if receiver then
                     receiver:update_diode_status()
-                    receiver_gui.refresh(player, entity)
+                    receiver_gui.refresh(player, receiver)
                 end
             end
         end
@@ -357,13 +357,13 @@ end)
 -- GUI events
 script.on_event(defines.events.on_gui_opened, function(event)
     if event.entity and event.entity.valid then
-        launcher_gui.on_gui_opened(game.players[event.player_index], event.entity)
-        receiver_gui.on_gui_opened(game.players[event.player_index], event.entity)
+        local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
         if event.entity.name == constants.entity_receiver_inventory then
             local receiver = ReceiverStation.get(event.entity)
             if receiver and receiver:valid() then
                 game.players[event.player_index].opened = receiver:get_gui_proxy()
                 receiver:update_diode_status()
+                receiver_gui.refresh(player, receiver)
             end
         end
         if event.entity.name == constants.entity_launcher_inventory then
@@ -371,6 +371,7 @@ script.on_event(defines.events.on_gui_opened, function(event)
             if launcher and launcher:valid() then
                 game.players[event.player_index].opened = launcher:get_gui_proxy()
                 launcher:update_diode_status()
+                launcher_gui.refresh(player, launcher)
             end
         end
     end

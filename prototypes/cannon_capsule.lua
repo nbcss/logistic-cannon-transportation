@@ -26,7 +26,7 @@ capsule_properties[constants.item_capsule_propelled] = {
     smoke_color = { 0.2, 0.9, 0.9, 0.375 },
 } --[[@as CannonCapsuleProperties]]
 
-if settings.startup[constants.capsule_consumption_mode].value == "no-consumption" then
+if settings.startup[constants.setting_capsule_consumption_mode].value == "no-consumption" then
     for _, capsule_data in pairs(capsule_properties) do
         capsule_data.energy_consumption = capsule_data.energy_consumption *
             constants.capsule_no_consumption_energy_modifier
@@ -184,7 +184,7 @@ data:extend {
     },
 }
 
-if settings.startup[constants.capsule_consumption_mode].value == "no-consumption" then
+if settings.startup[constants.setting_capsule_consumption_mode].value == "no-consumption" then
     for ammo, _ in pairs(capsule_properties) do
         data.raw["ammo"][ammo].stack_size = 1
         local capsule_recipe = data.raw["recipe"][ammo]

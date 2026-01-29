@@ -11,16 +11,19 @@ local item_bar_base_color = util.color "2e703b"
 local item_bar_top_color = util.color "3ccd5a"
 
 ---@param player LuaPlayer
----@param entity LuaEntity
-function receiver_gui.on_gui_opened(player, entity)
-    if player.gui.relative[constants.gui_receiver] then
-        player.gui.relative[constants.gui_receiver].destroy()
+---@return LuaGuiElement
+function receiver_gui.get_or_create(player)
+    local frame = player.gui.relative[constants.gui_receiver]
+    if frame then
+        if settings.startup[constants.setting_debug].value then
+            frame.destroy()
+        else
+            return frame
+        end
     end
-    if entity.name ~= constants.entity_receiver_gui_proxy then
-        return
-    end
+
     --frame
-    local frame = player.gui.relative.add {
+    frame = player.gui.relative.add {
         type = "frame",
         name = constants.gui_receiver,
         direction = "vertical",
@@ -199,7 +202,8 @@ function receiver_gui.on_gui_opened(player, entity)
             },
         },
     }
-    receiver_gui.refresh(player, entity)
+
+    return frame
 end
 
 ---@package
@@ -376,12 +380,10 @@ function receiver_gui.close_all_request_editor_blocks(request_elements)
 end
 
 ---@param player LuaPlayer
----@param entity LuaEntity
-function receiver_gui.refresh(player, entity)
-    local receiver = ReceiverStation.get(entity)
-    if not receiver or not receiver:valid() then return end
-    local frame = player.gui.relative[constants.gui_receiver] ---@type LuaGuiElement
-    if not frame then return end
+---@param receiver ReceiverStation
+function receiver_gui.refresh(player, receiver)
+    if not receiver:valid() then return end
+    local frame = receiver_gui.get_or_create(player)
 
     frame.station.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
@@ -576,7 +578,7 @@ function receiver_gui.on_request_elem_changed(player, event)
         table.remove(receiver.settings.delivery_requests, index)
     end
 
-    receiver_gui.refresh(player, entity)
+    receiver_gui.refresh(player, receiver)
 end
 
 ---@param player LuaPlayer
@@ -602,7 +604,7 @@ function receiver_gui.on_request_editor_toggled(player, event)
         receiver_gui.create_request_editor_block(element, request)
     end
 
-    receiver_gui.refresh(player, entity)
+    receiver_gui.refresh(player, receiver)
 end
 
 ---@param player LuaPlayer

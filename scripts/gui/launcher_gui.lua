@@ -15,16 +15,19 @@ for ammo, _ in pairs(prototypes.mod_data[constants.data_capsule_properties].data
 end
 
 ---@param player LuaPlayer
----@param entity LuaEntity
-function launcher_gui.on_gui_opened(player, entity)
-    if player.gui.relative[constants.gui_launcher] then
-        player.gui.relative[constants.gui_launcher].destroy()
+---@return LuaGuiElement
+function launcher_gui.get_or_create(player)
+    local frame = player.gui.relative[constants.gui_launcher]
+    if frame then
+        if settings.startup[constants.setting_debug].value then
+            frame.destroy()
+        else
+            return frame
+        end
     end
-    if entity.name ~= constants.entity_launcher_gui_proxy then
-        return
-    end
+
     --frame
-    local frame = player.gui.relative.add {
+    frame = player.gui.relative.add {
         type = "frame",
         name = constants.gui_launcher,
         direction = "vertical",
@@ -443,16 +446,15 @@ function launcher_gui.on_gui_opened(player, entity)
             },
         },
     }
-    launcher_gui.refresh(player, entity)
+
+    return frame
 end
 
 ---@param player LuaPlayer
----@param entity LuaEntity
-function launcher_gui.refresh(player, entity)
-    local launcher = LauncherStation.get(entity)
-    if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
-    if not frame then return end
+---@param launcher LauncherStation
+function launcher_gui.refresh(player, launcher)
+    if not launcher:valid() then return end
+    local frame = launcher_gui.get_or_create(player)
     
     frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
