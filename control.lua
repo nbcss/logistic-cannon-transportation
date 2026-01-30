@@ -443,6 +443,7 @@ script.on_event({
     defines.events.on_gui_text_changed,
     defines.events.on_gui_selection_state_changed,
 }, delegate_gui_event_handler)
+
 script.on_event({
     defines.events.on_gui_hover,
     defines.events.on_gui_leave,

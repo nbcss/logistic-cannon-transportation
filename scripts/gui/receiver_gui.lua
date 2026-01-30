@@ -237,6 +237,13 @@ function receiver_gui.create_request_list_item(parent, index)
     element.item.info.top.add {
         type = "label",
         name = "item_text",
+        raise_hover_events = true,
+        tags = {
+            [constants.gui_tag_tracked_hover_state] = false,
+            [constants.gui_tag_event_handlers] = {
+                on_gui_hover = "receiver_gui.on_lazy_tooltip_hover",
+            },
+        }
     }
     element.item.info.top.add {
         type = "empty-widget",
@@ -253,6 +260,7 @@ function receiver_gui.create_request_list_item(parent, index)
             request_index = index,
         },
     }
+
     element.item.info.add {
         type = "flow",
         name = "progress",
@@ -437,7 +445,8 @@ function receiver_gui.refresh(player, receiver)
 
             if request then
                 -- Display info about a request
-                local item = item_counts[format.encode_item(request.name, request.quality)]
+                local item_key = format.encode_item(request.name, request.quality)
+                local item = item_counts[item_key]
                 local incoming_text = item.incoming > 0 and
                     string.format("[color=gray] (+%s)[/color]", format.number(item.incoming)) or ""
                 local item_text = string.format("%s%s / %s", format.number(item.stored), incoming_text,
@@ -448,11 +457,23 @@ function receiver_gui.refresh(player, receiver)
 
                 element.item.choose_elem.elem_value = { name = request.name, quality = request.quality }
                 element.item.info.top.item_text.caption = item_text
-                element.item.info.top.item_text.tooltip = { "",
-                    { "logistic-cannon-transportation.receiver-item-tooltip-in-inventory", item.stored }, "\n",
-                    { "logistic-cannon-transportation.receiver-item-tooltip-incoming",     item.incoming }, "\n",
-                    { "logistic-cannon-transportation.receiver-item-tooltip-requested", item.demand },
-                }
+                if element.item.info.top.item_text.tags[constants.gui_tag_tracked_hover_state] then
+                    local available_for_delivery = 0
+                    for launcher in receiver.network:connected_launchers(receiver) do
+                        local items = receiver.network.launcher_to_items[launcher:id()]
+                        if items and items[item_key] then
+                            available_for_delivery = available_for_delivery + items[item_key].count
+                        end
+                    end
+                    local prefix = "[color=#fae8be][font=default-semibold]"
+                    local suffix = ": [/font][/color]"
+                    local satisfaction = string.format("%s/%s", item.stored, item.demand)
+                    element.item.info.top.item_text.tooltip = { "",
+                        { "", prefix, { "description.logistic-request-tooltip-satisfaction" }, suffix, satisfaction, "\n" },
+                        { "", prefix, { "description.logistic-request-tooltip-on-the-way" }, suffix, item.incoming, "\n" },
+                        { "", prefix, { "logistic-cannon-transportation.receiver-item-tooltip-available-for-delivery" }, suffix, available_for_delivery },
+                    }
+                end
                 element.item.info.top.edit_button.visible = true
                 element.item.info.progress.visible = true
                 element.item.info.progress.base.value = base_value
@@ -480,13 +501,14 @@ function receiver_gui.refresh(player, receiver)
     local occupied = capacity - receiver:get_inventory().count_empty_stacks(false, false)
     frame.station.reserved_slots.value = math.min(1.0, reserved / capacity)
     frame.station.reserved_slots.caption = { "", { "logistic-cannon-transportation.receiver-reserved-slots", reserved, capacity } }
-    frame.station.reserved_slots.style.color = reserved > capacity and {1, 0, 0} or {0, 0.9, 0.9}
+    frame.station.reserved_slots.style.color = reserved > capacity and { 1, 0, 0 } or { 0, 0.9, 0.9 }
     frame.station.occupied_slots.value = math.min(1.0, occupied / capacity)
     frame.station.occupied_slots.caption = { "", { "logistic-cannon-transportation.receiver-occupied-slots", occupied, capacity } }
     -- circuit refresh
     shared_gui.circuit_control_header.refresh(frame.circuit.header, receiver)
     local circuit_connected = receiver:is_circuit_connected(true)
-    signal_condition.refresh(circuit_connected, receiver.settings.circuit_enable_condition, frame.circuit.enable_condition)
+    signal_condition.refresh(circuit_connected, receiver.settings.circuit_enable_condition,
+        frame.circuit.enable_condition)
     frame.circuit.read_contents.enabled = circuit_connected
     frame.circuit.read_contents.state = receiver.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]

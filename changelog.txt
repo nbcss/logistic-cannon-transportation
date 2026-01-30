@@ -1,6 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.5
 Date: 30. 01. 2026
+  Gui:
+    - Added the tooltip for circuit signal.
+    - Added the tooltip for connected receiver/launcher names.
+    - Improved the tooltip of request item.
+  Sounds:
+    - Added the sound for capsule landing.
   Changes:
     - Copy-paste launcher setting will not copy ammo-slot side now.
   Bugfixes:
