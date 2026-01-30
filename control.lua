@@ -397,51 +397,52 @@ script.on_event({
         end
     end
 end)
-script.on_event({
-        defines.events.on_gui_click,
-        defines.events.on_gui_elem_changed,
-        defines.events.on_gui_text_changed,
-        defines.events.on_gui_confirmed,
-        defines.events.on_gui_checked_state_changed,
-        defines.events.on_gui_value_changed,
-        defines.events.on_gui_text_changed,
-        defines.events.on_gui_selection_state_changed,
-    },
-    ---@param event
-    ---| EventData.on_gui_click
-    ---| EventData.on_gui_elem_changed
-    ---| EventData.on_gui_text_changed
-    ---| EventData.on_gui_confirmed
-    ---| EventData.on_gui_checked_state_changed
-    ---| EventData.on_gui_value_changed
-    ---| EventData.on_gui_text_changed
-    ---| EventData.on_gui_selection_state_changed
-    function(event)
-        local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
-        if not handlers then return end
-        local handler_name
-        for k, v in pairs(handlers) do
-            if defines.events[k] == event.name then
-                handler_name = v
-                break
-            end
-        end
-        if handler_name then
-            local sep = string.find(handler_name, ".", 0, true)
-            local handler_module = string.sub(handler_name, 0, sep - 1)
-            local handler_func = string.sub(handler_name, sep + 1)
-            if handler_module == "receiver_gui" then
-                receiver_gui[handler_func](game.get_player(event.player_index), event)
-            elseif handler_module == "launcher_gui" then
-                launcher_gui[handler_func](game.get_player(event.player_index), event)
-            elseif handler_module == "signal_condition" then
-                signal_condition[handler_func](game.get_player(event.player_index), event)
-            else
-                error("Invalid GUI event handler: " .. handler_name)
-            end
+---@param event
+---| EventData.on_gui_click
+---| EventData.on_gui_elem_changed
+---| EventData.on_gui_text_changed
+---| EventData.on_gui_confirmed
+---| EventData.on_gui_checked_state_changed
+---| EventData.on_gui_value_changed
+---| EventData.on_gui_text_changed
+---| EventData.on_gui_selection_state_changed
+---| EventData.on_gui_hover
+---| EventData.on_gui_leave
+local function delegate_gui_event_handler(event)
+    local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
+    if not handlers then return end
+    local handler_name
+    for k, v in pairs(handlers) do
+        if defines.events[k] == event.name then
+            handler_name = v
+            break
         end
     end
-)
+    if handler_name then
+        local sep = string.find(handler_name, ".", 0, true)
+        local handler_module = string.sub(handler_name, 0, sep - 1)
+        local handler_func = string.sub(handler_name, sep + 1)
+        if handler_module == "receiver_gui" then
+            receiver_gui[handler_func](game.get_player(event.player_index), event)
+        elseif handler_module == "launcher_gui" then
+            launcher_gui[handler_func](game.get_player(event.player_index), event)
+        elseif handler_module == "signal_condition" then
+            signal_condition[handler_func](game.get_player(event.player_index), event)
+        else
+            error("Invalid GUI event handler: " .. handler_name)
+        end
+    end
+end
+script.on_event({
+    defines.events.on_gui_click,
+    defines.events.on_gui_elem_changed,
+    defines.events.on_gui_text_changed,
+    defines.events.on_gui_confirmed,
+    defines.events.on_gui_checked_state_changed,
+    defines.events.on_gui_value_changed,
+    defines.events.on_gui_text_changed,
+    defines.events.on_gui_selection_state_changed,
+}, delegate_gui_event_handler)
 script.on_event({
     defines.events.on_gui_hover,
     defines.events.on_gui_leave,
@@ -455,4 +456,6 @@ script.on_event({
         tags[constants.gui_tag_tracked_hover_state] = event.name == defines.events.on_gui_hover
         event.element.tags = tags
     end
+
+    delegate_gui_event_handler(event)
 end)

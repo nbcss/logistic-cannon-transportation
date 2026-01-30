@@ -5,8 +5,9 @@ local circuit_control_header = {}
 
 ---@param parent LuaGuiElement
 ---@param name string
+---@param on_lazy_tooltip_hover string
 ---@return LuaGuiElement
-function circuit_control_header.create(parent, name)
+function circuit_control_header.create(parent, name, on_lazy_tooltip_hover)
     local element = parent.add {
         type = "frame",
         name = name,
@@ -32,6 +33,9 @@ function circuit_control_header.create(parent, name)
         raise_hover_events = true,
         tags = {
             [constants.gui_tag_tracked_hover_state] = false,
+            [constants.gui_tag_event_handlers] = {
+                on_gui_hover = on_lazy_tooltip_hover,
+            },
         },
     }
     element.flow.add {
@@ -41,6 +45,9 @@ function circuit_control_header.create(parent, name)
         raise_hover_events = true,
         tags = {
             [constants.gui_tag_tracked_hover_state] = false,
+            [constants.gui_tag_event_handlers] = {
+                on_gui_hover = on_lazy_tooltip_hover,
+            },
         },
     }
     element.flow.add {
@@ -93,8 +100,6 @@ function circuit_control_header.refresh(element, station)
                 label.tooltip = { "",
                     "[color=#fae8be][font=default-semibold]", { "description.signals" }, "[/font][/color]\n",
                     table.concat(tooltip) }
-            else
-                label.tooltip = nil
             end
         else
             label.visible = false

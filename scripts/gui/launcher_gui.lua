@@ -240,6 +240,9 @@ function launcher_gui.get_or_create(player)
         raise_hover_events = true,
         tags = {
             [constants.gui_tag_tracked_hover_state] = false,
+            [constants.gui_tag_event_handlers] = {
+                on_gui_hover = "launcher_gui.on_lazy_tooltip_hover",
+            },
         },
     }
     -- payload size
@@ -384,7 +387,7 @@ function launcher_gui.get_or_create(player)
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
     }
-    shared_gui.circuit_control_header.create(frame.circuit, "header")
+    shared_gui.circuit_control_header.create(frame.circuit, "header", "launcher_gui.on_lazy_tooltip_hover")
     -- Enable/disable
     signal_condition.create_gui(frame.circuit)
     frame.circuit.add {
@@ -494,8 +497,6 @@ function launcher_gui.refresh(player, launcher)
                 #names > 0 and "\n" or nil,
                 table.concat(names, "\n"),
             }
-        else
-            frame.station.connected_receivers.value_label.tooltip = nil
         end
     else
         frame.station.connected_receivers.value_label.caption = "0"
@@ -525,6 +526,14 @@ local function set_display_name(launcher, frame)
         { "logistic-cannon-transportation.launcher-default-name" }
     frame.station.header.edit_name_field.visible = false
     frame.station.header.display_name.visible = true
+end
+
+---@param player LuaPlayer
+---@param event EventData.on_gui_hover
+function launcher_gui.on_lazy_tooltip_hover(player, event)
+    local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
+    if not launcher or not launcher:valid() then return end
+    launcher_gui.refresh(player, launcher)
 end
 
 ---@param player LuaPlayer
