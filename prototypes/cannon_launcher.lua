@@ -366,12 +366,12 @@ data:extend {
             ammo_consumption_modifier = 0,
             range = 0,
             sound = {
-                filename = "__logistic-cannon-transportation__/sounds/launcher_shoot.ogg",
+                filename = "__logistic-cannon-transportation__/sounds/launcher-shoot.ogg",
                 category = "weapon",
                 volume = 0.5,
                 aggregation = {
                     max_count = 1,
-                    remove = false
+                    remove = false,
                 },
             }
         },

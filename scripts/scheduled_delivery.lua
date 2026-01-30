@@ -118,6 +118,10 @@ function ScheduledDelivery.prototype:deliver()
     }[1]
     if receiver_entity then
         local receiver = ReceiverStation.get(receiver_entity)
+        surface.play_sound{
+            path = constants.capsule_landed_sound,
+            position = self.position,
+        }
         if receiver and receiver:valid() then
             local receiver_inventory = receiver:get_inventory()
             inventory_tool.dump_items(capsule_inventory, receiver_inventory)

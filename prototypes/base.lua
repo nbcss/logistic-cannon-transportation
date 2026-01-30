@@ -24,6 +24,17 @@ data.extend {
         linked_game_control = "reverse-rotate",
     },
     {
+        type = "sound",
+        name = constants.capsule_landed_sound,
+        category = "environment",
+        filename = "__logistic-cannon-transportation__/sounds/capsule-landed.ogg",
+        volume = 0.4,
+        aggregation = {
+            max_count = 1,
+            remove = false,
+        }
+    },
+    {
         type = "ammo-category",
         name = constants.ammo_category,
         icon = "__logistic-cannon-transportation__/graphics/icons/capsule-category.png",

@@ -11,7 +11,7 @@ TODO
 Roadmap
 - Circuit set request
 - Tool for manual drop point selection
-- Player launcher onboard
+- Player transportation
 - Addon
 
 Ammo properties
