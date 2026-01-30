@@ -6,7 +6,6 @@ TODO
 - Player setting to turn off projectile visualization [B]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]
 - Show signal value on enable/disable button [C]
-- Show connected circuit network signals in tooltip [C]
 
 Roadmap
 - Circuit set request
