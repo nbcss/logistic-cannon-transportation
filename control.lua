@@ -370,8 +370,7 @@ script.on_event({
 ---| EventData.on_gui_closed
 ---| EventData.on_player_controller_changed
 }, function(event)
-    local player = game.get_player(event.player_index)
-    if not player then return end
+    local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
     receiver_gui.destroy(player)
     launcher_gui.destroy(player)
     if player.opened_gui_type ~= defines.gui_type.entity then return end
@@ -407,8 +406,6 @@ script.on_event({
         defines.events.on_gui_value_changed,
         defines.events.on_gui_text_changed,
         defines.events.on_gui_selection_state_changed,
-        defines.events.on_gui_hover,
-        defines.events.on_gui_leave,
     },
     ---@param event
     ---| EventData.on_gui_click
@@ -419,8 +416,6 @@ script.on_event({
     ---| EventData.on_gui_value_changed
     ---| EventData.on_gui_text_changed
     ---| EventData.on_gui_selection_state_changed
-    ---| EventData.on_gui_hover
-    ---| EventData.on_gui_leave
     function(event)
         local handlers = event.element.tags[constants.gui_tag_event_handlers] --[[@as {[string]: string?}]]
         if not handlers then return end
@@ -447,3 +442,17 @@ script.on_event({
         end
     end
 )
+script.on_event({
+    defines.events.on_gui_hover,
+    defines.events.on_gui_leave,
+---@param event
+---| EventData.on_gui_hover
+---| EventData.on_gui_leave
+}, function (event)
+    -- Track hover state in a tag if such tag already exists
+    if event.element.tags[constants.gui_tag_tracked_hover_state] ~= nil then
+        local tags = event.element.tags
+        tags[constants.gui_tag_tracked_hover_state] = event.name == defines.events.on_gui_hover
+        event.element.tags = tags
+    end
+end)

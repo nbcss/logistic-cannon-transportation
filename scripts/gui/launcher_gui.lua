@@ -236,6 +236,10 @@ function launcher_gui.get_or_create(player)
     frame.station.connected_receivers.add {
         type = "label",
         name = "value_label",
+        raise_hover_events = true,
+        tags = {
+            [constants.gui_tag_tracked_hover_state] = false,
+        },
     }
     -- payload size
     frame.station.add {
@@ -498,20 +502,24 @@ function launcher_gui.refresh(player, launcher)
     local connected_count = launcher.network:get_connection_count(launcher:id())
     if connected_count > 0 then
         frame.station.connected_receivers.value_label.caption = string.format("%s [img=info]", connected_count)
-        local unamed_count = 0
-        local names = {}
-        for receiver in launcher.network:connected_receivers(launcher) do
-            if receiver.settings.name then
-                table.insert(names, receiver.settings.name)
-            else
-                unamed_count = unamed_count + 1
+        if frame.station.connected_receivers.value_label.tags[constants.gui_tag_tracked_hover_state] then
+            local unamed_count = 0
+            local names = {}
+            for receiver in launcher.network:connected_receivers(launcher) do
+                if receiver.settings.name then
+                    table.insert(names, receiver.settings.name)
+                else
+                    unamed_count = unamed_count + 1
+                end
             end
+            frame.station.connected_receivers.value_label.tooltip = { "",
+                { "logistic-cannon-transportation.launcher-connected-receivers-unamed-count", unamed_count },
+                #names > 0 and "\n" or nil,
+                table.concat(names, "\n"),
+            }
+        else
+            frame.station.connected_receivers.value_label.tooltip = nil
         end
-        frame.station.connected_receivers.value_label.tooltip = { "",
-            { "logistic-cannon-transportation.launcher-connected-receivers-unamed-count", unamed_count },
-            #names > 0 and "\n" or nil,
-            table.concat(names, "\n"),
-        }
     else
         frame.station.connected_receivers.value_label.caption = "0"
         frame.station.connected_receivers.value_label.tooltip = nil

@@ -50,6 +50,7 @@ constants.entity_capsule_inventory = "lct-capsule-inventory"
 constants.gui_launcher = "lct-launcher-gui"
 constants.gui_receiver = "lct-receiver-gui"
 constants.gui_tag_event_handlers = "lct-event-handlers"
+constants.gui_tag_tracked_hover_state = "lct-tracked-hover-state"
 -- other
 constants.capsule_landed_sound = "lct-capsule-landed-sound"
 constants.capsule_no_consumption_energy_modifier = 2.5
