@@ -2,6 +2,7 @@ local constants = require("constants")
 local util = require("util")
 local format = require("scripts.format")
 local signal_condition = require("scripts.gui.signal_condition")
+local shared_gui = require("scripts.gui.shared_gui")
 local ReceiverStation = require("scripts.receiver_station")
 
 
@@ -157,31 +158,7 @@ function receiver_gui.get_or_create(player)
         style = "inside_shallow_frame_with_padding_and_vertical_spacing",
         direction = "vertical",
     }
-    frame.circuit.add {
-        type = "frame",
-        name = "header",
-        style = "lct_subheader_frame",
-        direction = "horizontal",
-    }
-    frame.circuit.header.add {
-        type = "label",
-        name = "title",
-        style = "subheader_label",
-        caption = { "logistic-cannon-transportation.circuit-control" }
-    }
-    frame.circuit.header.add {
-        type = "label",
-        name = "red_network",
-        visible = false,
-    }
-    frame.circuit.header.add {
-        type = "label",
-        name = "green_network",
-        visible = false,
-    }
-    frame.circuit.header.add {
-        type = "empty-widget",
-    }.style.horizontally_stretchable = true
+    shared_gui.circuit_control_header.create(frame.circuit, "header")
     -- Enable/disable
     signal_condition.create_gui(frame.circuit)
     frame.circuit.add {
@@ -506,23 +483,10 @@ function receiver_gui.refresh(player, receiver)
     frame.station.occupied_slots.value = math.min(1.0, occupied / capacity)
     frame.station.occupied_slots.caption = { "", { "logistic-cannon-transportation.receiver-occupied-slots", occupied, capacity } }
     -- circuit refresh
-    local red_network = receiver:is_circuit_connected(false, defines.wire_connector_id.circuit_red) and
-        receiver.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_red).network_id or nil
-    local green_network = receiver:is_circuit_connected(false, defines.wire_connector_id.circuit_green) and
-        receiver.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_green).network_id or nil
-    frame.circuit.header.title.caption = { "",
-        (red_network or green_network) and { "logistic-cannon-transportation.circuit-control-connected" }
-        or { "logistic-cannon-transportation.circuit-control-unconnected" },
-    }
-    frame.circuit.header.red_network.visible = red_network ~= nil
-    frame.circuit.header.red_network.caption = red_network and
-        string.format("[color=red]%s[/color]", red_network) or ""
-    frame.circuit.header.green_network.visible = green_network ~= nil
-    frame.circuit.header.green_network.caption = green_network and
-        string.format("[color=green]%s[/color]", green_network) or ""
-    local circuit_enabled = receiver:is_circuit_connected(true)
-    signal_condition.refresh(circuit_enabled, receiver.settings.circuit_enable_condition, frame.circuit.enable_condition)
-    frame.circuit.read_contents.enabled = circuit_enabled
+    shared_gui.circuit_control_header.refresh(frame.circuit.header, receiver)
+    local circuit_connected = receiver:is_circuit_connected(true)
+    signal_condition.refresh(circuit_connected, receiver.settings.circuit_enable_condition, frame.circuit.enable_condition)
+    frame.circuit.read_contents.enabled = circuit_connected
     frame.circuit.read_contents.state = receiver.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
 end
