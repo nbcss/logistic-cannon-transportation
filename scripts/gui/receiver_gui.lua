@@ -397,8 +397,8 @@ function receiver_gui.refresh(player, receiver)
                 end
             end
             frame.station.connected_launchers.value_label.tooltip = { "",
-                { "logistic-cannon-transportation.receiver-connected-launchers-unamed-count", unamed_count },
-                #names > 0 and "\n" or nil,
+                unamed_count > 0 and { "logistic-cannon-transportation.receiver-connected-launchers-unamed-count", unamed_count } or nil,
+                unamed_count > 0 and #names > 0 and "\n" or nil,
                 table.concat(names, "\n"),
             }
         end
