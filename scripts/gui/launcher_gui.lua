@@ -455,7 +455,7 @@ end
 function launcher_gui.refresh(player, launcher)
     if not launcher:valid() then return end
     local frame = launcher_gui.get_or_create(player)
-    
+
     frame.station.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
     inventory_slot.refresh {
@@ -491,7 +491,27 @@ function launcher_gui.refresh(player, launcher)
     local projectile_speed = launcher:get_projectile_speed()
     frame.station.projectile_speed.value_label.caption = projectile_speed and
         { "logistic-cannon-transportation.meter-per-second", tostring(projectile_speed) } or "-"
-    frame.station.connected_receivers.value_label.caption = launcher.network:get_connection_count(launcher:id())
+    local connected_count = launcher.network:get_connection_count(launcher:id())
+    if connected_count > 0 then
+        frame.station.connected_receivers.value_label.caption = string.format("%s [img=info]", connected_count)
+        local unamed_count = 0
+        local names = {}
+        for receiver in launcher.network:connected_receivers(launcher) do
+            if receiver.settings.name then
+                table.insert(names, receiver.settings.name)
+            else
+                unamed_count = unamed_count + 1
+            end
+        end
+        frame.station.connected_receivers.value_label.tooltip = { "",
+            { "logistic-cannon-transportation.launcher-connected-receivers-unamed-count", unamed_count },
+            #names > 0 and "\n" or nil,
+            table.concat(names, "\n"),
+        }
+    else
+        frame.station.connected_receivers.value_label.caption = "0"
+        frame.station.connected_receivers.value_label.tooltip = nil
+    end
     frame.station.network.value_signal.elem_value = launcher.network.signal
     local red_network = launcher:is_circuit_connected(false, defines.wire_connector_id.circuit_red) and
         launcher.inventory_entity.get_circuit_network(defines.wire_connector_id.circuit_red).network_id or nil

@@ -387,7 +387,27 @@ function receiver_gui.refresh(player, receiver)
 
     frame.station.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
-    frame.station.connected_launchers.value_label.caption = receiver.network:get_connection_count(receiver:id())
+    local connected_count = receiver.network:get_connection_count(receiver:id())
+    if connected_count > 0 then
+        frame.station.connected_launchers.value_label.caption = string.format("%s [img=info]", connected_count)
+        local unamed_count = 0
+        local names = {}
+        for launcher in receiver.network:connected_launchers(receiver) do
+            if launcher.settings.name then
+                table.insert(names, launcher.settings.name)
+            else
+                unamed_count = unamed_count + 1
+            end
+        end
+        frame.station.connected_launchers.value_label.tooltip = { "",
+            { "logistic-cannon-transportation.receiver-connected-launchers-unamed-count", unamed_count },
+            #names > 0 and "\n" or nil,
+            table.concat(names, "\n"),
+        }
+    else
+        frame.station.connected_launchers.value_label.caption = "0"
+        frame.station.connected_launchers.value_label.tooltip = nil
+    end
     frame.station.network.value_signal.elem_value = receiver.network.signal
 
     local n_requests = #receiver.settings.delivery_requests

@@ -216,6 +216,30 @@ function CannonNetwork.prototype:get_connection_count(station_id)
 end
 
 ---@param launcher LauncherStation
+---@return fun():ReceiverStation?
+function CannonNetwork.prototype:connected_receivers(launcher)
+    local connected_receivers = self.launcher_to_receivers[launcher:id()]
+    local key = nil
+    return function()
+        local value
+        key, value = next(connected_receivers, key)
+        return value
+    end
+end
+
+---@param receiver ReceiverStation
+---@return fun():LauncherStation?
+function CannonNetwork.prototype:connected_launchers(receiver)
+    local connected_launchers = self.receiver_to_launchers[receiver:id()]
+    local key = nil
+    return function()
+        local value
+        key, value = next(connected_launchers, key)
+        return value
+    end
+end
+
+---@param launcher LauncherStation
 function CannonNetwork.prototype:update_launcher_connections(launcher)
     if not launcher:valid() or not self.launchers:contains(launcher:id()) then return end
     local receivers_in_range = self.launcher_to_receivers[launcher:id()]
