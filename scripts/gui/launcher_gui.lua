@@ -19,11 +19,7 @@ end
 function launcher_gui.get_or_create(player)
     local frame = player.gui.relative[constants.gui_launcher]
     if frame then
-        if settings.startup[constants.setting_debug].value then
-            frame.destroy()
-        else
-            return frame
-        end
+        return frame
     end
 
     --frame
@@ -448,6 +444,14 @@ function launcher_gui.get_or_create(player)
     }
 
     return frame
+end
+
+---@param player LuaPlayer
+function launcher_gui.destroy(player)
+    local frame = player.gui.relative[constants.gui_launcher]
+    if frame then
+        frame.destroy()
+    end
 end
 
 ---@param player LuaPlayer

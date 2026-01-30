@@ -18,7 +18,6 @@ constants.setting_gui_update_interval = "lct-gui-update-interval"
 constants.setting_default_launcher_auto_load = "lct-default-launcher-auto-load-setting"
 constants.setting_default_launcher_side_load = "lct-default-launcher-side-load-setting"
 constants.setting_range_visualization_mode = "lct-range-visualization-mode"
-constants.setting_debug = "lct-debug"
 -- bonus effect
 constants.range_upgrade_bonus = "lct-launcher-range-bonus"
 constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"

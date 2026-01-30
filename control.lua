@@ -30,7 +30,7 @@ script.on_init(function()
     visualization_control.on_init()
 end)
 
-script.on_configuration_changed(function()
+script.on_configuration_changed(function(event)
     CannonNetwork.on_init()
     LauncherStation.on_init()
     ReceiverStation.on_init()
@@ -38,6 +38,12 @@ script.on_configuration_changed(function()
     visualization_control.on_init()
     for _, force in pairs(game.forces) do
         bonus_control.update_bonus(force)
+    end
+    if event.mod_changes[script.mod_name] then
+        for _, player in pairs(game.players) do
+            launcher_gui.destroy(player)
+            receiver_gui.destroy(player)
+        end
     end
 end)
 
@@ -355,24 +361,40 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 -- GUI events
-script.on_event(defines.events.on_gui_opened, function(event)
-    if event.entity and event.entity.valid then
-        local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
-        if event.entity.name == constants.entity_receiver_inventory then
-            local receiver = ReceiverStation.get(event.entity)
-            if receiver and receiver:valid() then
-                game.players[event.player_index].opened = receiver:get_gui_proxy()
-                receiver:update_diode_status()
-                receiver_gui.refresh(player, receiver)
-            end
+script.on_event({
+    defines.events.on_gui_opened,
+    defines.events.on_gui_closed,
+    defines.events.on_player_controller_changed,
+---@param event
+---| EventData.on_gui_opened
+---| EventData.on_gui_closed
+---| EventData.on_player_controller_changed
+}, function(event)
+    local player = game.get_player(event.player_index)
+    if not player then return end
+    receiver_gui.destroy(player)
+    launcher_gui.destroy(player)
+    if player.opened_gui_type ~= defines.gui_type.entity then return end
+    local entity = player.opened --[[@as LuaEntity]]
+
+    if entity.name == constants.entity_receiver_inventory then
+        local receiver = ReceiverStation.get(entity)
+        player.opened = receiver and receiver:valid() and receiver:get_gui_proxy() or nil
+    elseif entity.name == constants.entity_launcher_inventory then
+        local launcher = LauncherStation.get(entity)
+        player.opened = launcher and launcher:valid() and launcher:get_gui_proxy() or nil
+
+    elseif entity.name == constants.entity_receiver_gui_proxy then
+        local receiver = ReceiverStation.get(entity)
+        if receiver and receiver:valid() then
+            receiver:update_diode_status()
+            receiver_gui.refresh(player, receiver)
         end
-        if event.entity.name == constants.entity_launcher_inventory then
-            local launcher = LauncherStation.get(event.entity)
-            if launcher and launcher:valid() then
-                game.players[event.player_index].opened = launcher:get_gui_proxy()
-                launcher:update_diode_status()
-                launcher_gui.refresh(player, launcher)
-            end
+    elseif entity.name == constants.entity_launcher_gui_proxy then
+        local launcher = LauncherStation.get(entity)
+        if launcher and launcher:valid() then
+            launcher:update_diode_status()
+            launcher_gui.refresh(player, launcher)
         end
     end
 end)

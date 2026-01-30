@@ -24,13 +24,6 @@ data:extend{
         default_value = false,
     },
     {
-        type = "bool-setting",
-        name = constants.setting_debug,
-        order = "z",
-        setting_type = "startup",
-        default_value = false,
-    },
-    {
         type = "int-setting",
         name = constants.setting_entity_update_interval,
         order = "ba",

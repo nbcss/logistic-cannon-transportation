@@ -15,11 +15,7 @@ local item_bar_top_color = util.color "3ccd5a"
 function receiver_gui.get_or_create(player)
     local frame = player.gui.relative[constants.gui_receiver]
     if frame then
-        if settings.startup[constants.setting_debug].value then
-            frame.destroy()
-        else
-            return frame
-        end
+        return frame
     end
 
     --frame
@@ -204,6 +200,14 @@ function receiver_gui.get_or_create(player)
     }
 
     return frame
+end
+
+---@param player LuaPlayer
+function receiver_gui.destroy(player)
+    local frame = player.gui.relative[constants.gui_receiver]
+    if frame then
+        frame.destroy()
+    end
 end
 
 ---@package
