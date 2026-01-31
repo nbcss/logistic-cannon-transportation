@@ -1,7 +1,6 @@
 local constants = {}
 
 -- base
-constants.mod_name = "logistic-cannon-transportation"
 constants.ammo_category = "lct-capsule"
 constants.item_subgroup = "cannon-transport"
 constants.rotate_input_event = "lct-rotate-entity-action"

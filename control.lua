@@ -72,10 +72,12 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
 end)
 
 script.on_event(defines.events.on_object_destroyed, function(event)
-    if event.type == defines.target_type.entity and event.useful_id then
-        LauncherStation.on_object_destroyed(event.useful_id)
-        ReceiverStation.on_object_destroyed(event.useful_id)
-        ScheduledDelivery.on_object_destroyed(event.useful_id)
+    if event.type == defines.target_type.entity then
+        if event.useful_id then
+            LauncherStation.on_object_destroyed(event.useful_id)
+            ReceiverStation.on_object_destroyed(event.useful_id)
+        end
+        ScheduledDelivery.on_object_destroyed(event.registration_number, event.useful_id)
     end
 end)
 
@@ -268,6 +270,7 @@ end)
 script.on_event(defines.events.on_entity_cloned, function(event)
     LauncherStation.on_entity_cloned(event.source, event.destination)
     ReceiverStation.on_entity_cloned(event.source, event.destination)
+    ScheduledDelivery.on_entity_cloned(event.source, event.destination)
 end)
 script.on_event(defines.events.script_raised_teleported, function(event)
     LauncherStation.on_entity_teleported(event.entity)
@@ -365,10 +368,10 @@ script.on_event({
     defines.events.on_gui_opened,
     defines.events.on_gui_closed,
     defines.events.on_player_controller_changed,
----@param event
----| EventData.on_gui_opened
----| EventData.on_gui_closed
----| EventData.on_player_controller_changed
+    ---@param event
+    ---| EventData.on_gui_opened
+    ---| EventData.on_gui_closed
+    ---| EventData.on_player_controller_changed
 }, function(event)
     local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
     receiver_gui.destroy(player)
@@ -382,7 +385,6 @@ script.on_event({
     elseif entity.name == constants.entity_launcher_inventory then
         local launcher = LauncherStation.get(entity)
         player.opened = launcher and launcher:valid() and launcher:get_gui_proxy() or nil
-
     elseif entity.name == constants.entity_receiver_gui_proxy then
         local receiver = ReceiverStation.get(entity)
         if receiver and receiver:valid() then
@@ -447,10 +449,10 @@ script.on_event({
 script.on_event({
     defines.events.on_gui_hover,
     defines.events.on_gui_leave,
----@param event
----| EventData.on_gui_hover
----| EventData.on_gui_leave
-}, function (event)
+    ---@param event
+    ---| EventData.on_gui_hover
+    ---| EventData.on_gui_leave
+}, function(event)
     -- Track hover state in a tag if such tag already exists
     if event.element.tags[constants.gui_tag_tracked_hover_state] ~= nil then
         local tags = event.element.tags

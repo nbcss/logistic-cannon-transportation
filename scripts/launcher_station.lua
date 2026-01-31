@@ -626,27 +626,16 @@ function LauncherStation.prototype:launch()
                 if settings.startup[constants.setting_capsule_consumption_mode].value ~= "no-consumption" then
                     ammo_slot.drain_ammo(1)
                 end
-                local data = capsule_properties[self.ammo_name] or error()
-                local direction = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
+                local source_offset = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
                 local base_position = self:position()
-                local position = { base_position.x + direction.x,
-                    base_position.y - 1.8 + direction.y * math2d.projection_constant }
-                self.turret_entity.surface.create_entity {
-                    name = string.format(constants.capsule_projectile_format, data.projectile_name, data.speed),
-                    position = position,
-                    force = self.turret_entity.force,
-                    source = position,
-                    target = delivery.capsule_entity,
-                }
-                self.turret_entity.surface.create_entity {
-                    name = constants.entity_tracker,
-                    speed = data.speed / 60,
-                    position = position,
-                    force = self.turret_entity.force,
-                    source = position,
-                    target = delivery.capsule_entity,
-                    cause = delivery.capsule_entity,
-                }
+                local source_position = { base_position.x + source_offset.x,
+                    base_position.y - 1.8 + source_offset.y * math2d.projection_constant }
+                delivery:launch_capsule(
+                    capsule_properties[self.ammo_name] or error(),
+                    self.turret_entity.surface,
+                    self.turret_entity.force,
+                    source_position
+                )
                 return
             end
         end

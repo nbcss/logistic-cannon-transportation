@@ -18,7 +18,7 @@ function bonus_control.update_bonus(force)
     end
     if #texts > 0 then
         remote.call("custom-bonus-gui", "set", force, {
-            mod_name = constants.mod_name,
+            mod_name = script.mod_name,
             name = "cannon-launcher-bonus",
             icons = {
                 {

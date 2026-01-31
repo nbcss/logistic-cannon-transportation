@@ -6,15 +6,17 @@ local ScheduledDelivery = {}
 
 ---Represents a scheduled or ongoing delivery.
 ---@class ScheduledDelivery
----@field delivery_id uint64 Id of the delivery
+---@field delivery_id uint64 Id of the delivery.
 ---@field capsule_entity LuaEntity Temporary container containing items in the delivery.
----@field capsule_size uint The number of payload slots in the capsule
+---@field capsule_size uint The number of payload slots in the capsule.
+---@field tracker_entity LuaEntity? The tracker projectile in air.
+---@field projectile_entity LuaEntity? The projectile entity (a fluid stream) for visual effect.
 ---@field launcher LauncherStation
 ---@field receiver ReceiverStation
 ---@field ammo_name string Prototype name of ammo used.
 ---@field ammo_quality LuaQualityPrototype? Quality of ammo used.
 ---@field created_time MapTick When the delivery was created.
----@field position MapPosition Target position
+---@field position MapPosition Target position.
 ---@field item string Name of the item delivered.
 ---@field quality string? Quality of the item delivered.
 ---@field amount uint32 Number of items delivered.
@@ -25,11 +27,13 @@ local alert_icon = {
     type = "virtual",
     name = "signal-alert",
 }
-local alert_message = {"", { "gui-alert-tooltip.capsule-delivery-failed" }}
+local alert_message = { "", { "gui-alert-tooltip.capsule-delivery-failed" } }
 
 function ScheduledDelivery.on_init()
     ---@type table<uint64, ScheduledDelivery?> ScheduledDelivery's indexed by capsule_entity.unit_number.
     storage.scheduled_deliveries = storage.scheduled_deliveries or {}
+    ---@type table<uint64, ScheduledDelivery?> Map tracker register number to scheduled_delivery
+    storage.tracker_delivery_index = storage.tracker_delivery_index or {}
 end
 
 ---Create a CannonDelivery in storage and its associated entities.
@@ -68,16 +72,36 @@ function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
     return instance
 end
 
----@param unit_number uint64 Unit number of the destroyed entity.
-function ScheduledDelivery.on_object_destroyed(unit_number)
-    local delivery = ScheduledDelivery.get(unit_number)
+---@param registration_number uint64
+---@param unit_number uint64?
+function ScheduledDelivery.on_object_destroyed(registration_number, unit_number)
+    local delivery = unit_number and ScheduledDelivery.get(unit_number)
+        or storage.tracker_delivery_index[registration_number]
     if not delivery then return end
+
     storage.scheduled_deliveries[delivery:id()] = nil
+    storage.tracker_delivery_index[registration_number] = nil
+
     if delivery.receiver:valid() then
         delivery.receiver.scheduled_deliveries[delivery:id()] = nil
     end
     if delivery.launcher:valid() and delivery.launcher.scheduled_delivery == delivery then
         delivery.launcher.scheduled_delivery = nil
+    end
+    delivery.capsule_entity.destroy()
+    if delivery.tracker_entity then
+        delivery.tracker_entity.destroy()
+    end
+    if delivery.projectile_entity then
+        delivery.projectile_entity.destroy()
+    end
+end
+
+---@param source LuaEntity
+---@param destination LuaEntity
+function ScheduledDelivery.on_entity_cloned(source, destination)
+    if destination.name == constants.entity_tracker then
+        destination.destroy()
     end
 end
 
@@ -108,6 +132,27 @@ function ScheduledDelivery.prototype:is_matching_ammo(ammo_slot)
     return ammo_slot.valid_for_read and self.ammo_name == ammo_slot.name and self.ammo_quality == ammo_slot.quality
 end
 
+function ScheduledDelivery.prototype:launch_capsule(capsule_property, surface, force, source_position)
+    self.projectile_entity = surface.create_entity {
+        name = string.format(constants.capsule_projectile_format, capsule_property.projectile_name, capsule_property.speed),
+        position = source_position,
+        force = force,
+        source = source_position,
+        target = self.position,
+    } or error()
+    self.tracker_entity = surface.create_entity {
+        name = constants.entity_tracker,
+        speed = capsule_property.speed / 60,
+        position = source_position,
+        force = force,
+        source = source_position,
+        target = self.position,
+        cause = self.capsule_entity,
+    } or error()
+    local tracker_id = script.register_on_object_destroyed(self.tracker_entity)
+    storage.tracker_delivery_index[tracker_id] = self
+end
+
 function ScheduledDelivery.prototype:deliver()
     local surface = self.capsule_entity.surface
     local capsule_inventory = self:get_inventory()
@@ -118,7 +163,7 @@ function ScheduledDelivery.prototype:deliver()
     }[1]
     if receiver_entity then
         local receiver = ReceiverStation.get(receiver_entity)
-        surface.play_sound{
+        surface.play_sound {
             path = constants.capsule_landed_sound,
             position = self.position,
         }
