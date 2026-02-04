@@ -568,14 +568,18 @@ function LauncherStation.prototype:set_network_signal(signal)
     self:set_network(network)
 end
 
+---Assumes launcher is valid.
 ---@param receiver ReceiverStation
 ---@param item ItemIDAndQualityIDPair
 ---@param amount uint32
 ---@return ScheduledDelivery?
 function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
-    if not self:is_ready(receiver:position()) then
+    if self.scheduled_delivery ~= nil or self.ammo_name == "" or self:is_disabled() then
         return nil
     end
+    local distance = math2d.position.distance(self:position(), receiver:position())
+    if self:get_current_range() < distance then return nil end
+
     local inventory = self:get_inventory()
     local available_count = inventory.get_item_count_filtered { name = item.name, quality = item.quality }
     local capsule_size = self:get_max_payload_size() --[[@as number]]
@@ -588,17 +592,6 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
     self.scheduled_delivery = delivery
     self:set_aiming(delivery.position)
     return delivery
-end
-
----@param position MapPosition
----@return boolean
-function LauncherStation.prototype:is_ready(position)
-    if not self:valid() or self.ammo_name == "" or self.scheduled_delivery ~= nil then
-        return false
-    end
-    if self:is_disabled() then return false end
-    local distance = math2d.position.distance(self:position(), position)
-    return self:get_current_range() >= distance
 end
 
 function LauncherStation.prototype:launch()

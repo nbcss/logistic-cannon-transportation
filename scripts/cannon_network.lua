@@ -127,6 +127,7 @@ function CannonNetwork.prototype:update(tick)
         launcher:update_state()
         self:update_launcher_storage(launcher)
     end
+
     for receiver in self.receivers:bucket(bucket_id) do
         if not receiver:valid() or receiver:is_disabled() then goto next_receiver end
         local empty_slots = receiver:get_inventory().count_empty_stacks(false, false)
@@ -166,28 +167,30 @@ function CannonNetwork.prototype:update(tick)
             local item_providers = self.item_to_launchers[encoded_item]
             if item_providers then
                 local item = { name = demand.name, quality = demand.quality }
-                local launchers = {}
-                -- iterate over item providers or neighbours, determined by which one is smaller
-                if table_size(item_providers) <= connections_count then
-                    for _, launcher in pairs(item_providers) do
-                        if neighbours[launcher:id()] then
-                            table.insert(launchers, launcher)
-                        end
-                    end
-                else
-                    for _, launcher in pairs(neighbours) do
-                        if self.launcher_to_items[launcher:id()][encoded_item] then
-                            table.insert(launchers, launcher)
-                        end
-                    end
-                end
-                for _, launcher in ipairs(launchers) do
-                    if launcher:valid() and (not protect or launcher:get_max_payload_size() <= empty_slots) then
+                ---@param launcher LauncherStation
+                local function try_deliver(launcher)
+                    if (not protect or launcher:get_max_payload_size() <= empty_slots) and launcher:valid() then
                         local delivery = launcher:schedule_delivery(receiver, item, demand.count)
                         if delivery then
                             receiver:add_delivery(delivery)
                             demand.count = demand.count - delivery.amount
                             empty_slots = empty_slots - delivery.capsule_size
+                            return true
+                        end
+                    end
+                    return false
+                end
+                -- iterate over item providers or neighbours, determined by which one is smaller
+                if table_size(item_providers) <= connections_count then
+                    for _, launcher in pairs(item_providers) do
+                        if neighbours[launcher:id()] and try_deliver(launcher) then
+                            if protect and empty_slots <= 0 then goto next_receiver end
+                            if demand.count <= 0 then break end
+                        end
+                    end
+                else
+                    for _, launcher in pairs(neighbours) do
+                        if self.launcher_to_items[launcher:id()][encoded_item] and try_deliver(launcher) then
                             if protect and empty_slots <= 0 then goto next_receiver end
                             if demand.count <= 0 then break end
                         end
