@@ -3,6 +3,7 @@ local constants = require("constants")
 local format = require("scripts.format")
 local BucketSet = require("scripts.bucket_set")
 local visualization_control = require("scripts.visualization_control")
+local lct_util              = require("scripts.lct_util")
 
 local CannonNetwork = {}
 
@@ -258,7 +259,7 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
     if maximum_range > 0 then
         for receiver in self.receivers:all() do
             if receiver:valid() then
-                local d = math2d.position.distance(receiver:position(), launcher:position())
+                local d = lct_util.distance(receiver:position(), launcher:position())
                 if d <= maximum_range then
                     self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
                     self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
@@ -290,7 +291,7 @@ function CannonNetwork.prototype:update_receiver_connections(receiver)
         if launcher:valid() then
             local maximum_range = launcher:get_max_range()
             if maximum_range > 0 then
-                local d = math2d.position.distance(receiver:position(), launcher:position())
+                local d = lct_util.distance(receiver:position(), launcher:position())
                 if d <= maximum_range then
                     self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
                     self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher

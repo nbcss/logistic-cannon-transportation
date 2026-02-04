@@ -5,6 +5,7 @@ local format = require("scripts.format")
 local bonus_control = require("scripts.bonus_control")
 local visualization_control = require("scripts.visualization_control")
 local signal_condition = require("scripts.gui.signal_condition")
+local lct_util         = require("scripts.lct_util")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
@@ -577,7 +578,7 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
     if self.scheduled_delivery ~= nil or self.ammo_name == "" or self:is_disabled() then
         return nil
     end
-    local distance = math2d.position.distance(self:position(), receiver:position())
+    local distance = lct_util.distance(self:position(), receiver:position())
     if self:get_current_range() < distance then return nil end
 
     local inventory = self:get_inventory()
@@ -601,7 +602,7 @@ function LauncherStation.prototype:launch()
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_slot = self:get_ammo_inventory()[1]
     if not self:is_disabled() and delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
-        local energy_cost = math2d.position.distance(self:position(), delivery.position) * self:get_launch_consumption()
+        local energy_cost = lct_util.distance(self:position(), delivery.position) * self:get_launch_consumption()
         if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
             local inventory = self:get_inventory()
