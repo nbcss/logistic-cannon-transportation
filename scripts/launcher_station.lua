@@ -177,10 +177,10 @@ function LauncherStation.create(entity, from_settings)
     instance.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
         instance.settings.circuit_read_ammo
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)
-        .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true),
+        .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_red, true)--[[@as LuaWireConnector]],
             false, defines.wire_origin.script)
     instance.turret_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true)
-        .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true),
+        .connect_to(instance.inventory_entity.get_wire_connector(defines.wire_connector_id.circuit_green, true)--[[@as LuaWireConnector]],
             false, defines.wire_origin.script)
     instance:update_ammo_proxy()
 
