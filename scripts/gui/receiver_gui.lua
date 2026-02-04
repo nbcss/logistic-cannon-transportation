@@ -381,12 +381,14 @@ function receiver_gui.refresh(player, receiver)
     if not receiver:valid() then return end
     local frame = receiver_gui.get_or_create(player)
 
-    frame.station.header.display_name.caption = receiver.settings.name or
+    local station_frame = frame.station
+    station_frame.header.display_name.caption = receiver.settings.name or
         { "logistic-cannon-transportation.receiver-default-name" }
     local connected_count = receiver.network:get_connection_count(receiver:id())
+    local connected_launchers_value_label = station_frame.connected_launchers.value_label
     if connected_count > 0 then
-        frame.station.connected_launchers.value_label.caption = string.format("%s [img=info]", connected_count)
-        if frame.station.connected_launchers.value_label.tags[constants.gui_tag_tracked_hover_state] then
+        connected_launchers_value_label.caption = string.format("%s [img=info]", connected_count)
+        if connected_launchers_value_label.tags[constants.gui_tag_tracked_hover_state] then
             local unamed_count = 0
             local names = {}
             for launcher in receiver.network:connected_launchers(receiver) do
@@ -396,17 +398,17 @@ function receiver_gui.refresh(player, receiver)
                     unamed_count = unamed_count + 1
                 end
             end
-            frame.station.connected_launchers.value_label.tooltip = { "",
+            connected_launchers_value_label.tooltip = { "",
                 unamed_count > 0 and { "logistic-cannon-transportation.receiver-connected-launchers-unamed-count", unamed_count } or nil,
                 unamed_count > 0 and #names > 0 and "\n" or nil,
                 table.concat(names, "\n"),
             }
         end
     else
-        frame.station.connected_launchers.value_label.caption = "0"
-        frame.station.connected_launchers.value_label.tooltip = nil
+        connected_launchers_value_label.caption = "0"
+        connected_launchers_value_label.tooltip = nil
     end
-    frame.station.network.value_signal.elem_value = receiver.network.signal
+    station_frame.network.value_signal.elem_value = receiver.network.signal
 
     local n_requests = #receiver.settings.delivery_requests
     ---@type table<string, {demand: integer, stored: integer, incoming: integer}>
@@ -434,14 +436,19 @@ function receiver_gui.refresh(player, receiver)
         end
     end
 
-    local requests_flow_children = frame.station.requests.children
+    local requests_flow_children = station_frame.requests.children
     for i = 1, math.max(#requests_flow_children, n_requests + 1) do
         local request = receiver.settings.delivery_requests[i]
         local element = requests_flow_children[i]
         if request or i == n_requests + 1 then
             if not element then
-                element = receiver_gui.create_request_list_item(frame.station.requests, i)
+                element = receiver_gui.create_request_list_item(station_frame.requests, i)
             end
+            local item_flow = element.item
+            local item_elem_button = item_flow.choose_elem
+            local item_text_label = item_flow.info.top.item_text
+            local item_edit_button = item_flow.info.top.edit_button
+            local item_progress_flow = item_flow.info.progress
 
             if request then
                 -- Display info about a request
@@ -455,9 +462,9 @@ function receiver_gui.refresh(player, receiver)
                     (item.stored + item.incoming) / item.demand or 0)
                 local top_value = math.min(1, item.stored > 0 and item.stored / item.demand or 0)
 
-                element.item.choose_elem.elem_value = { name = request.name, quality = request.quality }
-                element.item.info.top.item_text.caption = item_text
-                if element.item.info.top.item_text.tags[constants.gui_tag_tracked_hover_state] then
+                item_elem_button.elem_value = { name = request.name, quality = request.quality }
+                item_text_label.caption = item_text
+                if item_text_label.tags[constants.gui_tag_tracked_hover_state] then
                     local available_for_delivery = 0
                     for launcher in receiver.network:connected_launchers(receiver) do
                         local items = receiver.network.launcher_to_items[launcher:id()]
@@ -468,26 +475,26 @@ function receiver_gui.refresh(player, receiver)
                     local prefix = "[color=#fae8be][font=default-semibold]"
                     local suffix = ": [/font][/color]"
                     local satisfaction = string.format("%s/%s", item.stored, item.demand)
-                    element.item.info.top.item_text.tooltip = { "",
+                    item_text_label.tooltip = { "",
                         { "", prefix, { "description.logistic-request-tooltip-satisfaction" }, suffix, satisfaction, "\n" },
                         { "", prefix, { "description.logistic-request-tooltip-on-the-way" }, suffix, item.incoming, "\n" },
                         { "", prefix, { "logistic-cannon-transportation.receiver-item-tooltip-available-for-delivery" }, suffix, available_for_delivery },
                     }
                 end
-                element.item.info.top.edit_button.visible = true
-                element.item.info.progress.visible = true
-                element.item.info.progress.base.value = base_value
-                element.item.info.progress.top.value = top_value
+                item_edit_button.visible = true
+                item_progress_flow.visible = true
+                item_progress_flow.base.value = base_value
+                item_progress_flow.top.value = top_value
                 receiver_gui.refresh_request_editor_block(element, request)
             else
                 -- New request button
-                element.item.choose_elem.elem_value = nil
-                element.item.info.top.item_text.caption = { "logistic-cannon-transportation.receiver-add-request" }
-                element.item.info.top.item_text.tooltip = nil
-                element.item.info.top.edit_button.visible = false
-                element.item.info.progress.visible = false
-                element.item.info.progress.base.value = 0
-                element.item.info.progress.top.value = 0
+                item_flow.choose_elem.elem_value = nil
+                item_text_label.caption = { "logistic-cannon-transportation.receiver-add-request" }
+                item_text_label.tooltip = nil
+                item_edit_button.visible = false
+                item_progress_flow.visible = false
+                item_progress_flow.base.value = 0
+                item_progress_flow.top.value = 0
                 receiver_gui.close_request_editor_block(element)
             end
         else
@@ -499,18 +506,19 @@ function receiver_gui.refresh(player, receiver)
     -- progressbar refresh
     local capacity = #receiver:get_inventory()
     local occupied = capacity - receiver:get_inventory().count_empty_stacks(false, false)
-    frame.station.reserved_slots.value = math.min(1.0, reserved / capacity)
-    frame.station.reserved_slots.caption = { "", { "logistic-cannon-transportation.receiver-reserved-slots", reserved, capacity } }
-    frame.station.reserved_slots.style.color = reserved > capacity and { 1, 0, 0 } or { 0, 0.9, 0.9 }
-    frame.station.occupied_slots.value = math.min(1.0, occupied / capacity)
-    frame.station.occupied_slots.caption = { "", { "logistic-cannon-transportation.receiver-occupied-slots", occupied, capacity } }
+    station_frame.reserved_slots.value = math.min(1.0, reserved / capacity)
+    station_frame.reserved_slots.caption = { "", { "logistic-cannon-transportation.receiver-reserved-slots", reserved, capacity } }
+    station_frame.reserved_slots.style.color = reserved > capacity and { 1, 0, 0 } or { 0, 0.9, 0.9 }
+    station_frame.occupied_slots.value = math.min(1.0, occupied / capacity)
+    station_frame.occupied_slots.caption = { "", { "logistic-cannon-transportation.receiver-occupied-slots", occupied, capacity } }
     -- circuit refresh
-    shared_gui.circuit_control_header.refresh(frame.circuit.header, receiver)
+    local circuit_frame = frame.circuit
+    shared_gui.circuit_control_header.refresh(circuit_frame.header, receiver)
     local circuit_connected = receiver:is_circuit_connected(true)
     signal_condition.refresh(circuit_connected, receiver.settings.circuit_enable_condition,
-        frame.circuit.enable_condition)
-    frame.circuit.read_contents.enabled = circuit_connected
-    frame.circuit.read_contents.state = receiver.inventory_entity.get_or_create_control_behavior()
+        circuit_frame.enable_condition)
+    circuit_frame.read_contents.enabled = circuit_connected
+    circuit_frame.read_contents.state = receiver.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
 end
 

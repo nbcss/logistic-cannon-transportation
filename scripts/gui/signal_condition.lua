@@ -196,47 +196,57 @@ end
 ---@param element LuaGuiElement
 function signal_condition.refresh(circuit_connected, circuit_condition, element)
 
-    element.checkbox.enabled = circuit_connected
-    element.checkbox.state = circuit_condition.enabled
+    local checkbox = element.checkbox
+    local radio_constant = element.condition_type.constant
+    local radio_signal = element.condition_type.signal
+    local comparator_menu = element.condition_values.comparator
+    local left_value_button = element.condition_values.left
+    local right_value_button = element.condition_values.right
+    local right_constant_text = element.condition_values.right_constant_text
+    local right_constant_confirm = element.condition_values.right_constant_confirm
+    local right_constant_display = right_value_button.constant_display
+
+    checkbox.enabled = circuit_connected
+    checkbox.state = circuit_condition.enabled
 
     -- Enable/disable input elements
-    element.condition_type.constant.enabled = circuit_connected and circuit_condition.enabled
-    element.condition_type.signal.enabled = circuit_connected and circuit_condition.enabled
-    element.condition_values.left.enabled = circuit_connected and circuit_condition.enabled
-    element.condition_values.comparator.enabled = circuit_connected and circuit_condition.enabled
-    element.condition_values.right.enabled = circuit_connected and circuit_condition.enabled
+    radio_constant.enabled = circuit_connected and circuit_condition.enabled
+    radio_signal.enabled = circuit_connected and circuit_condition.enabled
+    left_value_button.enabled = circuit_connected and circuit_condition.enabled
+    comparator_menu.enabled = circuit_connected and circuit_condition.enabled
+    right_value_button.enabled = circuit_connected and circuit_condition.enabled
 
     -- Close editor of constant when irrelavant
     if not (circuit_connected and circuit_condition.enabled and circuit_condition.constant) then
-        element.condition_values.right.visible = true
-        element.condition_values.right_constant_text.visible = false
-        element.condition_values.right_constant_confirm.visible = false
+        right_value_button.visible = true
+        right_constant_text.visible = false
+        right_constant_confirm.visible = false
     end
 
     -- Condition type
-    element.condition_type.constant.state = circuit_condition.constant ~= nil
-    element.condition_type.signal.state = circuit_condition.constant == nil
+    radio_constant.state = circuit_condition.constant ~= nil
+    radio_signal.state = circuit_condition.constant == nil
 
     -- Left side
-    element.condition_values.left.elem_value = circuit_condition.first_signal
+    left_value_button.elem_value = circuit_condition.first_signal
 
     -- Right-side
-    element.condition_values.right.elem_value = circuit_condition.second_signal
-    element.condition_values.right.tags = util.merge{element.condition_values.right.tags, {
-        constant_value = circuit_condition.constant or 0
-    }}
+    right_value_button.elem_value = circuit_condition.second_signal
+    local right_value_tags = right_value_button.tags
+    right_value_tags.constant_value = circuit_condition.constant or 0
+    right_value_button.tags = right_value_tags
     if circuit_condition.constant then
-        element.condition_values.right.locked = true
-        element.condition_values.right.constant_display.caption = format.number(circuit_condition.constant or 0)
+        right_value_button.locked = true
+        right_constant_display.caption = format.number(circuit_condition.constant or 0)
     else
-        element.condition_values.right.locked = false
-        element.condition_values.right.constant_display.caption = ""
+        right_value_button.locked = false
+        right_constant_display.caption = ""
     end
 
     -- Comparator
     for i, s in ipairs(signal_condition.comparators) do
         if s == circuit_condition.comparator then
-            element.condition_values.comparator.selected_index = i
+            comparator_menu.selected_index = i
             break
         end
     end

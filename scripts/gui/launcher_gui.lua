@@ -444,10 +444,11 @@ function launcher_gui.refresh(player, launcher)
     if not launcher:valid() then return end
     local frame = launcher_gui.get_or_create(player)
 
-    frame.station.header.display_name.caption = launcher.settings.name or
+    local station_frame = frame.station
+    station_frame.header.display_name.caption = launcher.settings.name or
         { "logistic-cannon-transportation.launcher-default-name" }
     inventory_slot.refresh {
-        element = frame.station.ammo_and_energy.ammo_slot,
+        element = station_frame.ammo_and_energy.ammo_slot,
         target = launcher:get_ammo_inventory()[1],
         options = ammo_slot_options,
     }
@@ -455,34 +456,34 @@ function launcher_gui.refresh(player, launcher)
     local capacity = format.energy(launcher:get_energy_capacity())
     local energy_ratio = launcher:get_stored_energy() > 0 and
         math.min(1.0, launcher:get_stored_energy() / launcher:get_energy_capacity()) or 0
-    frame.station.ammo_and_energy.energy.value = energy_ratio
-    frame.station.ammo_and_energy.energy.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
-    frame.station.auto_load_ammo.state = launcher.settings.load_capsule_from_inventory
-    frame.station.side_load_ammo.state = launcher.settings.enable_ammo_proxy
-    frame.station.range.info.value_label.caption = { "",
+    station_frame.ammo_and_energy.energy.value = energy_ratio
+    station_frame.ammo_and_energy.energy.caption = { "", { "logistic-cannon-transportation.launcher-energy", energy, capacity } }
+    station_frame.auto_load_ammo.state = launcher.settings.load_capsule_from_inventory
+    station_frame.side_load_ammo.state = launcher.settings.enable_ammo_proxy
+    station_frame.range.info.value_label.caption = { "",
         string.format("%.0f", launcher:get_current_range()),
         launcher.settings.range_override and "[color=yellow]" or "[color=#ffffff]",
         string.format("/%.0f", launcher:get_max_range()),
         "[/color]",
     }
-    frame.station.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
+    station_frame.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
     local payload_size = launcher:get_max_payload_size()
-    frame.station.payload_size.info.edit_button.visible = payload_size ~= nil
-    frame.station.payload_size.info.value_label.caption = { "",
+    station_frame.payload_size.info.edit_button.visible = payload_size ~= nil
+    station_frame.payload_size.info.value_label.caption = { "",
         launcher.settings.payload_size_override and "[color=yellow]" or "[color=#ffffff]",
         payload_size and { "logistic-cannon-transportation.stack", payload_size } or "-",
         "[/color]",
     }
     local energy_consumption = launcher:get_launch_consumption()
-    frame.station.energy_consumption.value_label.caption = energy_consumption and
+    station_frame.energy_consumption.value_label.caption = energy_consumption and
         format.energy(energy_consumption, "J/m") or "-"
     local projectile_speed = launcher:get_projectile_speed()
-    frame.station.projectile_speed.value_label.caption = projectile_speed and
+    station_frame.projectile_speed.value_label.caption = projectile_speed and
         { "logistic-cannon-transportation.meter-per-second", tostring(projectile_speed) } or "-"
     local connected_count = launcher.network:get_connection_count(launcher:id())
     if connected_count > 0 then
-        frame.station.connected_receivers.value_label.caption = string.format("%s [img=info]", connected_count)
-        if frame.station.connected_receivers.value_label.tags[constants.gui_tag_tracked_hover_state] then
+        station_frame.connected_receivers.value_label.caption = string.format("%s [img=info]", connected_count)
+        if station_frame.connected_receivers.value_label.tags[constants.gui_tag_tracked_hover_state] then
             local unamed_count = 0
             local names = {}
             for receiver in launcher.network:connected_receivers(launcher) do
@@ -492,26 +493,27 @@ function launcher_gui.refresh(player, launcher)
                     unamed_count = unamed_count + 1
                 end
             end
-            frame.station.connected_receivers.value_label.tooltip = { "",
+            station_frame.connected_receivers.value_label.tooltip = { "",
                 unamed_count > 0 and { "logistic-cannon-transportation.launcher-connected-receivers-unamed-count", unamed_count } or nil,
                 unamed_count > 0 and #names > 0 and "\n" or nil,
                 table.concat(names, "\n"),
             }
         end
     else
-        frame.station.connected_receivers.value_label.caption = "0"
-        frame.station.connected_receivers.value_label.tooltip = nil
+        station_frame.connected_receivers.value_label.caption = "0"
+        station_frame.connected_receivers.value_label.tooltip = nil
     end
-    frame.station.network.value_signal.elem_value = launcher.network.signal
+    station_frame.network.value_signal.elem_value = launcher.network.signal
     -- circuit refresh
-    shared_gui.circuit_control_header.refresh(frame.circuit.header, launcher)
+    local circuit_frame = frame.circuit
+    shared_gui.circuit_control_header.refresh(circuit_frame.header, launcher)
     local circuit_connected = launcher:is_circuit_connected(true)
-    frame.circuit.read_ammo.enabled = circuit_connected
-    frame.circuit.read_ammo.state = launcher.settings.circuit_read_ammo
-    frame.circuit.read_contents.enabled = circuit_connected
-    frame.circuit.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
+    circuit_frame.read_ammo.enabled = circuit_connected
+    circuit_frame.read_ammo.state = launcher.settings.circuit_read_ammo
+    circuit_frame.read_contents.enabled = circuit_connected
+    circuit_frame.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
-    signal_condition.refresh(circuit_connected, launcher.settings.circuit_enable_condition, frame.circuit.enable_condition)
+    signal_condition.refresh(circuit_connected, launcher.settings.circuit_enable_condition, circuit_frame.enable_condition)
 end
 
 ---@param launcher LauncherStation
