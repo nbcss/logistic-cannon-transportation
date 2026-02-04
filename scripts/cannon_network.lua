@@ -259,7 +259,7 @@ function CannonNetwork.prototype:update_launcher_connections(launcher)
     if maximum_range > 0 then
         for receiver in self.receivers:all() do
             if receiver:valid() then
-                local d = lct_util.distance(receiver:position(), launcher:position())
+                local d = lct_util.math2d.distance(receiver:position(), launcher:position())
                 if d <= maximum_range then
                     self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
                     self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher
@@ -291,7 +291,7 @@ function CannonNetwork.prototype:update_receiver_connections(receiver)
         if launcher:valid() then
             local maximum_range = launcher:get_max_range()
             if maximum_range > 0 then
-                local d = lct_util.distance(receiver:position(), launcher:position())
+                local d = lct_util.math2d.distance(receiver:position(), launcher:position())
                 if d <= maximum_range then
                     self.launcher_to_receivers[launcher:id()][receiver:id()] = receiver
                     self.receiver_to_launchers[receiver:id()][launcher:id()] = launcher

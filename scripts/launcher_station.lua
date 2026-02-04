@@ -586,7 +586,7 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, demand)
     -- Check valid late because it is slow
     if not self:valid() or self:is_disabled() then return nil end
 
-    local distance = lct_util.distance(self:position(), receiver:position())
+    local distance = lct_util.math2d.distance(self:position(), receiver:position())
     if self:get_current_range() < distance then return nil end
 
     local available_count = self:get_inventory().get_item_count_filtered { name = item.name, quality = item.quality }
@@ -600,13 +600,14 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, demand)
 end
 
 function LauncherStation.prototype:launch()
+    if not self:valid() then return end
     self:set_aiming(nil)
     local delivery = self.scheduled_delivery
-    if not self:valid() or not delivery then return end
+    if not delivery then return end
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_slot = self:get_ammo_inventory()[1]
     if not self:is_disabled() and delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
-        local energy_cost = lct_util.distance(self:position(), delivery.position) * self:get_launch_consumption()
+        local energy_cost = lct_util.math2d.distance(self:position(), delivery.position) * self:get_launch_consumption()
         if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
             local inventory = self:get_inventory()
@@ -641,24 +642,31 @@ function LauncherStation.prototype:launch()
     delivery:destroy()
 end
 
----@param position MapPosition?
-function LauncherStation.prototype:set_aiming(position)
-    if not self:valid() then return end
-    if self.target_entity and self.target_entity.valid then
-        self.target_entity.destroy()
-    end
-    if position then
-        local direction = math2d.position.get_normalised(math2d.position.subtract(position, self:position()))
-        self.target_entity = self.turret_entity.surface.create_entity {
-            name = constants.entity_target,
-            position = math2d.position.add(self:position(), direction),
-            force = "enemy",
-        } or error()
-        self.target_entity.destructible = false
+---Assumes self is valid.
+---@param target_position MapPosition?
+function LauncherStation.prototype:set_aiming(target_position)
+    if target_position then
+        local self_position = self:position()
+        local target_distance = lct_util.math2d.distance(target_position, self_position)
+        local entity_position = {
+            x = (target_position.x - self_position.x) / target_distance + self_position.x,
+            y = (target_position.y - self_position.y) / target_distance + self_position.y,
+        }
+        if self.target_entity and self.target_entity.valid then
+            if not self.target_entity.teleport(entity_position) then error() end
+        else
+            self.target_entity = self.turret_entity.surface.create_entity {
+                name = constants.entity_target,
+                position = entity_position,
+                force = "enemy",
+            } or error()
+            self.target_entity.destructible = false
+        end
+
+        self.turret_entity.shooting_target = self.target_entity
     else
-        self.target_entity = nil
+        self.turret_entity.shooting_target = nil
     end
-    self.turret_entity.shooting_target = self.target_entity
 end
 
 ---@return ScheduledDelivery?
