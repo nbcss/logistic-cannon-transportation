@@ -569,26 +569,30 @@ function LauncherStation.prototype:set_network_signal(signal)
     self:set_network(network)
 end
 
----Assumes launcher is valid.
 ---@param receiver ReceiverStation
 ---@param item ItemIDAndQualityIDPair
----@param amount uint32
+---@param demand uint32
 ---@return ScheduledDelivery?
-function LauncherStation.prototype:schedule_delivery(receiver, item, amount)
-    if self.scheduled_delivery ~= nil or self.ammo_name == "" or self:is_disabled() then
+function LauncherStation.prototype:schedule_delivery(receiver, item, demand)
+    if self.scheduled_delivery ~= nil or self.ammo_name == "" then
         return nil
     end
+
+    -- Check demand < payload_item_count early because it prunes most invocations
+    local capsule_size = self:get_max_payload_size() --[[@as number]]
+    local payload_item_count = capsule_size * prototypes.item[item.name].stack_size
+    if demand < payload_item_count then return nil end
+
+    -- Check valid late because it is slow
+    if not self:valid() or self:is_disabled() then return nil end
+
     local distance = lct_util.distance(self:position(), receiver:position())
     if self:get_current_range() < distance then return nil end
 
-    local inventory = self:get_inventory()
-    local available_count = inventory.get_item_count_filtered { name = item.name, quality = item.quality }
-    local capsule_size = self:get_max_payload_size() --[[@as number]]
-    local payload_count = capsule_size * prototypes.item[item.name].stack_size
-    if capsule_size <= 0 or available_count < payload_count or payload_count > amount then
-        return nil
-    end
-    local deliver_item = { name = item.name, quality = item.quality, count = payload_count }
+    local available_count = self:get_inventory().get_item_count_filtered { name = item.name, quality = item.quality }
+    if capsule_size <= 0 or available_count < payload_item_count then return nil end
+
+    local deliver_item = { name = item.name, quality = item.quality, count = payload_item_count }
     local delivery = ScheduledDelivery.create(self, receiver, deliver_item, capsule_size)
     self.scheduled_delivery = delivery
     self:set_aiming(delivery.position)

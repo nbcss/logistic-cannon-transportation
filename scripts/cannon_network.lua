@@ -170,7 +170,7 @@ function CannonNetwork.prototype:update(tick)
                 local item = { name = demand.name, quality = demand.quality }
                 ---@param launcher LauncherStation
                 local function try_deliver(launcher)
-                    if (not protect or launcher:get_max_payload_size() <= empty_slots) and launcher:valid() then
+                    if (not protect or launcher:get_max_payload_size() <= empty_slots) then
                         local delivery = launcher:schedule_delivery(receiver, item, demand.count)
                         if delivery then
                             receiver:add_delivery(delivery)
