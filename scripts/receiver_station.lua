@@ -27,13 +27,16 @@ ReceiverStation.prototype.__index = ReceiverStation.prototype
 ---@field delivery_requests {name: string, quality: string, amount: uint32}[]
 ---@field overflow_protection boolean
 ---@field circuit_enable_condition ModCircuitCondition
-ReceiverStation.default_settings = {
-    name = nil,
-    network_signal = nil,
-    delivery_requests = {},
-    overflow_protection = true,
-    circuit_enable_condition = signal_condition.default_value,
-}
+
+function ReceiverStation.make_default_settings()
+    return {
+        name = nil,
+        network_signal = nil,
+        delivery_requests = {},
+        overflow_protection = true,
+        circuit_enable_condition = signal_condition.default_value,
+    } --[[@as ReceiverStationSettings]]
+end
 
 local clone_blacklist = {
     [constants.entity_receiver_gui_proxy] = true,
@@ -53,7 +56,7 @@ function ReceiverStation.create(entity, from_settings)
     local surface = entity.surface
     local force = entity.force --[[@as LuaForce]]
 
-    local receiver_settings = from_settings or util.table.deepcopy(ReceiverStation.default_settings)
+    local receiver_settings = from_settings or ReceiverStation.make_default_settings()
 
     local instance = setmetatable({
         inventory_entity = entity,

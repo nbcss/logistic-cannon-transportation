@@ -50,18 +50,19 @@ LauncherStation.prototype.__index = LauncherStation.prototype
 ---@field load_capsule_from_inventory boolean
 ---@field circuit_read_ammo boolean
 ---@field circuit_enable_condition ModCircuitCondition
-LauncherStation.default_settings = function()
+
+function LauncherStation.make_default_settings()
     return {
         name = nil,
         range_override = nil,
         payload_size_override = nil,
         network_signal = nil,
         direction = defines.direction.north,
-        enable_ammo_proxy = settings.global[constants.setting_default_launcher_side_load].value,
-        load_capsule_from_inventory = settings.global[constants.setting_default_launcher_auto_load].value,
+        enable_ammo_proxy = not not settings.global[constants.setting_default_launcher_side_load].value,
+        load_capsule_from_inventory = not not settings.global[constants.setting_default_launcher_auto_load].value,
         circuit_read_ammo = true,
         circuit_enable_condition = signal_condition.default_value,
-    }
+    } --[[@as LauncherStationSettings]]
 end
 
 local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
@@ -148,7 +149,7 @@ function LauncherStation.create(entity, from_settings)
         quality = entity.quality,
     } or error()
 
-    local launcher_settings = from_settings or LauncherStation.default_settings()
+    local launcher_settings = from_settings or LauncherStation.make_default_settings()
 
     local instance = setmetatable({
         inventory_entity = inventory_entity,
