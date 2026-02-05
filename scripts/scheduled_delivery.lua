@@ -16,8 +16,8 @@ local ScheduledDelivery = {}
 ---@field ammo_name string Prototype name of ammo used.
 ---@field ammo_quality LuaQualityPrototype? Quality of ammo used.
 ---@field created_time MapTick When the delivery was created.
----@field position MapPosition Target position.
----@field distance number Distance between launcher and receiver.
+---@field position MapPosition Target position (receiver landing position).
+---@field distance number Distance between launcher (center) and receiver (center).
 ---@field item string Name of the item delivered.
 ---@field quality string? Quality of the item delivered.
 ---@field amount uint32 Number of items delivered.
@@ -47,7 +47,7 @@ function ScheduledDelivery.create(launcher, receiver, distance, item, capsule_si
     local capsule_entity = launcher.inventory_entity.surface.create_entity {
         name = constants.entity_capsule_inventory,
         position = constants.out_of_map_position,
-        force = launcher.network.force
+        force = launcher.network.force,
     } or error()
 
     local instance = setmetatable({

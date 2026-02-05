@@ -5,12 +5,12 @@ local LauncherStation = require("scripts.launcher_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
 local ReceiverStation = require("scripts.receiver_station")
 local inventory_tool = require("scripts.inventory_tool")
-local lct_util = require("scripts.lct_util")
 local launcher_gui = require("scripts.gui.launcher_gui")
 local receiver_gui = require("scripts.gui.receiver_gui")
 local bonus_control = require("scripts.bonus_control")
 local visualization_control = require("scripts.visualization_control")
 local signal_condition = require("scripts.gui.signal_condition")
+local migrations       = require("scripts.migrations")
 
 LauncherStation.load_deps()
 ReceiverStation.load_deps()
@@ -37,22 +37,7 @@ script.on_configuration_changed(function(event)
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
     visualization_control.on_init()
-    for _, force in pairs(game.forces) do
-        bonus_control.update_bonus(force)
-    end
-    if event.mod_changes[script.mod_name] then
-        for _, player in pairs(game.players) do
-            launcher_gui.destroy(player)
-            receiver_gui.destroy(player)
-        end
-    end
-    if event.old_version and helpers.compare_versions(event.old_version, "0.1.5") <= 0 then
-        for delivery in ScheduledDelivery.all() do
-            local source = delivery.launcher:valid() and delivery.launcher:position() or {0, 0}
-            local target = delivery.receiver:valid() and delivery.receiver:position() or delivery.position
-            delivery.distance = lct_util.math2d.distance(source, target)
-        end
-    end
+    migrations.on_configuration_changed(event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event) bonus_control.update_bonus(event.research.force) end)

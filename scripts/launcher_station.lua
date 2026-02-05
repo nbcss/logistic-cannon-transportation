@@ -607,7 +607,7 @@ function LauncherStation.prototype:launch()
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_slot = self:get_ammo_inventory()[1]
     if not self:is_disabled() and delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
-        local energy_cost = delivery.distance * self:get_launch_consumption()
+        local energy_cost = self:get_launch_consumption() * (delivery.distance or 0)
         if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
             local inventory = self:get_inventory()

@@ -255,7 +255,7 @@ end
 ---@return MapPosition
 function ReceiverStation.prototype:landing_position()
     local position = self.inventory_entity.position
-    return { position.x, position.y - 1 }
+    return { x = position.x, y = position.y - 1 }
 end
 
 ---@return LuaEntity

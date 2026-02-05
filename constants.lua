@@ -53,6 +53,6 @@ constants.gui_tag_tracked_hover_state = "lct-tracked-hover-state"
 -- other
 constants.capsule_landed_sound = "lct-capsule-landed-sound"
 constants.capsule_no_consumption_energy_modifier = 2.5
-constants.out_of_map_position = { x = 1100000, y = 1100000 }
+constants.out_of_map_position = { x = 1025914, y = -895124 }
 
 return constants
