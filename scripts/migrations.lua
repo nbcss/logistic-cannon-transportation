@@ -9,7 +9,6 @@ local migrations = {}
 
 ---@param event ConfigurationChangedData
 function migrations.on_configuration_changed(event)
-    log(serpent.block(event))
     for _, force in pairs(game.forces) do
         bonus_control.update_bonus(force)
     end
