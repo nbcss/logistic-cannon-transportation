@@ -11,6 +11,7 @@ local bonus_control = require("scripts.bonus_control")
 local visualization_control = require("scripts.visualization_control")
 local signal_condition = require("scripts.gui.signal_condition")
 local migrations       = require("scripts.migrations")
+local settings_cache   = require("scripts.settings_cache")
 
 LauncherStation.load_deps()
 ReceiverStation.load_deps()
@@ -297,6 +298,7 @@ script.on_event(defines.events.on_forces_merging, function(event)
 end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
+    settings_cache.on_runtime_mod_setting_changed(event)
     if event.setting_type == "runtime-global" and event.setting == constants.setting_entity_update_interval then
         CannonNetwork.resize_buckets()
     end
@@ -319,7 +321,7 @@ script.on_event(defines.events.on_tick, function(event)
     for network in CannonNetwork.all() do
         network:update(event.tick)
     end
-    local tick_index = event.tick % settings.global[constants.setting_gui_update_interval].value
+    local tick_index = event.tick % settings_cache.global[constants.setting_gui_update_interval]
     -- update station custom states
     for _, player in ipairs(game.connected_players) do
         update_player_selected_diode_status(player)

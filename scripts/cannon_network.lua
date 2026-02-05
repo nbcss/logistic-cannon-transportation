@@ -4,6 +4,7 @@ local format = require("scripts.format")
 local BucketSet = require("scripts.bucket_set")
 local visualization_control = require("scripts.visualization_control")
 local lct_util              = require("scripts.lct_util")
+local settings_cache        = require("scripts.settings_cache")
 
 local CannonNetwork = {}
 
@@ -46,13 +47,13 @@ end
 function CannonNetwork.resize_buckets()
     for network in CannonNetwork.all() do
         -- resize launchers
-        local launchers = BucketSet.new(settings.global[constants.setting_entity_update_interval].value)
+        local launchers = BucketSet.new(settings_cache.global[constants.setting_entity_update_interval])
         for launcher in network.launchers:all() do
             launchers:put(launcher:id(), launcher)
         end
         network.launchers = launchers
         -- resize receivers
-        local receivers = BucketSet.new(settings.global[constants.setting_entity_update_interval].value)
+        local receivers = BucketSet.new(settings_cache.global[constants.setting_entity_update_interval])
         for receiver in network.receivers:all() do
             receivers:put(receiver:id(), receiver)
         end
@@ -74,8 +75,8 @@ function CannonNetwork.get_or_create(force, surface, signal)
         force = force,
         surface = surface,
         signal = signal,
-        launchers = BucketSet.new(settings.global[constants.setting_entity_update_interval].value),
-        receivers = BucketSet.new(settings.global[constants.setting_entity_update_interval].value),
+        launchers = BucketSet.new(settings_cache.global[constants.setting_entity_update_interval]),
+        receivers = BucketSet.new(settings_cache.global[constants.setting_entity_update_interval]),
         launcher_to_receivers = {},
         receiver_to_launchers = {},
         connection_count = {},
@@ -123,7 +124,7 @@ function CannonNetwork.prototype:update_launcher_storage(launcher)
 end
 
 function CannonNetwork.prototype:update(tick)
-    local bucket_id = tick % settings.global[constants.setting_entity_update_interval].value + 1
+    local bucket_id = tick % settings_cache.global[constants.setting_entity_update_interval] + 1
     for launcher in self.launchers:bucket(bucket_id) do
         launcher:update_state()
         self:update_launcher_storage(launcher)

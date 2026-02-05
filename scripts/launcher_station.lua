@@ -6,6 +6,7 @@ local bonus_control = require("scripts.bonus_control")
 local visualization_control = require("scripts.visualization_control")
 local signal_condition = require("scripts.gui.signal_condition")
 local lct_util         = require("scripts.lct_util")
+local settings_cache   = require("scripts.settings_cache")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
@@ -58,8 +59,8 @@ function LauncherStation.make_default_settings()
         payload_size_override = nil,
         network_signal = nil,
         direction = defines.direction.north,
-        enable_ammo_proxy = not not settings.global[constants.setting_default_launcher_side_load].value,
-        load_capsule_from_inventory = not not settings.global[constants.setting_default_launcher_auto_load].value,
+        enable_ammo_proxy = not not settings_cache.global[constants.setting_default_launcher_side_load],
+        load_capsule_from_inventory = not not settings_cache.global[constants.setting_default_launcher_auto_load],
         circuit_read_ammo = true,
         circuit_enable_condition = signal_condition.default_value,
     } --[[@as LauncherStationSettings]]
@@ -626,7 +627,7 @@ function LauncherStation.prototype:launch()
                 if ammo_slot.count <= 1 and self.settings.load_capsule_from_inventory then
                     inventory_tool.transfer_to_slot(inventory, ammo_slot)
                 end
-                if settings.startup[constants.setting_capsule_consumption_mode].value ~= "no-consumption" then
+                if settings_cache.startup[constants.setting_capsule_consumption_mode] ~= "no-consumption" then
                     ammo_slot.drain_ammo(1)
                 end
                 local source_offset = math2d.vector.from_orientation(self.turret_entity.orientation, 1.9)
