@@ -5,6 +5,7 @@ local LauncherStation = require("scripts.launcher_station")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
 local ReceiverStation = require("scripts.receiver_station")
 local inventory_tool = require("scripts.inventory_tool")
+local lct_util = require("scripts.lct_util")
 local launcher_gui = require("scripts.gui.launcher_gui")
 local receiver_gui = require("scripts.gui.receiver_gui")
 local bonus_control = require("scripts.bonus_control")
@@ -43,6 +44,13 @@ script.on_configuration_changed(function(event)
         for _, player in pairs(game.players) do
             launcher_gui.destroy(player)
             receiver_gui.destroy(player)
+        end
+    end
+    if event.old_version and helpers.compare_versions(event.old_version, "0.1.5") <= 0 then
+        for delivery in ScheduledDelivery.all() do
+            local source = delivery.launcher:valid() and delivery.launcher:position() or {0, 0}
+            local target = delivery.receiver:valid() and delivery.receiver:position() or delivery.position
+            delivery.distance = lct_util.math2d.distance(source, target)
         end
     end
 end)

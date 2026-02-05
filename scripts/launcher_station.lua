@@ -484,7 +484,7 @@ function LauncherStation.prototype:update_ammo_proxy()
     end
     -- for reset inserter targets
     local last_pos = self.inventory_entity.position
-    self.inventory_entity.teleport(math2d.position.add(last_pos, { 10, 10 }), nil, false)
+    self.inventory_entity.teleport(constants.out_of_map_position, nil, false)
     self.inventory_entity.teleport(last_pos, nil, false)
     -- update ammo proxy position
     local position = compute_ammo_proxy_position(self.inventory_entity, self.base_entity.direction)
@@ -593,7 +593,7 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, demand)
     if capsule_size <= 0 or available_count < payload_item_count then return nil end
 
     local deliver_item = { name = item.name, quality = item.quality, count = payload_item_count }
-    local delivery = ScheduledDelivery.create(self, receiver, deliver_item, capsule_size)
+    local delivery = ScheduledDelivery.create(self, receiver, distance, deliver_item, capsule_size)
     self.scheduled_delivery = delivery
     self:set_aiming(delivery.position)
     return delivery
@@ -607,7 +607,7 @@ function LauncherStation.prototype:launch()
     self.scheduled_delivery = nil -- reset delivery state for launcher
     local ammo_slot = self:get_ammo_inventory()[1]
     if not self:is_disabled() and delivery:valid() and delivery:is_matching_ammo(ammo_slot) then
-        local energy_cost = lct_util.math2d.distance(self:position(), delivery.position) * self:get_launch_consumption()
+        local energy_cost = delivery.distance * self:get_launch_consumption()
         if self:get_stored_energy() >= energy_cost then
             local capsule = delivery:get_inventory()
             local inventory = self:get_inventory()
