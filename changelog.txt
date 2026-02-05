@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.6
+Date: 05. 02. 2026
+  Optimizations:
+    - Significantly improved performance of scheduler & GUI.
+  Bugfixes:
+    - Fixed some rare compatibility issue (clone) may cause stuck delivery.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.5
 Date: 30. 01. 2026
   Gui:
