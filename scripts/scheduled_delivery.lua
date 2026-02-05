@@ -11,12 +11,13 @@ local ScheduledDelivery = {}
 ---@field capsule_size uint The number of payload slots in the capsule.
 ---@field tracker_entity LuaEntity? The tracker projectile in air.
 ---@field projectile_entity LuaEntity? The projectile entity (a fluid stream) for visual effect.
----@field launcher LauncherStation
----@field receiver ReceiverStation
+---@field launcher LauncherStation The launcher station of the delivery.
+---@field receiver ReceiverStation The receiver station of the delivery.
 ---@field ammo_name string Prototype name of ammo used.
 ---@field ammo_quality LuaQualityPrototype? Quality of ammo used.
 ---@field created_time MapTick When the delivery was created.
 ---@field position MapPosition Target position.
+---@field distance number Distance between launcher and receiver.
 ---@field item string Name of the item delivered.
 ---@field quality string? Quality of the item delivered.
 ---@field amount uint32 Number of items delivered.
@@ -42,10 +43,10 @@ end
 ---@param item ItemWithQualityCount
 ---@param capsule_size uint
 ---@return ScheduledDelivery
-function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
-    local capsule_entity = receiver.inventory_entity.surface.create_entity {
+function ScheduledDelivery.create(launcher, receiver, distance, item, capsule_size)
+    local capsule_entity = launcher.inventory_entity.surface.create_entity {
         name = constants.entity_capsule_inventory,
-        position = receiver:landing_position(),
+        position = constants.out_of_map_position,
         force = launcher.network.force
     } or error()
 
@@ -58,7 +59,8 @@ function ScheduledDelivery.create(launcher, receiver, item, capsule_size)
         ammo_name = launcher.ammo_name,
         ammo_quality = launcher.ammo_quality,
         created_time = game.tick,
-        position = receiver:position(),
+        position = receiver:landing_position(),
+        distance = distance,
         item = item.name,
         quality = item.quality,
         amount = item.count,
@@ -94,6 +96,17 @@ function ScheduledDelivery.on_object_destroyed(registration_number, unit_number)
     end
     if delivery.projectile_entity then
         delivery.projectile_entity.destroy()
+    end
+end
+
+---Get an iterator over all ScheduledDelivery's.
+---@return fun():ScheduledDelivery?
+function ScheduledDelivery.all()
+    local key = nil
+    return function()
+        local value
+        key, value = next(storage.scheduled_deliveries, key)
+        return value
     end
 end
 
