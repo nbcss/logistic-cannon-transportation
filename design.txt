@@ -2,7 +2,6 @@ TODO
 - Allow visualize ghost range [A]
 - Allow edit ghost settings in UI [A]
 - Allow rotate ghost/cursor [A]
-- Destroy launcher after get scheduled could cause stuck delivery?
 - Handle undo/redo stack [B]
 - Player setting to turn off projectile visualization [B]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]

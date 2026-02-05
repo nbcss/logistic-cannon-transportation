@@ -134,6 +134,11 @@ function ScheduledDelivery.prototype:valid()
     return self.capsule_entity.valid
 end
 
+---@return boolean
+function ScheduledDelivery.prototype:is_launched()
+    return self.tracker_entity ~= nil
+end
+
 ---@return LuaInventory
 function ScheduledDelivery.prototype:get_inventory()
     return self.capsule_entity.get_inventory(defines.inventory.chest) --[[@as LuaInventory]]

@@ -139,6 +139,9 @@ function ReceiverStation.on_object_destroyed(unit_number)
     if instance.proxy_entity and instance.proxy_entity.valid then
         instance.proxy_entity.destroy()
     end
+    for _, delivery in pairs(instance.scheduled_deliveries) do
+        delivery:destroy()
+    end
     instance.network:remove_receiver(instance.station_id)
     visualization_control.on_station_remove(instance:id())
 end

@@ -284,14 +284,17 @@ function LauncherStation.on_object_destroyed(unit_number)
     if instance.electric_interface.valid then
         instance.electric_interface.destroy()
     end
-    if instance.proxy_entity and instance.proxy_entity.valid then
+    if instance.proxy_entity then
         instance.proxy_entity.destroy()
     end
-    if instance.target_entity and instance.target_entity.valid then
+    if instance.target_entity then
         instance.target_entity.destroy()
     end
-    if instance.ammo_proxy_entity and instance.ammo_proxy_entity.valid then
+    if instance.ammo_proxy_entity then
         instance.ammo_proxy_entity.destroy()
+    end
+    if instance.scheduled_delivery then
+        instance.scheduled_delivery:destroy()
     end
     instance.network:remove_launcher(instance:id())
     visualization_control.on_station_remove(instance:id())

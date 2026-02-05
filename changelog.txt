@@ -4,7 +4,8 @@ Date: 05. 02. 2026
   Optimizations:
     - Significantly improved performance of scheduler & GUI.
   Bugfixes:
-    - Fixed some rare compatibility issue (clone) may cause stuck delivery.
+    - Fixed some rare compatibility issue (clone) may cause stucked delivery.
+    - Fixed deconstruct launcher while it have uncompleted delivery will cause stucked delivery.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.5
 Date: 30. 01. 2026
