@@ -467,11 +467,11 @@ function launcher_gui.refresh(player, launcher)
         "[/color]",
     }
     station_frame.charging_speed.value_label.caption = format.energy(launcher:get_charging_speed(), "W")
-    local payload_size = launcher:get_max_payload_size()
-    station_frame.payload_size.info.edit_button.visible = payload_size ~= nil
+    local payload_size = launcher:get_payload_size()
+    station_frame.payload_size.info.edit_button.visible = payload_size ~= 0
     station_frame.payload_size.info.value_label.caption = { "",
         launcher.settings.payload_size_override and "[color=yellow]" or "[color=#ffffff]",
-        payload_size and { "logistic-cannon-transportation.stack", payload_size } or "-",
+        payload_size ~= 0 and { "logistic-cannon-transportation.stack", payload_size } or "-",
         "[/color]",
     }
     local energy_consumption = launcher:get_launch_consumption()
@@ -621,7 +621,7 @@ function launcher_gui.on_edit_payload_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
     local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
-    local payload_size = launcher:get_max_payload_size(true) or 1
+    local payload_size = math.max(launcher:get_payload_size(true), 1)
     local override = launcher.settings.payload_size_override
     if frame.station.payload_size.override.visible then
         -- Commit and save change

@@ -1,5 +1,11 @@
 local lct_util = {}
 
+---@param x number
+---@return number
+function lct_util.round(x)
+    return math.floor(x + 0.5)
+end
+
 lct_util.math2d = {}
 
 ---@param a MapPosition

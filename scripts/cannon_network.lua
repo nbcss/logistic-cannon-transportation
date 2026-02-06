@@ -99,6 +99,7 @@ function CannonNetwork.all()
     end
 end
 
+---@param launcher LauncherStation
 function CannonNetwork.prototype:update_launcher_storage(launcher)
     if not launcher:valid() or not self.launchers:contains(launcher:id()) then return end
     -- delete previous item index
@@ -107,8 +108,8 @@ function CannonNetwork.prototype:update_launcher_storage(launcher)
     end
     self.launcher_to_items[launcher:id()] = {}
     -- indexing items
-    local payload_stack = launcher:get_max_payload_size()
-    if not payload_stack or payload_stack <= 0 then return end
+    local payload_stack = launcher:get_payload_size()
+    if payload_stack <= 0 then return end
     for _, item in ipairs(launcher:get_inventory().get_contents()) do
         local payload_count = payload_stack * prototypes.item[item.name].stack_size
         local encoded_item = format.encode_item(item.name, item.quality)
@@ -171,7 +172,7 @@ function CannonNetwork.prototype:update(tick)
                 local item = { name = demand.name, quality = demand.quality }
                 ---@param launcher LauncherStation
                 local function try_deliver(launcher)
-                    if (not protect or launcher:get_max_payload_size() <= empty_slots) then
+                    if (not protect or launcher:get_payload_size() <= empty_slots) then
                         local delivery = launcher:schedule_delivery(receiver, item, demand.count)
                         if delivery then
                             receiver:add_delivery(delivery)

@@ -10,6 +10,7 @@ local settings_cache   = require("scripts.settings_cache")
 local CannonNetwork ---@module "scripts.cannon_network"
 local ScheduledDelivery ---@module "scripts.scheduled_delivery"
 local inventory_tool = require("scripts.inventory_tool")
+local launcher_computed_values = require("scripts.launcher_computed_values")
 
 local LauncherStation = {}
 function LauncherStation.load_deps()
@@ -31,8 +32,10 @@ end
 ---@field ammo_name string Prototype name of the loaded ammo, empty string means no ammo.
 ---@field ammo_quality LuaQualityPrototype? Quality of loaded ammo, nil if no ammo.
 ---@field overflow_energy number The amount of overflow energy
----@field max_range number The max range of the cannon launcher, affect by override
----@field payload_size number? The capsule payload size of the cannon launcher, not affect by override
+---@field computed_max_range uint32 The max range of the cannon launcher, without override.
+---@field effective_max_range uint32 The max range of the cannon launcher, affected by override.
+---@field computed_payload_size uint32 The capsule payload size of the cannon launcher, without override.
+---@field effective_payload_size uint32 The capsule payload size of the cannon launcher, affected by override.
 ---@field energy_consumption number? The energy consumption of the cannon launcher
 ---@field network CannonNetwork The netowrk that the station belongs to
 ---@field scheduled_delivery ScheduledDelivery? The delivery being scheduled for launch.
@@ -66,8 +69,6 @@ function LauncherStation.make_default_settings()
     } --[[@as LauncherStationSettings]]
 end
 
-local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
-    .data --[[@as table<string, LauncherProperties>]]
 local capsule_properties = prototypes.mod_data[constants.data_capsule_properties]
     .data --[[@as table<string, CannonCapsuleProperties?>]]
 local clone_blacklist = {
@@ -79,37 +80,6 @@ local clone_blacklist = {
     [constants.entity_target] = true,
 }
 
----@param force LuaForce
----@param ammo_name string
----@param ammo_quality LuaQualityPrototype?
----@return number?
-local function compute_energy_consumption(force, ammo_name, ammo_quality)
-    local data = capsule_properties[ammo_name]
-    local consumption = data and data.energy_consumption or 0
-    if consumption == 0 then return nil end
-    local quality_modifier = ammo_quality and 1 / ammo_quality.range_multiplier or 1
-    local modifier = 1.0 + bonus_control.get_launcher_energy_consumption_modifier(force)
-    return consumption * quality_modifier * modifier
-end
-
----@param ammo_name string
----@param ammo_quality LuaQualityPrototype?
----@return number?
-local function compute_payload_size(ammo_name, ammo_quality)
-    local data = capsule_properties[ammo_name]
-    local payload_size = data and data.payload_size or 0
-    if payload_size == 0 then return nil end
-    local quality_modifier = ammo_quality and ammo_quality.default_multiplier or 1
-    return math.floor(0.5 + (payload_size * quality_modifier))
-end
-
----@param inventory_entity LuaEntity
----@param direction defines.direction
-local function compute_ammo_proxy_position(inventory_entity, direction)
-    local opposite = util.oppositedirection(direction)
-    local distance = inventory_entity.tile_height / 2 - 0.5
-    return util.moveposition(inventory_entity.position, opposite, distance)
-end
 
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by inventory entity's unit number
@@ -161,7 +131,10 @@ function LauncherStation.create(entity, from_settings)
         turret_id = turret_entity.unit_number,
         ammo_name = "",
         overflow_energy = 0,
-        max_range = 0,
+        computed_max_range = 0,
+        effective_max_range = 0,
+        computed_payload_size = 0,
+        effective_payload_size = 0,
         network = CannonNetwork.get_or_create(force, surface, launcher_settings.network_signal),
         scheduled_delivery = nil,
         settings = launcher_settings,
@@ -173,7 +146,8 @@ function LauncherStation.create(entity, from_settings)
     instance.turret_entity.destructible = false
     instance.base_entity.destructible = false
     instance.electric_interface.destructible = false
-    instance.max_range = instance:get_max_range(true)
+    instance.computed_max_range = launcher_computed_values.compute_max_range(inventory_entity.name, inventory_entity.quality, force)
+    instance.effective_max_range = launcher_computed_values.with_override(instance.computed_max_range, instance.settings.range_override)
     instance.base_entity.direction = instance.settings.direction
     instance.turret_entity.direction = instance.settings.direction
     instance.turret_entity.get_or_create_control_behavior() --[[@as LuaTurretControlBehavior]].read_ammo =
@@ -189,6 +163,7 @@ function LauncherStation.create(entity, from_settings)
     storage.launcher_stations[instance:id()] = instance
     storage.launcher_stations_turret_index[instance.turret_id] = instance
     instance.network:add_launcher(instance)
+
     -- redirect opened GUI
     for _, player in ipairs(game.connected_players) do
         if player.opened == instance.inventory_entity then
@@ -313,38 +288,26 @@ function LauncherStation.all()
     end
 end
 
----@param launcher_name string
----@param launcher_quality LuaQualityPrototype
----@param force LuaForce
----@param ammo_name string? Used ammo
----@return uint32
-function LauncherStation.compute_max_range(launcher_name, launcher_quality, force, ammo_name)
-    local range = launcher_properties[launcher_name].range --[[@as number]]
-    local quality_modifier = launcher_quality.range_multiplier
-    local tech_modifier = 1.0 + bonus_control.get_launcher_range_bonus(force)
-    local capsule = ammo_name and capsule_properties[ammo_name]
-    return range * quality_modifier * tech_modifier * (capsule and capsule.range_modifier or 1.0)
-end
-
 function LauncherStation.prototype:update_state()
     if not self:valid() then return false end
+
+    local disabled = self:is_disabled()
     local ammo_slot = self:get_ammo_inventory()[1]
     local ammo_name = ""
     local ammo_quality = nil
-    local disabled = self:is_disabled()
-    -- auto reload ammo for active launcher only
-    if not ammo_slot.valid_for_read and not disabled and self.settings.load_capsule_from_inventory then
-        inventory_tool.transfer_to_slot(self:get_inventory(), ammo_slot)
-    end
     if ammo_slot.valid_for_read then
         ammo_name = ammo_slot.name
         ammo_quality = ammo_slot.quality
     end
     local ammo_changed = self.ammo_name ~= ammo_name or self.ammo_quality ~= ammo_quality
-    -- update payload size
-    if ammo_changed then
-        self.payload_size = compute_payload_size(ammo_name, ammo_quality)
+    self.ammo_name = ammo_name
+    self.ammo_quality = ammo_quality
+
+    -- auto reload ammo for active launcher only
+    if self.settings.load_capsule_from_inventory and not ammo_slot.valid_for_read and not disabled then
+        inventory_tool.transfer_to_slot(self:get_inventory(), ammo_slot)
     end
+
     -- cancel ongoing delivery if ammo changed/disabled
     if ammo_changed or disabled then
         if self.scheduled_delivery and self.scheduled_delivery:valid() then
@@ -352,29 +315,41 @@ function LauncherStation.prototype:update_state()
             self.scheduled_delivery = nil
         end
     end
+
+    -- update payload size
+    if ammo_changed then
+        self.computed_payload_size = launcher_computed_values.compute_payload_size(ammo_name, ammo_quality)
+    end
+    self.effective_payload_size = launcher_computed_values.with_override(self.computed_payload_size, self.settings.payload_size_override)
+
     local force = self.inventory_entity.force --[[@as LuaForce]]
-    local max_range = self:get_max_range(true, ammo_name)
-    local effective_max_range = self.settings.range_override and
-        math.min(self.settings.range_override, max_range) or max_range
-    local consumption = compute_energy_consumption(force, ammo_name, ammo_quality)
+
+    -- update max range
+    self.computed_max_range = launcher_computed_values.compute_max_range(self.inventory_entity.name, self.inventory_entity.quality, force, ammo_name)
+    local effective_max_range = launcher_computed_values.with_override(self.computed_max_range, self.settings.range_override)
+    local max_range_changed = self.effective_max_range ~= effective_max_range
+    self.effective_max_range = effective_max_range
+
+    -- update energy consumption
+    local energy_consumption = launcher_computed_values.compute_energy_consumption(force, ammo_name, ammo_quality)
+    local energy_consumption_changed = energy_consumption ~= self.energy_consumption
+    self.energy_consumption = energy_consumption
+
     -- resize energy capacity
-    if self.max_range ~= effective_max_range or consumption ~= self.energy_consumption then
+    if max_range_changed or energy_consumption_changed then
         local energy = self:get_stored_energy()
         self.overflow_energy = 0
         self.electric_interface.energy = 0
         -- assume capacity modifer change corelate to consumption modifer
         local capacity_modifier = 1.0 + bonus_control.get_launcher_energy_capacity_modifier(force)
-        self.electric_interface.electric_buffer_size = effective_max_range * (consumption or 0) * capacity_modifier
+        self.electric_interface.electric_buffer_size = effective_max_range * (energy_consumption or 0) * capacity_modifier
         self:charge_energy(energy)
     end
+
     -- update connections if range changed
-    if self.max_range ~= effective_max_range then
-        self.max_range = effective_max_range
+    if max_range_changed then
         self.network:update_launcher_connections(self)
     end
-    self.ammo_name = ammo_name
-    self.ammo_quality = ammo_quality
-    self.energy_consumption = consumption
 end
 
 ---@param launcher_settings LauncherStationSettings
@@ -388,17 +363,9 @@ function LauncherStation.prototype:set_settings(launcher_settings)
 end
 
 ---@param ignore_override boolean?
----@param ammo_name string?
 ---@return uint32
-function LauncherStation.prototype:get_max_range(ignore_override, ammo_name)
-    if ignore_override then
-        local launcher_name = self.inventory_entity.name
-        local launcher_quality = self.inventory_entity.quality
-        local force = self.turret_entity.force --[[@as LuaForce]]
-        local ammo = ammo_name or self.ammo_name
-        return LauncherStation.compute_max_range(launcher_name, launcher_quality, force, ammo)
-    end
-    return self.max_range
+function LauncherStation.prototype:get_max_range(ignore_override)
+    return ignore_override and self.computed_max_range or self.effective_max_range
 end
 
 ---@return number
@@ -414,12 +381,9 @@ function LauncherStation.prototype:get_charging_speed()
 end
 
 ---@param ignore_override boolean?
----@return uint32?
-function LauncherStation.prototype:get_max_payload_size(ignore_override)
-    if ignore_override then return self.payload_size end
-    local override = self.settings.payload_size_override
-    local payload_size = self.payload_size
-    return override and payload_size and math.min(override, payload_size) or payload_size
+---@return uint32
+function LauncherStation.prototype:get_payload_size(ignore_override)
+    return ignore_override and self.computed_payload_size or self.effective_payload_size
 end
 
 ---@return number?
@@ -492,7 +456,7 @@ function LauncherStation.prototype:update_ammo_proxy()
     self.inventory_entity.teleport(constants.out_of_map_position, nil, false)
     self.inventory_entity.teleport(last_pos, nil, false)
     -- update ammo proxy position
-    local position = compute_ammo_proxy_position(self.inventory_entity, self.base_entity.direction)
+    local position = launcher_computed_values.compute_ammo_proxy_position(self.inventory_entity, self.base_entity.direction)
     if self.ammo_proxy_entity and self.ammo_proxy_entity.valid then
         self.ammo_proxy_entity.teleport(position)
     else
@@ -584,7 +548,7 @@ function LauncherStation.prototype:schedule_delivery(receiver, item, demand)
     end
 
     -- Check demand < payload_item_count early because it prunes most invocations
-    local capsule_size = self:get_max_payload_size() --[[@as number]]
+    local capsule_size = self:get_payload_size()
     local payload_item_count = capsule_size * prototypes.item[item.name].stack_size
     if demand < payload_item_count then return nil end
 
