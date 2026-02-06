@@ -2,6 +2,7 @@ local launcher_gui = require("scripts.gui.launcher_gui")
 local receiver_gui = require("scripts.gui.receiver_gui")
 local bonus_control = require("scripts.bonus_control")
 local lct_util = require("scripts.lct_util")
+local lct_command = require("scripts.lct_command")
 local ScheduledDelivery = require("scripts.scheduled_delivery")
 local LauncherStation  = require("scripts.launcher_station")
 local launcher_computed_values = require("scripts.launcher_computed_values")
@@ -56,14 +57,13 @@ migrations.this_mod_migrations = {
     end
 }
 
-commands.add_command("lct_migrate", nil, function(command)
-    local print = command.player_index and game.get_player(command.player_index).print or game.print
+lct_command.subcommands["migrate"] = function(command)
     if not command.parameter or not migrations.this_mod_migrations[command.parameter] then
-        print("No migrations run.")
+        command.print("No migrations run.")
         return
     end
-    print("Run migrations for v"..command.parameter)
+    command.print("Run migrations for v"..command.parameter)
     migrations.this_mod_migrations[command.parameter]()
-end)
+end
 
 return migrations
