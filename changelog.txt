@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 11. 02. 2026
+  Changes:
+    - Separate assets into a new mod "logistic-cannon-assets", which is now a dependency of this mod.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 06. 02. 2026
   Optimizations:

@@ -1,7 +1,7 @@
 local constants = require("constants")
 local vertical_acceleration_coefficient = 150
-local particle_path = "__logistic-cannon-transportation__/graphics/entity/projectile/%s.png"
-local shadow_path = "__logistic-cannon-transportation__/graphics/entity/projectile/capsule-shadow.png"
+local particle_path = "__logistic-cannon-assets__/graphics/entity/projectile/%s.png"
+local shadow_path = "__logistic-cannon-assets__/graphics/entity/projectile/capsule-shadow.png"
 local capsule_properties = data.raw["mod-data"][constants.data_capsule_properties]
     .data --[[@as table<string, CannonCapsuleProperties?>]]
 

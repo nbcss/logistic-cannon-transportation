@@ -2,10 +2,20 @@ TODO
 - Allow visualize ghost range [A]
 - Allow edit ghost settings in UI [A]
 - Allow rotate ghost/cursor [A]
+- Smaller variant of receiver chest
 - Handle undo/redo stack [B]
 - Player setting to turn off projectile visualization [B]
 - Use temporary container to hold items which unable to insert into receiver's inventory [C]
 - Show signal value on enable/disable button [C]
+
+TBC
+- Hop [very hard, may need to change design]
+- Fixed energy consumption (not relevant to distance?)
+- Hop takes energy? what if it don't have sufficient energy? repathing?
+- Hop use launcher or should be a new entity?
+- Similar problems
+-- Transport Drone
+-- Create mod
 
 Roadmap
 - Circuit set request

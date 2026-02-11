@@ -27,7 +27,7 @@ data.extend {
         type = "sound",
         name = constants.capsule_landed_sound,
         category = "environment",
-        filename = "__logistic-cannon-transportation__/sounds/capsule-landed.ogg",
+        filename = "__logistic-cannon-assets__/sounds/capsule-landed.ogg",
         volume = 0.4,
         aggregation = {
             max_count = 1,
@@ -37,7 +37,7 @@ data.extend {
     {
         type = "ammo-category",
         name = constants.ammo_category,
-        icon = "__logistic-cannon-transportation__/graphics/icons/capsule-category.png",
+        icon = "__logistic-cannon-assets__/graphics/icons/capsule-category.png",
         subgroup = "ammo-category",
     },
     {
