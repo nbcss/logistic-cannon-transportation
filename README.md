@@ -34,23 +34,23 @@ The mod features intuitive GUI and no circuit knowledge required to setup, so it
 
 ## Buildings
 
-![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/graphics/icons/launcher.png) **Logistic cannon launcher**  
+![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/launcher.png) **Logistic cannon launcher**  
 Deliver items in its inventory to receivers in range. Only full payload amount of items will be delivered. Each quality level increase the range, charging speed and inventory size.
 
-![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/graphics/icons/receiver.png) **Logistic cannon receiver**  
+![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/receiver.png) **Logistic cannon receiver**  
 Request any item from nearby launchers. Each quality level increase it's inventory size.
 
 ## Capsules
 
 Capsules are consumed during cannon deliveries, but you can change to "no consumption" mode in the startup setting, which will significantly increase capsule energy consumption and capsule craft cost as exchange. Each type of capsule has differentiated properties. Each quality level increase it's payload size and decrease it's energy consumption.
 
-![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/graphics/icons/capsule-basic.png) **Basic cannon capsule**  
+![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/capsule-basic.png) **Basic cannon capsule**  
 Cheap capsule which suitable for low throughput transportation, has limited payload size and regular energy consumption. 
 
-![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/graphics/icons/capsule-reinforced.png) **Reinforced cannon capsule**  
+![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/capsule-reinforced.png) **Reinforced cannon capsule**  
 Mid-game capsule which suitable for high throughput transportation, has very large payload size (8 stacks). 
 
-![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/graphics/icons/capsule-propelled.png) **Propelled cannon capsule**  
+![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/capsule-propelled.png) **Propelled cannon capsule**  
 Late-game capsule which has very fast projectile speed and extended range, regular payload size (3 stacks) make it suitable for general usecase.
 
 ## Technology bonuses
