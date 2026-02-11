@@ -175,7 +175,7 @@ function ScheduledDelivery.prototype:deliver()
     local surface = self.capsule_entity.surface
     local capsule_inventory = self:get_inventory()
     local receiver_entity = surface.find_entities_filtered {
-        name = constants.entity_receiver_inventory,
+        name = ReceiverStation.get_receiver_entities(),
         position = self.position,
         limit = 1,
     }[1]

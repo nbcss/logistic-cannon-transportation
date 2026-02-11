@@ -93,7 +93,7 @@ end
 ---@param from_settings LauncherStationSettings?
 ---@return LauncherStation
 function LauncherStation.create(entity, from_settings)
-    assert(entity.name == constants.entity_launcher_inventory)
+    assert(LauncherStation.is_launcher_entity(entity.name))
     local surface = entity.surface
     local position = entity.position
     local force = entity.force --[[@as LuaForce]]
@@ -174,6 +174,12 @@ function LauncherStation.create(entity, from_settings)
     return instance
 end
 
+---@param name string name of entity
+---@return boolean
+function LauncherStation.is_launcher_entity(name)
+    return name == constants.entity_launcher_inventory
+end
+
 ---Get a LauncherStation from storage.
 ---@param entity LuaEntity | uint64 An associated entity or a unit number thereof.
 ---@return LauncherStation?
@@ -206,7 +212,7 @@ end
 ---@param destination LuaEntity
 function LauncherStation.on_entity_cloned(source, destination)
     if clone_blacklist[destination.name] then destination.destroy() end
-    if destination.name ~= constants.entity_launcher_inventory then return end
+    if not LauncherStation.is_launcher_entity(destination.name) then return end
     local src_launcher = LauncherStation.get(source)
     local des_launcher = LauncherStation.create(destination, src_launcher and src_launcher.settings)
     if not src_launcher or not src_launcher:valid() then return end
@@ -217,7 +223,7 @@ end
 
 ---@param entity LuaEntity
 function LauncherStation.on_entity_teleported(entity)
-    if entity.name ~= constants.entity_launcher_inventory then return end
+    if not LauncherStation.is_launcher_entity(entity.name) then return end
     local launcher = LauncherStation.get(entity)
     if not launcher or not launcher:valid() then return end
     local position = entity.position

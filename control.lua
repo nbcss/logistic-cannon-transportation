@@ -87,11 +87,11 @@ script.on_event({
     ---| EventData.on_space_platform_built_entity
     ---| EventData.script_raised_revive
     function(event)
-        if event.entity.name == constants.entity_launcher_inventory then
+        if LauncherStation.is_launcher_entity(event.entity.name) then
             local settings = LauncherStation.read_settings(event.tags)
             LauncherStation.create(event.entity, settings)
         end
-        if event.entity.name == constants.entity_receiver_inventory then
+        if ReceiverStation.is_receiver_entity(event.entity.name) then
             local settings = ReceiverStation.read_settings(event.tags)
             ReceiverStation.create(event.entity, settings)
         end
@@ -104,7 +104,7 @@ local function transfer_ammo(station, ammo_inventory, target)
     station.turret_entity.force = force
 end
 script.on_event(defines.events.on_space_platform_pre_mined, function(event)
-    if event.entity.name == constants.entity_launcher_inventory then
+    if LauncherStation.is_launcher_entity(event.entity.name) then
         local station = LauncherStation.get(event.entity)
         if station then
             local ammo_inventory = station:get_ammo_inventory()
@@ -117,7 +117,7 @@ script.on_event(defines.events.on_space_platform_pre_mined, function(event)
 end)
 script.on_event(defines.events.on_pre_player_mined_item, function(event)
     local player = game.players[event.player_index]
-    if event.entity.name == constants.entity_launcher_inventory then
+    if LauncherStation.is_launcher_entity(event.entity.name) then
         local station = LauncherStation.get(event.entity)
         if station then
             local ammo_inventory = station:get_ammo_inventory()
@@ -129,7 +129,7 @@ script.on_event(defines.events.on_pre_player_mined_item, function(event)
     end
 end)
 script.on_event(defines.events.on_robot_pre_mined, function(event)
-    if event.entity.name == constants.entity_launcher_inventory then
+    if LauncherStation.is_launcher_entity(event.entity.name) then
         local station = LauncherStation.get(event.entity)
         if station then
             local ammo_inventory = station:get_ammo_inventory()
@@ -144,23 +144,23 @@ end)
 script.on_event(defines.events.on_entity_settings_pasted, function(event)
     -- Launcher
     local launcher_settings = nil
-    if event.source.name == constants.entity_launcher_inventory then
+    if LauncherStation.is_launcher_entity(event.source.name) then
         local source = LauncherStation.get(event.source)
         if source then
             launcher_settings = source.settings
         end
     end
-    if event.source.name == "entity-ghost" and event.source.ghost_name == constants.entity_launcher_inventory then
+    if event.source.name == "entity-ghost" and LauncherStation.is_launcher_entity(event.source.ghost_name) then
         launcher_settings = LauncherStation.read_settings(event.source.tags)
     end
     if launcher_settings then
-        if event.destination.name == constants.entity_launcher_inventory then
+        if LauncherStation.is_launcher_entity(event.destination.name) then
             local destination = LauncherStation.get(event.destination)
             if destination then
                 destination:set_settings(launcher_settings)
             end
         end
-        if event.destination.name == "entity-ghost" and event.destination.ghost_name == constants.entity_launcher_inventory then
+        if event.destination.name == "entity-ghost" and LauncherStation.is_launcher_entity(event.destination.ghost_name) then
             local tags = event.destination.tags or {}
             LauncherStation.write_settings(tags, launcher_settings)
             event.destination.tags = tags
@@ -168,23 +168,23 @@ script.on_event(defines.events.on_entity_settings_pasted, function(event)
     end
     -- Receiver
     local receiver_settings = nil
-    if event.source.name == constants.entity_receiver_inventory then
+    if ReceiverStation.is_receiver_entity(event.source.name) then
         local source = ReceiverStation.get(event.source)
         if source then
             receiver_settings = source.settings
         end
     end
-    if event.source.name == "entity-ghost" and event.source.ghost_name == constants.entity_receiver_inventory then
+    if event.source.name == "entity-ghost" and ReceiverStation.is_receiver_entity(event.source.ghost_name) then
         receiver_settings = ReceiverStation.read_settings(event.source.tags)
     end
     if receiver_settings then
-        if event.destination.name == constants.entity_receiver_inventory then
+        if ReceiverStation.is_receiver_entity(event.destination.name) then
             local destination = ReceiverStation.get(event.destination)
             if destination then
                 destination:set_settings(receiver_settings)
             end
         end
-        if event.destination.name == "entity-ghost" and event.destination.ghost_name == constants.entity_receiver_inventory then
+        if event.destination.name == "entity-ghost" and ReceiverStation.is_receiver_entity(event.destination.ghost_name) then
             local tags = event.destination.tags or {}
             ReceiverStation.write_settings(tags, receiver_settings)
             event.destination.tags = tags
@@ -194,7 +194,7 @@ end)
 script.on_event(defines.events.on_post_entity_died, function(event)
     if not event.ghost then return end
     -- Launcher
-    if event.ghost.ghost_name == constants.entity_launcher_inventory then
+    if LauncherStation.is_launcher_entity(event.ghost.ghost_name) then
         local launcher = LauncherStation.get(event.unit_number)
         if launcher then
             local tags = event.ghost.tags or {}
@@ -203,7 +203,7 @@ script.on_event(defines.events.on_post_entity_died, function(event)
         end
     end
     -- Receiver
-    if event.ghost.ghost_name == constants.entity_receiver_inventory then
+    if ReceiverStation.is_receiver_entity(event.ghost.ghost_name) then
         local receiver = ReceiverStation.get(event.unit_number)
         if receiver then
             local tags = event.ghost.tags or {}
@@ -220,7 +220,7 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
     local updated = false
     for index, entity in ipairs(entities) do
         -- Launcher
-        if entity.name == constants.entity_launcher_inventory then
+        if LauncherStation.is_launcher_entity(entity.name) then
             local source = event.mapping.get()[index] --[[@as LuaEntity?]]
             if source then
                 local launcher_settings = nil
@@ -239,7 +239,7 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
             end
         end
         -- Receiver
-        if entity.name == constants.entity_receiver_inventory then
+        if ReceiverStation.is_receiver_entity(entity.name) then
             local source = event.mapping.get()[index] --[[@as LuaEntity?]]
             if source then
                 local receiver_settings = nil
@@ -275,7 +275,7 @@ end)
 script.on_event({ constants.rotate_input_event, constants.reverse_rotate_input_event }, function(event)
     local player = game.players[event.player_index]
     if (player.cursor_stack and player.cursor_stack.valid_for_read) or player.cursor_ghost then return end
-    if player.selected and player.selected.name == constants.entity_launcher_inventory then
+    if player.selected and LauncherStation.is_launcher_entity(player.selected.name) then
         local launcher = LauncherStation.get(player.selected)
         if launcher and launcher:valid() and launcher.network.force == player.force then
             launcher:rotate(player, event.input_name == constants.reverse_rotate_input_event)
@@ -307,10 +307,10 @@ end)
 ---@param player LuaPlayer
 local function update_player_selected_diode_status(player)
     if player.selected then
-        if player.selected.name == constants.entity_launcher_inventory then
+        if LauncherStation.is_launcher_entity(player.selected.name) then
             local launcher = LauncherStation.get(player.selected)
             if launcher then launcher:update_diode_status() end
-        elseif player.selected.name == constants.entity_receiver_inventory then
+        elseif ReceiverStation.is_receiver_entity(player.selected.name) then
             local receiver = ReceiverStation.get(player.selected)
             if receiver then receiver:update_diode_status() end
         end
@@ -374,10 +374,10 @@ script.on_event({
     if player.opened_gui_type ~= defines.gui_type.entity then return end
     local entity = player.opened --[[@as LuaEntity]]
 
-    if entity.name == constants.entity_receiver_inventory then
+    if ReceiverStation.is_receiver_entity(entity.name) then
         local receiver = ReceiverStation.get(entity)
         player.opened = receiver and receiver:valid() and receiver:get_gui_proxy() or nil
-    elseif entity.name == constants.entity_launcher_inventory then
+    elseif LauncherStation.is_launcher_entity(entity.name) then
         local launcher = LauncherStation.get(entity)
         player.opened = launcher and launcher:valid() and launcher:get_gui_proxy() or nil
     elseif entity.name == constants.entity_receiver_gui_proxy then

@@ -52,7 +52,7 @@ end
 ---@param from_settings ReceiverStationSettings?
 ---@return ReceiverStation
 function ReceiverStation.create(entity, from_settings)
-    assert(entity.name == constants.entity_receiver_inventory)
+    assert(ReceiverStation.is_receiver_entity(entity.name))
     local surface = entity.surface
     local force = entity.force --[[@as LuaForce]]
 
@@ -78,6 +78,17 @@ function ReceiverStation.create(entity, from_settings)
     end
 
     return instance
+end
+
+---@param name string name of entity
+---@return boolean
+function ReceiverStation.is_receiver_entity(name)
+    return name == constants.entity_receiver_inventory
+end
+
+---@return string[]
+function ReceiverStation.get_receiver_entities()
+    return { constants.entity_receiver_inventory }
 end
 
 ---Get a ReceiverStation from storage.
@@ -111,7 +122,7 @@ end
 ---@param destination LuaEntity
 function ReceiverStation.on_entity_cloned(source, destination)
     if clone_blacklist[destination.name] then destination.destroy() end
-    if destination.name ~= constants.entity_receiver_inventory then return end
+    if not ReceiverStation.is_receiver_entity(destination.name) then return end
     local src_receiver = ReceiverStation.get(source)
     local des_receiver = ReceiverStation.create(destination, src_receiver and src_receiver.settings)
     -- nothing to further clone
@@ -119,7 +130,7 @@ end
 
 ---@param entity LuaEntity
 function ReceiverStation.on_entity_teleported(entity)
-    if entity.name ~= constants.entity_receiver_inventory then return end
+    if not ReceiverStation.is_receiver_entity(entity.name) then return end
     local receiver = ReceiverStation.get(entity)
     if not receiver or not receiver:valid() then return end
     local position = entity.position
