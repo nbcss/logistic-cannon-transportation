@@ -12,6 +12,7 @@
     "description": "",
     "package": {
         "ignore": [
+            "assets/**",
             "*.xcf",
             "design.txt",
             "README.md"

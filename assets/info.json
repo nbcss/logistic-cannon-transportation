@@ -1,0 +1,20 @@
+{
+    "name": "logistic-cannon-assets",
+    "version": "0.1.0",
+    "title": "Logistic Cannon Assets",
+    "author": "nbcss, FiveYellowMice",
+    "factorio_version": "2.0",
+	"dependencies": [],
+    "description": "",
+    "package": {
+        "ignore": [
+            "**/*.xcf",
+            "**/*.py",
+            "**/Makefile",
+            "**/*.blend",
+            "**/*.blend1",
+            "graphics/render/**",
+            "README.md"
+        ]
+    }
+}
