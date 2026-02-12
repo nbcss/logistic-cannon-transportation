@@ -54,7 +54,15 @@ migrations.this_mod_migrations = {
             launcher.computed_max_range = launcher_computed_values.compute_max_range(launcher.inventory_entity.name, launcher.inventory_entity.quality, launcher.inventory_entity.force--[[@as LuaForce]], launcher.ammo_name)
             launcher.effective_max_range = launcher_computed_values.with_override(launcher.computed_max_range, launcher.settings.range_override)
         end
-    end
+    end,
+    ["0.2.1"] = function()
+        for _, player in pairs(game.players) do
+            local receiver_frame = player.gui.relative["lct-receiver-gui"]
+            if receiver_frame then receiver_frame.destroy() end
+            local launcher_frame = player.gui.relative["lct-launcher-gui"]
+            if launcher_frame then launcher_frame.destroy() end
+        end
+    end,
 }
 
 lct_command.subcommands["migrate"] = function(command)

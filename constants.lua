@@ -24,6 +24,7 @@ constants.energy_consumption_modifier = "lct-launcher-energy-consumption-modifie
 -- data
 constants.data_capsule_properties = "lct-capsule-properties"
 constants.data_launcher_properties = "lct-launcher-properties"
+constants.data_receiver_properties = "lct-receiver-properties"
 -- capsule
 constants.item_capsule_basic = "lct-capsule-basic"
 constants.item_capsule_reinforced = "lct-capsule-reinforced"
@@ -46,8 +47,6 @@ constants.entity_proxy_connector = "lct-proxy-connector"
 constants.entity_tracker = "lct-capsule-tracker"
 constants.entity_capsule_inventory = "lct-capsule-inventory"
 -- GUI
-constants.gui_launcher = "lct-launcher-gui"
-constants.gui_receiver = "lct-receiver-gui"
 constants.gui_tag_event_handlers = "lct-event-handlers"
 constants.gui_tag_tracked_hover_state = "lct-tracked-hover-state"
 -- other

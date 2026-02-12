@@ -22,6 +22,11 @@ local container_animation = {
     }
 } --[[@as data.Animation]]
 
+data.raw["mod-data"][constants.data_receiver_properties].data[constants.entity_receiver_inventory] = {
+    landing_offset = { x = 0, y = -1 },
+    gui_proxy_name = constants.entity_receiver_gui_proxy,
+} --[[@as ReceiverProperties]]
+
 data:extend {
     {
         type = "item",

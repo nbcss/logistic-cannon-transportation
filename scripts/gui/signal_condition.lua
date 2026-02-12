@@ -263,9 +263,9 @@ function signal_condition.on_changed(player, event)
     if not player.opened or player.opened.object_name ~= "LuaEntity" then return end
     local entity = player.opened--[[@as LuaEntity]]
     local station = nil
-    if entity.name == constants.entity_launcher_gui_proxy then
+    if LauncherStation.is_gui_entity(entity.name) then
         station = LauncherStation.get(entity)
-    elseif entity.name == constants.entity_receiver_gui_proxy then
+    elseif ReceiverStation.is_gui_entity(entity.name) then
         station = ReceiverStation.get(entity)
     end
     local element = signal_condition.find_root_element(event.element)

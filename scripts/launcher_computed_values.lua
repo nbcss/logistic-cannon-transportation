@@ -7,7 +7,7 @@ local launcher_computed_values = {}
 local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
     .data --[[@as table<string, LauncherProperties>]]
 local capsule_properties = prototypes.mod_data[constants.data_capsule_properties]
-    .data --[[@as table<string, CannonCapsuleProperties?>]]
+    .data --[[@as table<string, CapsuleProperties?>]]
 
 ---@param force LuaForce
 ---@param ammo_name string

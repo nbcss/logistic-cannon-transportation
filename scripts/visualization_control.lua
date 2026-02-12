@@ -13,10 +13,13 @@ end
 local range_color = { 0.02, 0.06, 0.02, 0 }
 local range_edge_color = { 0.2, 0.6, 0.2, 0 }
 local connection_color = { 0.7, 0.7, 0, 1 }
-local items_to_view_stations = {
-    [constants.item_launcher] = "launcher",
-    [constants.item_receiver] = "receiver",
-}
+local entity_to_view_stations = {}
+for _, launcher_name in pairs(LauncherStation.get_station_entities()) do
+    entity_to_view_stations[launcher_name] = "launcher"
+end
+for _, receiver_name in pairs(ReceiverStation.get_station_entities()) do
+    entity_to_view_stations[receiver_name] = "receiver"
+end
 
 -- select a launcher: highlight connected receivers, show the launcher's range
 -- select a receiver: show the connected launcher's range
@@ -150,12 +153,12 @@ local function update_visualization(player, force_update)
     local mode = nil
     local target = nil
     if player.selected then
-        mode = items_to_view_stations[player.selected.name]
+        mode = entity_to_view_stations[player.selected.name]
     end
     if player.cursor_stack and player.cursor_stack.valid_for_read then
-        mode = items_to_view_stations[player.cursor_stack.name] and "all" or mode
+        mode = entity_to_view_stations[player.cursor_stack.name] and "all" or mode
     elseif player.cursor_ghost then
-        mode = items_to_view_stations[player.cursor_ghost.name.name] and "all" or mode
+        mode = entity_to_view_stations[player.cursor_ghost.name.name] and "all" or mode
     end
     if mode == "launcher" or mode == "receiver" then
         target = player.selected.unit_number

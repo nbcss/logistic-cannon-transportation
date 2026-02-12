@@ -3,20 +3,20 @@ local item_sounds = require("__base__.prototypes.item_sounds")
 local format = require("scripts.format")
 
 local capsule_properties = data.raw["mod-data"][constants.data_capsule_properties]
-    .data --[[@as table<string, CannonCapsuleProperties>]]
+    .data --[[@as table<string, CapsuleProperties>]]
 capsule_properties[constants.item_capsule_basic] = {
     speed = 40,                 -- tile per second
     payload_size = 1,           -- stack
     energy_consumption = 30000, -- J per tile
     projectile_name = "capsule-basic",
-} --[[@as CannonCapsuleProperties]]
+} --[[@as CapsuleProperties]]
 capsule_properties[constants.item_capsule_reinforced] = {
     speed = 30,                  -- tile per second
     payload_size = 8,            -- stack
     energy_consumption = 100000, -- J per tile
     projectile_name = "capsule-reinforced",
     smoke_color = { 0.9, 0.375, 0.375, 0.375 },
-} --[[@as CannonCapsuleProperties]]
+} --[[@as CapsuleProperties]]
 capsule_properties[constants.item_capsule_propelled] = {
     speed = 75,                 -- tile per second
     payload_size = 3,           -- stack
@@ -24,7 +24,7 @@ capsule_properties[constants.item_capsule_propelled] = {
     range_modifier = 2.0,
     projectile_name = "capsule-propelled",
     smoke_color = { 0.2, 0.9, 0.9, 0.375 },
-} --[[@as CannonCapsuleProperties]]
+} --[[@as CapsuleProperties]]
 
 if settings.startup[constants.setting_capsule_consumption_mode].value == "no-consumption" then
     for _, capsule_data in pairs(capsule_properties) do

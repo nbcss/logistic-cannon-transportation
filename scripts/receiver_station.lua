@@ -38,9 +38,12 @@ function ReceiverStation.make_default_settings()
     } --[[@as ReceiverStationSettings]]
 end
 
-local clone_blacklist = {
-    [constants.entity_receiver_gui_proxy] = true,
-}
+local receiver_properties = prototypes.mod_data[constants.data_receiver_properties]
+    .data --[[@as table<string, ReceiverProperties?>]]
+local clone_blacklist = {}
+for _, properties in pairs(receiver_properties) do
+    clone_blacklist[properties.gui_proxy_name] = true
+end
 
 function ReceiverStation.on_init()
     ---@type table<uint64, ReceiverStation?> ReceiverStation's indexed by station_entity.unit_number.
@@ -52,7 +55,7 @@ end
 ---@param from_settings ReceiverStationSettings?
 ---@return ReceiverStation
 function ReceiverStation.create(entity, from_settings)
-    assert(ReceiverStation.is_receiver_entity(entity.name))
+    assert(ReceiverStation.is_station_entity(entity.name))
     local surface = entity.surface
     local force = entity.force --[[@as LuaForce]]
 
@@ -82,13 +85,24 @@ end
 
 ---@param name string name of entity
 ---@return boolean
-function ReceiverStation.is_receiver_entity(name)
+function ReceiverStation.is_station_entity(name)
     return name == constants.entity_receiver_inventory
 end
 
 ---@return string[]
-function ReceiverStation.get_receiver_entities()
+function ReceiverStation.get_station_entities()
     return { constants.entity_receiver_inventory }
+end
+
+---@param name string name of entity
+---@return boolean
+function ReceiverStation.is_gui_entity(name)
+    return name == constants.entity_receiver_gui_proxy
+end
+
+---@return string[]
+function ReceiverStation.get_gui_entities()
+    return { constants.entity_receiver_gui_proxy }
 end
 
 ---Get a ReceiverStation from storage.
@@ -98,7 +112,7 @@ function ReceiverStation.get(entity)
     local unit_number
     if type(entity) == "number" then
         unit_number = entity
-    elseif entity.name == constants.entity_receiver_gui_proxy then
+    elseif ReceiverStation.is_gui_entity(entity.name) then
         unit_number = entity.proxy_target_entity.unit_number
     else
         unit_number = entity.unit_number
@@ -122,7 +136,7 @@ end
 ---@param destination LuaEntity
 function ReceiverStation.on_entity_cloned(source, destination)
     if clone_blacklist[destination.name] then destination.destroy() end
-    if not ReceiverStation.is_receiver_entity(destination.name) then return end
+    if not ReceiverStation.is_station_entity(destination.name) then return end
     local src_receiver = ReceiverStation.get(source)
     local des_receiver = ReceiverStation.create(destination, src_receiver and src_receiver.settings)
     -- nothing to further clone
@@ -130,7 +144,7 @@ end
 
 ---@param entity LuaEntity
 function ReceiverStation.on_entity_teleported(entity)
-    if not ReceiverStation.is_receiver_entity(entity.name) then return end
+    if not ReceiverStation.is_station_entity(entity.name) then return end
     local receiver = ReceiverStation.get(entity)
     if not receiver or not receiver:valid() then return end
     local position = entity.position
@@ -272,7 +286,13 @@ end
 ---@return MapPosition
 function ReceiverStation.prototype:landing_position()
     local position = self.inventory_entity.position
-    return { x = position.x, y = position.y - 1 }
+    local offset = receiver_properties[self.inventory_entity.name].landing_offset or error()
+    return { x = position.x + offset.x, y = position.y + offset.y }
+end
+
+---@return string
+function ReceiverStation.prototype:get_gui_proxy_name()
+    return receiver_properties[self.inventory_entity.name].gui_proxy_name or error()
 end
 
 ---@return LuaEntity
@@ -281,7 +301,7 @@ function ReceiverStation.prototype:get_gui_proxy()
         return self.proxy_entity
     end
     self.proxy_entity = self.inventory_entity.surface.create_entity {
-        name = constants.entity_receiver_gui_proxy,
+        name = self:get_gui_proxy_name(),
         position = self.inventory_entity.position,
         force = self.inventory_entity.force,
     } or error()

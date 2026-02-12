@@ -119,6 +119,10 @@ end
 data.raw["mod-data"][constants.data_launcher_properties].data[constants.entity_launcher_inventory] = {
     range = range,
     energy_consumption = energy_consumption,
+    turret_name = constants.entity_launcher_turret,
+    base_name = constants.entity_launcher_base,
+    electric_interface_name = constants.entity_launcher_energy_interface,
+    gui_proxy_name = constants.entity_launcher_gui_proxy,
 } --[[@as LauncherProperties]]
 
 data:extend {

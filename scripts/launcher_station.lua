@@ -69,17 +69,20 @@ function LauncherStation.make_default_settings()
     } --[[@as LauncherStationSettings]]
 end
 
+local launcher_properties = prototypes.mod_data[constants.data_launcher_properties]
+    .data --[[@as table<string, LauncherProperties?>]]
 local capsule_properties = prototypes.mod_data[constants.data_capsule_properties]
-    .data --[[@as table<string, CannonCapsuleProperties?>]]
+    .data --[[@as table<string, CapsuleProperties?>]]
 local clone_blacklist = {
-    [constants.entity_launcher_turret] = true,
-    [constants.entity_launcher_base] = true,
-    [constants.entity_launcher_energy_interface] = true,
-    [constants.entity_launcher_gui_proxy] = true,
     [constants.entity_launcher_ammo_proxy] = true,
     [constants.entity_target] = true,
 }
-
+for _, properties in pairs(launcher_properties) do
+    clone_blacklist[properties.turret_name] = true
+    clone_blacklist[properties.base_name] = true
+    clone_blacklist[properties.electric_interface_name] = true
+    clone_blacklist[properties.gui_proxy_name] = true
+end
 
 function LauncherStation.on_init()
     ---@type table<uint64, LauncherStation?> LauncherStation's indexed by inventory entity's unit number
@@ -93,28 +96,29 @@ end
 ---@param from_settings LauncherStationSettings?
 ---@return LauncherStation
 function LauncherStation.create(entity, from_settings)
-    assert(LauncherStation.is_launcher_entity(entity.name))
+    assert(LauncherStation.is_station_entity(entity.name))
     local surface = entity.surface
     local position = entity.position
     local force = entity.force --[[@as LuaForce]]
+    local properties = launcher_properties[entity.name] or error()
 
     local inventory_entity = entity
 
     local turret_entity = surface.create_entity {
-        name = constants.entity_launcher_turret,
+        name = properties.turret_name,
         position = position,
         force = force,
         quality = entity.quality,
     } or error()
 
     local base_entity = surface.create_entity {
-        name = constants.entity_launcher_base,
+        name = properties.base_name,
         position = position,
         force = force,
     } or error()
 
     local electric_interface = surface.create_entity {
-        name = constants.entity_launcher_energy_interface,
+        name = properties.electric_interface_name,
         position = position,
         force = force,
         quality = entity.quality,
@@ -176,8 +180,24 @@ end
 
 ---@param name string name of entity
 ---@return boolean
-function LauncherStation.is_launcher_entity(name)
+function LauncherStation.is_station_entity(name)
     return name == constants.entity_launcher_inventory
+end
+
+---@return string[]
+function LauncherStation.get_station_entities()
+    return { constants.entity_launcher_inventory }
+end
+
+---@param name string name of entity
+---@return boolean
+function LauncherStation.is_gui_entity(name)
+    return name == constants.entity_launcher_gui_proxy
+end
+
+---@return string[]
+function LauncherStation.get_gui_entities()
+    return { constants.entity_launcher_gui_proxy }
 end
 
 ---Get a LauncherStation from storage.
@@ -187,7 +207,7 @@ function LauncherStation.get(entity)
     local unit_number
     if type(entity) == "number" then
         unit_number = entity
-    elseif entity.name == constants.entity_launcher_gui_proxy then
+    elseif LauncherStation.is_gui_entity(entity.name) then
         unit_number = entity.proxy_target_entity.unit_number
     else
         unit_number = entity.unit_number
@@ -212,7 +232,7 @@ end
 ---@param destination LuaEntity
 function LauncherStation.on_entity_cloned(source, destination)
     if clone_blacklist[destination.name] then destination.destroy() end
-    if not LauncherStation.is_launcher_entity(destination.name) then return end
+    if not LauncherStation.is_station_entity(destination.name) then return end
     local src_launcher = LauncherStation.get(source)
     local des_launcher = LauncherStation.create(destination, src_launcher and src_launcher.settings)
     if not src_launcher or not src_launcher:valid() then return end
@@ -223,7 +243,7 @@ end
 
 ---@param entity LuaEntity
 function LauncherStation.on_entity_teleported(entity)
-    if not LauncherStation.is_launcher_entity(entity.name) then return end
+    if not LauncherStation.is_station_entity(entity.name) then return end
     local launcher = LauncherStation.get(entity)
     if not launcher or not launcher:valid() then return end
     local position = entity.position
@@ -714,13 +734,18 @@ function LauncherStation.prototype:set_read_ammo(state)
     control.read_ammo = state
 end
 
+---@return string
+function LauncherStation.prototype:get_gui_proxy_name()
+    return launcher_properties[self.inventory_entity.name].gui_proxy_name or error()
+end
+
 ---@return LuaEntity
 function LauncherStation.prototype:get_gui_proxy()
     if self.proxy_entity and self.proxy_entity.valid then
         return self.proxy_entity
     end
     self.proxy_entity = self.inventory_entity.surface.create_entity {
-        name = constants.entity_launcher_gui_proxy,
+        name = self:get_gui_proxy_name(),
         position = self.inventory_entity.position,
         force = self.inventory_entity.force,
     } or error()

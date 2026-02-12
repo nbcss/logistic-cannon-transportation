@@ -131,7 +131,7 @@ data.extend {
     {
         type = "mod-data",
         name = constants.data_capsule_properties,
-        ---@class CannonCapsuleProperties
+        ---@class CapsuleProperties
         ---@field speed number
         ---@field payload_size uint
         ---@field energy_consumption number
@@ -146,6 +146,18 @@ data.extend {
         ---@class LauncherProperties
         ---@field range number
         ---@field energy_consumption number
+        ---@field turret_name string
+        ---@field base_name string
+        ---@field electric_interface_name string
+        ---@field gui_proxy_name string
+        data = {},
+    },
+    {
+        type = "mod-data",
+        name = constants.data_receiver_properties,
+        ---@class ReceiverProperties
+        ---@field landing_offset MapPosition
+        ---@field gui_proxy_name string
         data = {},
     },
 }

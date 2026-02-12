@@ -16,9 +16,10 @@ for ammo, _ in pairs(prototypes.mod_data[constants.data_capsule_properties].data
 end
 
 ---@param player LuaPlayer
+---@param gui_name string
 ---@return LuaGuiElement
-function launcher_gui.get_or_create(player)
-    local frame = player.gui.relative[constants.gui_launcher]
+function launcher_gui.get_or_create(player, gui_name)
+    local frame = player.gui.relative[gui_name]
     if frame then
         return frame
     end
@@ -26,13 +27,13 @@ function launcher_gui.get_or_create(player)
     --frame
     frame = player.gui.relative.add {
         type = "frame",
-        name = constants.gui_launcher,
+        name = gui_name,
         direction = "vertical",
         style = "lct_config_frame",
         caption = "\xE2\x80\x8B", --ZWSP
         anchor = {
             gui = defines.relative_gui_type.proxy_container_gui,
-            name = constants.entity_launcher_gui_proxy,
+            name = gui_name,
             position = defines.relative_gui_position.right,
         },
     }
@@ -432,9 +433,9 @@ end
 
 ---@param player LuaPlayer
 function launcher_gui.destroy(player)
-    local frame = player.gui.relative[constants.gui_launcher]
-    if frame then
-        frame.destroy()
+    for _, gui_entity in ipairs(LauncherStation.get_gui_entities()) do
+        local frame = player.gui.relative[gui_entity]
+        if frame then frame.destroy() end
     end
 end
 
@@ -442,7 +443,7 @@ end
 ---@param launcher LauncherStation
 function launcher_gui.refresh(player, launcher)
     if not launcher:valid() then return end
-    local frame = launcher_gui.get_or_create(player)
+    local frame = launcher_gui.get_or_create(player, launcher:get_gui_proxy_name())
 
     local station_frame = frame.station
     station_frame.header.display_name.caption = launcher.settings.name or
@@ -543,7 +544,7 @@ end
 function launcher_gui.on_confirm_display_name(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
+    local frame = player.gui.relative[launcher:get_gui_proxy_name()] ---@type LuaGuiElement
     set_display_name(launcher, frame)
 end
 
@@ -552,7 +553,7 @@ end
 function launcher_gui.on_edit_display_name(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
+    local frame = player.gui.relative[launcher:get_gui_proxy_name()] ---@type LuaGuiElement
     if frame.station.header.edit_name_field.visible then
         set_display_name(launcher, frame)
     else
@@ -586,7 +587,7 @@ end
 function launcher_gui.on_edit_range_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
+    local frame = player.gui.relative[launcher:get_gui_proxy_name()] ---@type LuaGuiElement
     local range = launcher:get_max_range(true)
     local override = launcher.settings.range_override
     if frame.station.range.override.visible then
@@ -620,7 +621,7 @@ end
 function launcher_gui.on_edit_payload_override(player, event)
     local launcher = LauncherStation.get(player.opened --[[@as LuaEntity]])
     if not launcher or not launcher:valid() then return end
-    local frame = player.gui.relative[constants.gui_launcher] ---@type LuaGuiElement
+    local frame = player.gui.relative[launcher:get_gui_proxy_name()] ---@type LuaGuiElement
     local payload_size = math.max(launcher:get_payload_size(true), 1)
     local override = launcher.settings.payload_size_override
     if frame.station.payload_size.override.visible then
