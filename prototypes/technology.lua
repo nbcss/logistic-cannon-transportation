@@ -118,6 +118,25 @@ data:extend {
     },
     {
         type = "technology",
+        name = "compact-cannon-receiver",
+        icon = "__logistic-cannon-assets__/graphics/technology/logistic-cannon.png",
+        icon_size = 256,
+        effects = {
+            { type = "unlock-recipe", recipe = constants.item_compact_receiver },
+        },
+        prerequisites = { "logistic-cannon", "advanced-circuit" },
+        order = "compact-cannon-receiver",
+        unit = {
+            count = 100,
+            time = 30,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack",   1 },
+            }
+        },
+    },
+    {
+        type = "technology",
         name = "reinforced-cannon-capsule",
         icons = util.technology_icon_constant_capacity("__logistic-cannon-assets__/graphics/technology/capsule-reinforced.png"),
         icon_size = 256,

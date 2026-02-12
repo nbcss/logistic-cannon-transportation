@@ -41,6 +41,10 @@ constants.entity_launcher_gui_proxy = "lct-launcher-gui-proxy"
 constants.item_receiver = "lct-receiver"
 constants.entity_receiver_inventory = constants.item_receiver
 constants.entity_receiver_gui_proxy = "lct-receiver-gui-proxy"
+-- compact receiver
+constants.item_compact_receiver = "lct-compact-receiver"
+constants.entity_compact_receiver_inventory = constants.item_compact_receiver
+constants.entity_compact_receiver_gui_proxy = "lct-compact-receiver-gui-proxy"
 -- other entities
 constants.entity_target = "lct-cannon-target"
 constants.entity_proxy_connector = "lct-proxy-connector"
