@@ -4,22 +4,22 @@ local LauncherStation ---@module "scripts.launcher_station"
 local ReceiverStation ---@module "scripts.receiver_station"
 
 local Visualization = {}
+local entity_to_view_stations = {}
 function Visualization.load_deps()
     CannonNetwork = require("scripts.cannon_network")
     LauncherStation = require("scripts.launcher_station")
     ReceiverStation = require("scripts.receiver_station")
+    for _, launcher_name in pairs(LauncherStation.get_station_entities()) do
+        entity_to_view_stations[launcher_name] = "launcher"
+    end
+    for _, receiver_name in pairs(ReceiverStation.get_station_entities()) do
+        entity_to_view_stations[receiver_name] = "receiver"
+    end
 end
 
 local range_color = { 0.02, 0.06, 0.02, 0 }
 local range_edge_color = { 0.2, 0.6, 0.2, 0 }
 local connection_color = { 0.7, 0.7, 0, 1 }
-local entity_to_view_stations = {}
-for _, launcher_name in pairs(LauncherStation.get_station_entities()) do
-    entity_to_view_stations[launcher_name] = "launcher"
-end
-for _, receiver_name in pairs(ReceiverStation.get_station_entities()) do
-    entity_to_view_stations[receiver_name] = "receiver"
-end
 
 -- select a launcher: highlight connected receivers, show the launcher's range
 -- select a receiver: show the connected launcher's range

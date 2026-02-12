@@ -509,15 +509,16 @@ function launcher_gui.refresh(player, launcher)
             local stack_size = prototypes.item[item.name] and prototypes.item[item.name].stack_size or 0
             if stack_size > 0 then
                 local payload_item_count = stack_size * payload_size
-                local payload_count = math.ceil(item.count / payload_item_count)
+                local payload_count = math.floor(item.count / payload_item_count)
                 available_payload = available_payload + payload_count
                 if tooltip then
-                    table.insert(tooltip, string.format("[img=item/%s] %s%s/%s%s[/color]",
+                    table.insert(tooltip, string.format("[img=item/%s]%s[color=#FFFFFF] ×%s[/color] %s(%s/%s)[/color]",
                         item.name,
-                        payload_count > 0 and "[color=green]" or "[color=grey]",
+                        item.quality ~= "normal" and string.format("[img=quality/%s]", item.quality) or "",
+                        payload_count,
+                        payload_count > 0 and "[color=green]" or "[color=gray]",
                         item.count,
-                        payload_item_count,
-                        payload_count > 0 and string.format(" (%s)", payload_count) or ""
+                        payload_item_count
                     ))
                 end
             end
