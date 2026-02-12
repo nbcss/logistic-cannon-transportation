@@ -1,10 +1,10 @@
-local constants = require("constants")
-local format = require("scripts.format")
-local inventory_slot = require("scripts.gui.inventory_slot")
-local signal_condition = require("scripts.gui.signal_condition")
-local LauncherStation = require("scripts.launcher_station")
-local shared_gui      = require("scripts.gui.shared_gui")
-local launcher_gui = {}
+local constants         = require("constants")
+local format            = require("scripts.format")
+local inventory_slot    = require("scripts.gui.inventory_slot")
+local signal_condition  = require("scripts.gui.signal_condition")
+local LauncherStation   = require("scripts.launcher_station")
+local shared_gui        = require("scripts.gui.shared_gui")
+local launcher_gui      = {}
 
 local ammo_slot_options = {
     empty_sprite = "utility/empty_ammo_slot",
@@ -177,7 +177,7 @@ function launcher_gui.get_or_create(player, gui_name)
         type = "checkbox",
         name = "checkbox",
         style = "checkbox",
-        caption = {"", { "logistic-cannon-transportation.override" }, " [img=info]"},
+        caption = { "", { "logistic-cannon-transportation.override" }, " [img=info]" },
         tooltip = { "logistic-cannon-transportation.override-range-info" },
         state = false,
         tags = {
@@ -246,6 +246,31 @@ function launcher_gui.get_or_create(player, gui_name)
             },
         },
     }
+    -- available payload
+    frame.station.add {
+        type = "flow",
+        name = "available_payload",
+        style = "lct_player_input",
+        direction = "horizontal",
+    }
+    frame.station.available_payload.add {
+        type = "label",
+        caption = { "", { "logistic-cannon-transportation.launcher-available-payload" }, },
+    }
+    frame.station.available_payload.add {
+        type = "empty-widget",
+    }.style.horizontally_stretchable = true
+    frame.station.available_payload.add {
+        type = "label",
+        name = "value_label",
+        raise_hover_events = true,
+        tags = {
+            [constants.gui_tag_tracked_hover_state] = false,
+            [constants.gui_tag_event_handlers] = {
+                on_gui_hover = "launcher_gui.on_lazy_tooltip_hover",
+            },
+        },
+    }
     -- payload size
     frame.station.add {
         type = "frame",
@@ -293,7 +318,7 @@ function launcher_gui.get_or_create(player, gui_name)
         type = "checkbox",
         name = "checkbox",
         style = "checkbox",
-        caption = {"", { "logistic-cannon-transportation.override" }, " [img=info]"},
+        caption = { "", { "logistic-cannon-transportation.override" }, " [img=info]" },
         tooltip = { "logistic-cannon-transportation.override-payload-size-info" },
         state = false,
         tags = {
@@ -475,6 +500,41 @@ function launcher_gui.refresh(player, launcher)
         payload_size ~= 0 and { "logistic-cannon-transportation.stack", payload_size } or "-",
         "[/color]",
     }
+
+    if payload_size > 0 then
+        local contents = launcher:get_inventory().get_contents()
+        local available_payload = 0
+        local tooltip = station_frame.available_payload.value_label.tags[constants.gui_tag_tracked_hover_state] and {} or nil
+        for _, item in pairs(contents) do
+            local stack_size = prototypes.item[item.name] and prototypes.item[item.name].stack_size or 0
+            if stack_size > 0 then
+                local payload_item_count = stack_size * payload_size
+                local payload_count = math.ceil(item.count / payload_item_count)
+                available_payload = available_payload + payload_count
+                if tooltip then
+                    table.insert(tooltip, string.format("[img=item/%s] %s%s/%s%s[/color]",
+                        item.name,
+                        payload_count > 0 and "[color=green]" or "[color=grey]",
+                        item.count,
+                        payload_item_count,
+                        payload_count > 0 and string.format(" (%s)", payload_count) or ""
+                    ))
+                end
+            end
+        end
+        station_frame.available_payload.value_label.caption = string.format("%s [img=info]", available_payload)
+        if tooltip == nil then
+            station_frame.available_payload.value_label.tooltip = nil
+        elseif #tooltip == 0 then
+            station_frame.available_payload.value_label.tooltip = { "logistic-cannon-transportation.launcher-no-available-payload-tooltip" }
+        else
+            station_frame.available_payload.value_label.tooltip = table.concat(tooltip, "\n")
+        end
+    else
+        station_frame.available_payload.value_label.caption = "-"
+        station_frame.available_payload.value_label.tooltip = nil
+    end
+    
     local energy_consumption = launcher:get_launch_consumption()
     station_frame.energy_consumption.value_label.caption = energy_consumption and
         format.energy(energy_consumption, "J/m") or "-"
@@ -495,7 +555,8 @@ function launcher_gui.refresh(player, launcher)
                 end
             end
             station_frame.connected_receivers.value_label.tooltip = { "",
-                unamed_count > 0 and { "logistic-cannon-transportation.launcher-connected-receivers-unamed-count", unamed_count } or nil,
+                unamed_count > 0 and
+                { "logistic-cannon-transportation.launcher-connected-receivers-unamed-count", unamed_count } or nil,
                 unamed_count > 0 and #names > 0 and "\n" or nil,
                 table.concat(names, "\n"),
             }
@@ -514,7 +575,8 @@ function launcher_gui.refresh(player, launcher)
     circuit_frame.read_contents.enabled = circuit_connected
     circuit_frame.read_contents.state = launcher.inventory_entity.get_or_create_control_behavior()
         .read_contents --[[@as boolean]]
-    signal_condition.refresh(circuit_connected, launcher.settings.circuit_enable_condition, circuit_frame.enable_condition)
+    signal_condition.refresh(circuit_connected, launcher.settings.circuit_enable_condition,
+        circuit_frame.enable_condition)
 end
 
 ---@param launcher LauncherStation
