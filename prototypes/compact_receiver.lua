@@ -40,6 +40,7 @@ data:extend {
         pick_sound = item_sounds.turret_inventory_pickup,
         drop_sound = item_sounds.turret_inventory_move,
         stack_size = 10,
+        hidden = true,
     },
     {
         type = "recipe",
@@ -54,7 +55,8 @@ data:extend {
         },
         results = {
             { type = "item", name = constants.item_compact_receiver, amount = 1 },
-        }
+        },
+        hidden = true,
     },
     {
         type = "container",
@@ -87,6 +89,7 @@ data:extend {
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
         picture = container_animation,
+        hidden = true,
     },
     {
         type = "proxy-container",

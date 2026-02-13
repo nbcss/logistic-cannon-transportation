@@ -1,4 +1,3 @@
-local math2d = require("math2d")
 local constants = require("constants")
 local format = require("scripts.format")
 local BucketSet = require("scripts.bucket_set")

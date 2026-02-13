@@ -1,6 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
-Date: 11. 02. 2026
+Date: 13. 02. 2026
+  Info:
+    - Refactored the code structure to support various types of launchers/receivers in the future.
+  Gui:
+    - Added available payload info to launcher GUI.
+  Balancing:
+    - Cannon launcher base range increased to 100 tiles (was 80 tiles).
   Changes:
     - Separate assets into a new mod "logistic-cannon-assets", which is now a dependency of this mod.
   Compatibility:

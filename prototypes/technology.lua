@@ -134,6 +134,7 @@ data:extend {
                 { "logistic-science-pack",   1 },
             }
         },
+        hidden = true,
     },
     {
         type = "technology",
