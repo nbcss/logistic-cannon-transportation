@@ -2,7 +2,9 @@ local constants = {}
 
 -- base
 constants.ammo_category = "lct-capsule"
-constants.item_subgroup = "cannon-transport"
+constants.highlight_box = "lct-highlight-box"
+constants.negative_font = "lct-negative-effect"
+constants.item_subgroup = "lct-cannon-transport"
 constants.rotate_input_event = "lct-rotate-entity-action"
 constants.reverse_rotate_input_event = "lct-reverse-rotate-entity-action"
 constants.capsule_launched_effect_id = "lct-capsule-launched"

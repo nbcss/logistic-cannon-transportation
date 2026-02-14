@@ -2,13 +2,13 @@ local constants = require("constants")
 
 data.extend {
     util.merge { data.raw["highlight-box"]["highlight-box"], {
-        name = "lct-highlight-box",
+        name = constants.highlight_box,
         hidden = true,
     } },
     {
         type = "font",
-        name = "lct-negative-effect",
-        from = "lct-negative-effect",
+        name = constants.negative_font,
+        from = constants.negative_font,
         size = 14
     },
     {

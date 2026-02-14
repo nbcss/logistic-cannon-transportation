@@ -44,7 +44,7 @@ local function launcher_visaulization(player, launcher, source_position, from_la
     if not launcher:valid() then return {} end
     local visaulization = {
         launcher.inventory_entity.surface.create_entity {
-            name = "lct-highlight-box",
+            name = constants.highlight_box,
             position = launcher:position(),
             bounding_box = launcher.inventory_entity.selection_box,
             box_type = "logistics",
@@ -53,7 +53,7 @@ local function launcher_visaulization(player, launcher, source_position, from_la
     }
     if from_launcher and launcher.ammo_proxy_entity and launcher.ammo_proxy_entity.valid then
         table.insert(visaulization, launcher.inventory_entity.surface.create_entity {
-            name = "lct-highlight-box",
+            name = constants.highlight_box,
             position = launcher.ammo_proxy_entity.position,
             bounding_box = launcher.ammo_proxy_entity.selection_box,
             box_type = "copy",
@@ -127,7 +127,7 @@ local function receiver_visaulization(player, receiver, source_position)
     end
     local entities = {
         receiver.inventory_entity.surface.create_entity {
-            name = "lct-highlight-box",
+            name = constants.highlight_box,
             position = receiver:position(),
             bounding_box = receiver.inventory_entity.selection_box,
             box_type = "logistics",
