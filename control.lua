@@ -30,6 +30,7 @@ script.on_init(function()
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
     visualization_control.on_init()
+    bonus_control.on_init()
 end)
 
 script.on_configuration_changed(function(event)
@@ -38,6 +39,7 @@ script.on_configuration_changed(function(event)
     ReceiverStation.on_init()
     ScheduledDelivery.on_init()
     visualization_control.on_init()
+    bonus_control.on_init()
     migrations.on_configuration_changed(event)
 end)
 
@@ -284,6 +286,7 @@ script.on_event({ constants.rotate_input_event, constants.reverse_rotate_input_e
 end)
 
 script.on_event(defines.events.on_forces_merging, function(event)
+    bonus_control.on_forces_merging(event)
     for network in CannonNetwork.all() do
         if network.force == event.source then
             local target_network = CannonNetwork.get_or_create(event.destination, network.surface, network.signal)
