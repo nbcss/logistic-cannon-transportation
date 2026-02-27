@@ -41,23 +41,21 @@ data:extend {
         pick_sound = item_sounds.metal_chest_inventory_pickup,
         drop_sound = item_sounds.metal_chest_inventory_move,
         stack_size = 10,
-        hidden = true,
     },
     {
         type = "recipe",
         name = constants.item_receiver_small,
         enabled = false,
-        energy_required = 5,
+        energy_required = 2,
         ingredients = {
             { type = "item", name = "steel-plate",        amount = 10 },
             { type = "item", name = "concrete",           amount = 5 },
-            { type = "item", name = "advanced-circuit",   amount = 5 },
+            { type = "item", name = "electronic-circuit", amount = 5 },
             { type = "item", name = "iron-stick",         amount = 1 },
         },
         results = {
             { type = "item", name = constants.item_receiver_small, amount = 1 },
         },
-        hidden = true,
     },
     {
         type = "container",
@@ -90,7 +88,6 @@ data:extend {
         open_sound = sounds.metallic_chest_open,
         close_sound = sounds.metallic_chest_close,
         picture = container_animation,
-        hidden = true,
     },
     {
         type = "proxy-container",

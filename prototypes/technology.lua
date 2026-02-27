@@ -103,6 +103,7 @@ data:extend {
         effects = {
             { type = "unlock-recipe", recipe = constants.item_launcher },
             { type = "unlock-recipe", recipe = constants.item_receiver },
+            { type = "unlock-recipe", recipe = constants.item_receiver_small },
             { type = "unlock-recipe", recipe = constants.item_capsule_basic },
         },
         prerequisites = { "explosives", "radar", "concrete" },
@@ -115,26 +116,6 @@ data:extend {
                 { "logistic-science-pack",   1 },
             }
         },
-    },
-    {
-        type = "technology",
-        name = "compact-cannon-receiver",
-        icon = "__logistic-cannon-assets__/graphics/technology/logistic-cannon.png",
-        icon_size = 256,
-        effects = {
-            { type = "unlock-recipe", recipe = constants.item_receiver_small },
-        },
-        prerequisites = { "logistic-cannon", "advanced-circuit" },
-        order = "compact-cannon-receiver",
-        unit = {
-            count = 100,
-            time = 30,
-            ingredients = {
-                { "automation-science-pack", 1 },
-                { "logistic-science-pack",   1 },
-            }
-        },
-        hidden = true,
     },
     {
         type = "technology",
