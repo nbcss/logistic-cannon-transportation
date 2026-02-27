@@ -184,7 +184,7 @@ data:extend {
         icons = util.technology_icon_constant_range(launcher_bonus_icon),
         icon_size = 64,
         effects = launcher_range_bonus_effect(0.1),
-        prerequisites = { "cannon-launcher-range-upgrade-1", "military-science-pack" },
+        prerequisites = { "cannon-launcher-range-upgrade-1" },
         upgrade = true,
         order = "logistic-cannon-range-2",
         unit = {
@@ -194,7 +194,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
             }
         },
     },
@@ -214,7 +213,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
                 { "utility-science-pack",    1 },
             }
         },
@@ -235,7 +233,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
                 { "utility-science-pack",    1 },
                 { "production-science-pack", 1 },
             }
@@ -258,7 +255,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
                 { "utility-science-pack",    1 },
                 { "production-science-pack", 1 },
                 { "space-science-pack",      1 },
@@ -392,7 +388,7 @@ data:extend {
         icons = util.technology_icon_constant_recipe_productivity("__logistic-cannon-assets__/graphics/technology/capsules.png"),
         icon_size = 64,
         effects = capsule_productivity_effect(0.1),
-        prerequisites = { "cannon-capsule-productivity-upgrade-1", "military-science-pack" },
+        prerequisites = { "cannon-capsule-productivity-upgrade-1" },
         upgrade = true,
         order = "logistic-cannon-capsule-productivity-2",
         unit = {
@@ -402,7 +398,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
             }
         },
     },
@@ -422,7 +417,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
                 { "production-science-pack", 1 },
             }
         },
@@ -444,7 +438,6 @@ data:extend {
                 { "automation-science-pack", 1 },
                 { "logistic-science-pack",   1 },
                 { "chemical-science-pack",   1 },
-                { "military-science-pack",   1 },
                 { "production-science-pack", 1 },
                 { "space-science-pack",      1 },
             }
