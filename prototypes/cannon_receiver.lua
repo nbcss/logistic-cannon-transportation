@@ -2,18 +2,18 @@ local constants = require("constants")
 local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
-local icon = "__logistic-cannon-assets__/graphics/icons/receiver.png"
+local icon = "__logistic-cannon-assets__/graphics/icons/receiver-large.png"
 local health = 500
 local inventory_size = 59
 
 local container_animation = {
     layers = {
-        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver/receiver-base", {
+        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver-large/receiver-large-base", {
             priority = "extra-high",
             multiply_shift = 0.5,
             scale = 0.5,
         }),
-        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver/receiver-base-shadow", {
+        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver-large/receiver-large-base-shadow", {
             draw_as_shadow = true,
             priority = "extra-high",
             multiply_shift = 0.5,

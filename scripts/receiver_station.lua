@@ -86,23 +86,23 @@ end
 ---@param name string name of entity
 ---@return boolean
 function ReceiverStation.is_station_entity(name)
-    return name == constants.entity_receiver_inventory or name == constants.entity_compact_receiver_inventory
+    return name == constants.entity_receiver_inventory or name == constants.entity_receiver_small_inventory
 end
 
 ---@return string[]
 function ReceiverStation.get_station_entities()
-    return { constants.entity_receiver_inventory, constants.entity_compact_receiver_inventory }
+    return { constants.entity_receiver_inventory, constants.entity_receiver_small_inventory }
 end
 
 ---@param name string name of entity
 ---@return boolean
 function ReceiverStation.is_gui_entity(name)
-    return name == constants.entity_receiver_gui_proxy or name == constants.entity_compact_receiver_gui_proxy
+    return name == constants.entity_receiver_gui_proxy or name == constants.entity_receiver_small_gui_proxy
 end
 
 ---@return string[]
 function ReceiverStation.get_gui_entities()
-    return { constants.entity_receiver_gui_proxy, constants.entity_compact_receiver_gui_proxy }
+    return { constants.entity_receiver_gui_proxy, constants.entity_receiver_small_gui_proxy }
 end
 
 ---Get a ReceiverStation from storage.

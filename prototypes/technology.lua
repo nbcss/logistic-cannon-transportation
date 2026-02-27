@@ -122,7 +122,7 @@ data:extend {
         icon = "__logistic-cannon-assets__/graphics/technology/logistic-cannon.png",
         icon_size = 256,
         effects = {
-            { type = "unlock-recipe", recipe = constants.item_compact_receiver },
+            { type = "unlock-recipe", recipe = constants.item_receiver_small },
         },
         prerequisites = { "logistic-cannon", "advanced-circuit" },
         order = "compact-cannon-receiver",

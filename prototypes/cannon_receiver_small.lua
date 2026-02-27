@@ -2,40 +2,40 @@ local constants = require("constants")
 local util = require("util")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
-local icon = "__logistic-cannon-assets__/graphics/icons/receiver.png"
+local icon = "__logistic-cannon-assets__/graphics/icons/receiver-small.png"
 local health = 300
 local inventory_size = 29
 
 local container_animation = {
     layers = {
-        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver/receiver-base", {
+        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver-small/receiver-small-base", {
             priority = "extra-high",
-            multiply_shift = 0.5 / 3,
-            scale = 0.5 / 3,
+            multiply_shift = 0.5,
+            scale = 0.5,
         }),
-        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver/receiver-base-shadow", {
+        util.sprite_load("__logistic-cannon-assets__/graphics/entity/receiver-small/receiver-small-base-shadow", {
             draw_as_shadow = true,
             priority = "extra-high",
-            multiply_shift = 0.5 / 3,
-            scale = 0.5 / 3,
+            multiply_shift = 0.5,
+            scale = 0.5,
         }),
     }
 } --[[@as data.Animation]]
 
-data.raw["mod-data"][constants.data_receiver_properties].data[constants.entity_compact_receiver_inventory] = {
+data.raw["mod-data"][constants.data_receiver_properties].data[constants.entity_receiver_small_inventory] = {
     landing_offset = { x = 0, y = -0.2 },
-    gui_proxy_name = constants.entity_compact_receiver_gui_proxy,
+    gui_proxy_name = constants.entity_receiver_small_gui_proxy,
 } --[[@as ReceiverProperties]]
 
 data:extend {
     {
         type = "item",
-        name = constants.item_compact_receiver,
+        name = constants.item_receiver_small,
         icon = icon,
         icon_size = 64,
         subgroup = constants.item_subgroup,
         order = "b[receiver]",
-        place_result = constants.entity_compact_receiver_inventory,
+        place_result = constants.entity_receiver_small_inventory,
         inventory_move_sound = item_sounds.turret_inventory_move,
         pick_sound = item_sounds.turret_inventory_pickup,
         drop_sound = item_sounds.turret_inventory_move,
@@ -44,7 +44,7 @@ data:extend {
     },
     {
         type = "recipe",
-        name = constants.item_compact_receiver,
+        name = constants.item_receiver_small,
         enabled = false,
         energy_required = 5,
         ingredients = {
@@ -54,18 +54,18 @@ data:extend {
             { type = "item", name = "iron-stick",         amount = 1 },
         },
         results = {
-            { type = "item", name = constants.item_compact_receiver, amount = 1 },
+            { type = "item", name = constants.item_receiver_small, amount = 1 },
         },
         hidden = true,
     },
     {
         type = "container",
-        name = constants.entity_compact_receiver_inventory,
+        name = constants.entity_receiver_small_inventory,
         icon = icon,
         flags = { "player-creation", "placeable-player", "no-automated-item-insertion" },
         map_color = { 0.1, 0.8, 0.9 },
-        minable = { mining_time = 0.5, result = constants.item_compact_receiver },
-        placeable_by = { item = constants.item_compact_receiver, count = 1 },
+        minable = { mining_time = 0.5, result = constants.item_receiver_small },
+        placeable_by = { item = constants.item_receiver_small, count = 1 },
         collision_box = { { -0.35, -0.35 }, { 0.35, 0.35 } },
         selection_box = { { -0.5, -0.5 }, { 0.5, 0.5 } },
         selection_priority = 50,
@@ -93,11 +93,11 @@ data:extend {
     },
     {
         type = "proxy-container",
-        name = constants.entity_compact_receiver_gui_proxy,
+        name = constants.entity_receiver_small_gui_proxy,
         icon = icon,
         flags = { "not-on-map", "placeable-off-grid", "no-automated-item-removal", "no-automated-item-insertion" },
-        localised_name = { "entity-name." .. constants.entity_compact_receiver_inventory },
-        localised_description = { "entity-description." .. constants.entity_compact_receiver_inventory },
+        localised_name = { "entity-name." .. constants.entity_receiver_small_inventory },
+        localised_description = { "entity-description." .. constants.entity_receiver_small_inventory },
         collision_box = { { -0.35, -0.35 }, { 0.35, 0.35 } },
         collision_mask = { layers = {} },
         quality_indicator_scale = 0,
