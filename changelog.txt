@@ -4,7 +4,7 @@ Date: 28. 02. 2026
   Info:
     - Considering the mod is already very complete, I decided to bump the version to 1.0.0.
   Features:
-    - Added compact receiver, which has inventory smaller size but only has 1x1 dimension.
+    - Added compact receiver, which has inventory smaller size but only has 1x1 dimension. Unlocked by technology "Logistic Cannon".
   Changes:
     - Adjust the locale name of cannon receivers.
   Balancing:
