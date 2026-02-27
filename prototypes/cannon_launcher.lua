@@ -1,6 +1,7 @@
 local constants = require("constants")
 local format = require("scripts.format")
 local util = require("util")
+local hit_effects = require("__base__/prototypes/entity/hit-effects")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local sounds = require("__base__/prototypes/entity/sounds")
 local icon = "__logistic-cannon-assets__/graphics/icons/launcher.png"
@@ -198,6 +199,7 @@ data:extend {
         quality_affects_inventory_size = true,
         render_not_in_network_icon = false,
         is_military_target = false,
+        damaged_trigger_effect = hit_effects.entity(),
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },

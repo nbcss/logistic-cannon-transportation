@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+Date: 28. 02. 2026
+  Info:
+    - Considering the mod is now quite complete, I decided to bump the version to 1.0.0.
+  Features:
+    - Added compact receiver, which has inventory smaller size but only has 1x1 dimension.
+  Bugfixes:
+    - Fixed entities were missing damage effects.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 13. 02. 2026
   Info:

@@ -1,5 +1,6 @@
 local constants = require("constants")
 local util = require("util")
+local hit_effects = require("__base__/prototypes/entity/hit-effects")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local icon = "__logistic-cannon-assets__/graphics/icons/receiver-large.png"
@@ -83,6 +84,7 @@ data:extend {
         },
         corpse = "medium-remnants",
         dying_explosion = "medium-explosion",
+        damaged_trigger_effect = hit_effects.entity(),
         mined_sound = sounds.deconstruct_large(0.8),
         open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
         close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },

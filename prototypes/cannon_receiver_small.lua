@@ -1,5 +1,6 @@
 local constants = require("constants")
 local util = require("util")
+local hit_effects = require("__base__/prototypes/entity/hit-effects")
 local sounds = require("__base__/prototypes/entity/sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local icon = "__logistic-cannon-assets__/graphics/icons/receiver-small.png"
@@ -36,9 +37,9 @@ data:extend {
         subgroup = constants.item_subgroup,
         order = "b[receiver]",
         place_result = constants.entity_receiver_small_inventory,
-        inventory_move_sound = item_sounds.turret_inventory_move,
-        pick_sound = item_sounds.turret_inventory_pickup,
-        drop_sound = item_sounds.turret_inventory_move,
+        inventory_move_sound = item_sounds.metal_chest_inventory_move,
+        pick_sound = item_sounds.metal_chest_inventory_pickup,
+        drop_sound = item_sounds.metal_chest_inventory_move,
         stack_size = 10,
         hidden = true,
     },
@@ -79,15 +80,15 @@ data:extend {
         circuit_wire_max_distance = 9,
         circuit_connector = {
             points = {
-                wire = { red = util.by_pixel(5, 8), green = util.by_pixel(8, 9) },
-                shadow = { red = util.by_pixel(5, 8), green = util.by_pixel(8, 9) },
+                wire = { red = util.by_pixel(9, 11), green = util.by_pixel(3, 11) },
+                shadow = { red = util.by_pixel(19, 16), green = util.by_pixel(23, 16) },
             },
         },
         corpse = "small-remnants",
         dying_explosion = "medium-explosion",
-        mined_sound = sounds.deconstruct_large(0.8),
-        open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
-        close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
+        damaged_trigger_effect = hit_effects.entity(),
+        open_sound = sounds.metallic_chest_open,
+        close_sound = sounds.metallic_chest_close,
         picture = container_animation,
         hidden = true,
     },
@@ -107,8 +108,8 @@ data:extend {
         selectable_in_game = false,
         hidden = true,
         max_health = health,
-        open_sound = { filename = "__base__/sound/open-close/silo-open.ogg", volume = 0.7 },
-        close_sound = { filename = "__base__/sound/open-close/silo-close.ogg", volume = 0.7 },
+        open_sound = sounds.metallic_chest_open,
+        close_sound = sounds.metallic_chest_close,
         stateless_visualisation = {
             render_layer = "zero",
             animation = {
