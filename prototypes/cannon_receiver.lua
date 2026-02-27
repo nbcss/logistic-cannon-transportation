@@ -35,7 +35,7 @@ data:extend {
         icon = icon,
         icon_size = 64,
         subgroup = constants.item_subgroup,
-        order = "b[receiver]",
+        order = "b1[receiver]",
         place_result = constants.entity_receiver_inventory,
         inventory_move_sound = item_sounds.turret_inventory_move,
         pick_sound = item_sounds.turret_inventory_pickup,
