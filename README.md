@@ -37,7 +37,7 @@ The mod features intuitive GUI and no circuit knowledge required to setup, so it
 ![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/launcher.png) **Logistic cannon launcher**  
 Deliver items in its inventory to receivers in range. Only full payload amount of items will be delivered. Each quality level increase the range, charging speed and inventory size.
 
-![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/receiver.png) **Logistic cannon receiver**  
+![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/receiver-large.png) ![](https://media.githubusercontent.com/media/nbcss/logistic-cannon-transportation/master/assets/graphics/icons/receiver-small.png) **Logistic cannon receiver**  
 Request any item from nearby launchers. Each quality level increase it's inventory size.
 
 ## Capsules
