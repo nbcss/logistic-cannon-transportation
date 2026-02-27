@@ -4,7 +4,7 @@
     "title": "Logistic Cannon Assets",
     "author": "nbcss, FiveYellowMice",
     "factorio_version": "2.0",
-	"dependencies": [],
+    "dependencies": [],
     "description": "",
     "package": {
         "ignore": [
@@ -13,8 +13,7 @@
             "**/Makefile",
             "**/*.blend",
             "**/*.blend1",
-            "graphics/render/**",
-            "README.md"
+            "graphics/render/**"
         ]
     }
 }
