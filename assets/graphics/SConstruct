@@ -1,0 +1,53 @@
+from SCons.Script import *
+import re
+
+vars = Variables()
+vars.Add('PYTHON', default='python')
+env = Environment(variables=vars)
+
+env['remove_suffix'] = lambda s: re.sub(r'(?:-\d+)?\.\w+$', '', s)
+
+env['BUILDERS']['TileCropSprites'] = Builder(
+    action="$PYTHON tile_crop_sprites.py $args --output ${remove_suffix(TARGET.path)} $SOURCES",
+    emitter=lambda target, source, env: (target + [env['remove_suffix'](target[0].path) + '.lua'], source),
+)
+
+sub_targets = env.Split('launcher-base launcher-head receiver-large-base receiver-small-base')
+for st in sub_targets: env.Alias(st)
+env.Default(sub_targets)
+
+# launcher-base
+for l in ['', '-shadow']:
+    p = env.TileCropSprites(
+        f'entity/launcher/launcher-base{l}.png',
+        [f'render/launcher-base{l}-{i}.png' for i in range(4)],
+        args='--columns 4',
+    )
+    env.Alias('launcher-base', p)
+
+# launcher-head
+for l in ['', '-shadow']:
+    p = env.TileCropSprites(
+        [f'entity/launcher/launcher-raising{l}-{i}.png' for i in range(4)],
+        [f'render/launcher-head{l}-{j:03}.png' for i in range(64) for j in range(i, 256, 64)],
+        args='--columns 4 --rows-per-output 16',
+    )
+    env.Alias('launcher-head', p)
+
+for l in ['', '-shadow']:
+    p = env.TileCropSprites(
+        f'entity/launcher/launcher-folded{l}.png',
+        [f'render/launcher-head{l}-{i:03}.png' for i in range(64)],
+        args='--columns 4',
+    )
+    env.Alias('launcher-head', p)
+
+# receiver-{large,small}-base
+for size in ['large', 'small']:
+    for l in ['', '-shadow']:
+        p = env.TileCropSprites(
+            f'entity/receiver-{size}/receiver-{size}-base{l}.png',
+            f'render/receiver-{size}-base{l}.png',
+            args='--columns 1',
+        )
+        env.Alias(f'receiver-{size}-base', p)

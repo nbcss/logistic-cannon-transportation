@@ -10,7 +10,7 @@
         "ignore": [
             "**/*.xcf",
             "**/*.py",
-            "**/Makefile",
+            "**/SConstruct",
             "**/*.blend",
             "**/*.blend1",
             "graphics/render/**"

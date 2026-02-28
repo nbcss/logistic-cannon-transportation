@@ -3,5 +3,6 @@
 /*.zip
 assets/*.zip
 .venv/
+.sconsign*
 *.blend1
 render/
