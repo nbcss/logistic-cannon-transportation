@@ -4,7 +4,7 @@ Logistic cannon (mass driver) introduces a new flexible way to deliver items ove
 
 It works like logistic containers, while able to transport much larger amount of items at once. The range of each launcher is limited however, so you may want to place them judiciously, or utilize different types of capsules suited for your varied purpose. Or alternatively, grind for higher qualities, or go through researches to enhance the launcher's capabilities.
 
-Note that the mod is currently at early development stage, further balance or mechanism changes may take place. Any feedback/bug report would be greatly appreciated.
+The mod is currently at stable state, but further balance or mechanism changes may still take place. Any feedback/bug report would be greatly appreciated.
 
 ## Features
 
