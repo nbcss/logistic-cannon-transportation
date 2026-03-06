@@ -23,14 +23,14 @@ local function get_bonus(force, update)
     if not bonus then
         bonus = {
             range_modifier = force.get_ammo_damage_modifier(constants.range_upgrade_bonus),
-            consumption_modifier = force.get_ammo_damage_modifier(constants.range_upgrade_bonus),
-            capacity_modifier = force.get_ammo_damage_modifier(constants.energy_consumption_modifier),
+            consumption_modifier = force.get_ammo_damage_modifier(constants.energy_consumption_modifier),
+            capacity_modifier = force.get_ammo_damage_modifier(constants.energy_capacity_modifier),
         }
         storage.force_bonus[force.index] = bonus
     elseif update then
         bonus.range_modifier = force.get_ammo_damage_modifier(constants.range_upgrade_bonus)
-        bonus.consumption_modifier = force.get_ammo_damage_modifier(constants.range_upgrade_bonus)
-        bonus.capacity_modifier = force.get_ammo_damage_modifier(constants.energy_consumption_modifier)
+        bonus.consumption_modifier = force.get_ammo_damage_modifier(constants.energy_consumption_modifier)
+        bonus.capacity_modifier = force.get_ammo_damage_modifier(constants.energy_capacity_modifier)
     end
     return bonus
 end
