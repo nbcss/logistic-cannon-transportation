@@ -63,4 +63,21 @@ data:extend{
         default_value = "edge",
         allowed_values = { "filled", "edge" },
     },
+    {
+        type = "int-setting",
+        name = constants.setting_launcher_base_range,
+        order = "da",
+        setting_type = "startup",
+        minimum_value = 5,
+        maximum_value = 1000,
+        default_value = 100,
+    },
+    {
+        type = "int-setting",
+        name = constants.setting_launcher_base_consumption,
+        order = "db",
+        setting_type = "startup",
+        minimum_value = 1,
+        default_value = 400 * 1000,
+    },
 }

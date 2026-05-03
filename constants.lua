@@ -19,6 +19,8 @@ constants.setting_gui_update_interval = "lct-gui-update-interval"
 constants.setting_default_launcher_auto_load = "lct-default-launcher-auto-load-setting"
 constants.setting_default_launcher_side_load = "lct-default-launcher-side-load-setting"
 constants.setting_range_visualization_mode = "lct-range-visualization-mode"
+constants.setting_launcher_base_range = "lct-launcher-base-range"
+constants.setting_launcher_base_consumption = "lct-launcher-base-consumption"
 -- bonus effect
 constants.range_upgrade_bonus = "lct-launcher-range-bonus"
 constants.energy_capacity_modifier = "lct-launcher-energy-capacity-modifier"
@@ -31,6 +33,11 @@ constants.data_receiver_properties = "lct-receiver-properties"
 constants.item_capsule_basic = "lct-capsule-basic"
 constants.item_capsule_reinforced = "lct-capsule-reinforced"
 constants.item_capsule_propelled = "lct-capsule-propelled"
+constants.item_capsules = {
+    constants.item_capsule_basic,
+    constants.item_capsule_reinforced,
+    constants.item_capsule_propelled,
+}
 -- launcher
 constants.item_launcher = "lct-launcher"
 constants.entity_launcher_inventory = constants.item_launcher

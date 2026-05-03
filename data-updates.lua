@@ -4,7 +4,7 @@ local constants = require("constants")
 
 if feature_flags["space_travel"] then
     local steel_chest = data.raw["container"]["steel-chest"]
-    local container_surface_conditions = steel_chest and steel_chest.surface_conditions or { { property = "gravity", min = 1 } }
+    local container_surface_conditions = steel_chest and steel_chest.surface_conditions or { { property = "gravity", min = 0.1 } }
     data.raw["container"][constants.entity_launcher_inventory].surface_conditions = table.deepcopy(container_surface_conditions)
     data.raw["container"][constants.entity_receiver_inventory].surface_conditions = table.deepcopy(container_surface_conditions)
     data.raw["container"][constants.entity_receiver_small_inventory].surface_conditions = table.deepcopy(container_surface_conditions)
@@ -14,3 +14,5 @@ if settings.startup[constants.setting_se_allow_in_space].value == true then
     data.raw["container"][constants.entity_receiver_inventory]["se_allow_in_space"] = true
     data.raw["container"][constants.entity_receiver_small_inventory]["se_allow_in_space"] = true
 end
+
+data.raw["mod-data"]["lct-capsule-properties"].data["lct-capsule-basic"].range_modifier = 5.0

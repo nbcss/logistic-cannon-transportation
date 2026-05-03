@@ -1,6 +1,5 @@
 local constants = require("constants")
 local item_sounds = require("__base__.prototypes.item_sounds")
-local format = require("scripts.format")
 
 local capsule_properties = data.raw["mod-data"][constants.data_capsule_properties]
     .data --[[@as table<string, CapsuleProperties>]]
@@ -33,52 +32,6 @@ if settings.startup[constants.setting_capsule_consumption_mode].value == "no-con
     end
 end
 
----@param capsule_item string
----@return data.CustomTooltipField[]
-local function custom_tooltip_fields(capsule_item)
-    local capsule = capsule_properties[capsule_item]
-    local tooltip_fields = {
-        {
-            name = { "logistic-cannon-transportation.capsule-payload-size" },
-            value = { "logistic-cannon-transportation.stack", tostring(capsule.payload_size) },
-            quality_base_value = capsule.payload_size,
-            quality_multiplier = "default_multiplier",
-            quality_formatting = setmetatable({}, {
-                __call = function(self, value)
-                    return { "logistic-cannon-transportation.stack", tostring(math.floor(0.5 + value)) }
-                end
-            }),
-            order = 1,
-        },
-        {
-            name = { "logistic-cannon-transportation.capsule-energy-consumption" },
-            value = { "", format.energy(capsule.energy_consumption, "J/m") },
-            quality_header = "quality-tooltip.reduced-energy",
-            quality_base_value = 1,
-            quality_multiplier = "range_multiplier",
-            quality_formatting = setmetatable({}, {
-                __call = function(self, value)
-                    return { "", format.energy(capsule.energy_consumption / value, "J/m") }
-                end
-            }),
-            order = 2,
-        },
-        {
-            name = { "logistic-cannon-transportation.capsule-speed" },
-            value = { "logistic-cannon-transportation.meter-per-second", tostring(capsule.speed) },
-            order = 3,
-        },
-    }
-    if capsule.range_modifier then
-        table.insert(tooltip_fields, {
-            name = { "description.range-modifier" },
-            value = { "", string.format("%.0f%%", capsule.range_modifier * 100) },
-            order = 4,
-        })
-    end
-    return tooltip_fields
-end
-
 ---@return data.AmmoType
 local function ammo_type()
     return {
@@ -109,7 +62,7 @@ data:extend {
         inventory_move_sound = item_sounds.ammo_large_inventory_move,
         pick_sound = item_sounds.ammo_large_inventory_pickup,
         drop_sound = item_sounds.ammo_large_inventory_move,
-        custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_basic),
+        -- custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_basic),
         ammo_type = ammo_type(),
     },
     {
@@ -137,7 +90,7 @@ data:extend {
         inventory_move_sound = item_sounds.ammo_large_inventory_move,
         pick_sound = item_sounds.ammo_large_inventory_pickup,
         drop_sound = item_sounds.ammo_large_inventory_move,
-        custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_reinforced),
+        -- custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_reinforced),
         ammo_type = ammo_type(),
     },
     {
@@ -165,7 +118,7 @@ data:extend {
         inventory_move_sound = item_sounds.ammo_large_inventory_move,
         pick_sound = item_sounds.ammo_large_inventory_pickup,
         drop_sound = item_sounds.ammo_large_inventory_move,
-        custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_propelled),
+        -- custom_tooltip_fields = custom_tooltip_fields(constants.item_capsule_propelled),
         ammo_type = ammo_type(),
     },
     {
@@ -183,16 +136,3 @@ data:extend {
         }
     },
 }
-
-if settings.startup[constants.setting_capsule_consumption_mode].value == "no-consumption" then
-    for ammo, _ in pairs(capsule_properties) do
-        data.raw["ammo"][ammo].stack_size = 1
-        local capsule_recipe = data.raw["recipe"][ammo]
-        local modifier = math.ceil(40 / capsule_recipe.results[1].amount)
-        capsule_recipe.results[1].amount = 1
-        capsule_recipe.energy_required = capsule_recipe.energy_required * 4
-        for _, ingredient in ipairs(capsule_recipe.ingredients) do
-            ingredient.amount = ingredient.amount * modifier
-        end
-    end
-end
