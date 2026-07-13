@@ -69,8 +69,8 @@ function signal_condition.create_gui(parent)
         type = "checkbox",
         name = "checkbox",
         style = "caption_checkbox",
-        caption = { "gui-control-behavior-modes.enable-disable" },
-        tooltip = { "gui-control-behavior-modes.enable-disable-description" },
+        caption = { "gui-control-behavior-modes.enable-if" },
+        tooltip = { "gui-control-behavior-modes.enable-if-description" },
         state = false,
         tags = {
             [constants.gui_tag_event_handlers] = {

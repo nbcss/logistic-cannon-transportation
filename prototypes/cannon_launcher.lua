@@ -187,9 +187,11 @@ data:extend {
         max_health = health,
         circuit_wire_max_distance = 9,
         circuit_connector = {
-            points = {
-                wire = { red = util.by_pixel(35, 13), green = util.by_pixel(30, 18) },
-                shadow = { red = util.by_pixel(55, 33), green = util.by_pixel(50, 38) },
+            {
+                points = {
+                    wire = { red = util.by_pixel(35, 13), green = util.by_pixel(30, 18) },
+                    shadow = { red = util.by_pixel(55, 33), green = util.by_pixel(50, 38) },
+                },
             },
         },
         corpse = "medium-remnants",

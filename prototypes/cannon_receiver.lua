@@ -77,9 +77,11 @@ data:extend {
         is_military_target = false,
         circuit_wire_max_distance = 9,
         circuit_connector = {
-            points = {
-                wire = { red = util.by_pixel(35, 18), green = util.by_pixel(28, 19) },
-                shadow = { red = util.by_pixel(55, 38), green = util.by_pixel(48, 39) },
+            {
+                points = {
+                    wire = { red = util.by_pixel(35, 18), green = util.by_pixel(28, 19) },
+                    shadow = { red = util.by_pixel(55, 38), green = util.by_pixel(48, 39) },
+                },
             },
         },
         corpse = "medium-remnants",
